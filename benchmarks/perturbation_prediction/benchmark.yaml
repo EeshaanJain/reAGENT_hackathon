@@ -34,3 +34,7 @@ gold:
   # e.g. papers the team judged relevant despite DB task-status columns.
   force_positive:
     - scPerb
+  # Manual doc-id resolution (e.g. journal paper only in corpus as a preprint
+  # with a different title, so automatic DOI/title resolution can't find it).
+  doc_id_overrides:
+    D-SPIN: bio_42aa85936e2c

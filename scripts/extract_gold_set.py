@@ -62,9 +62,12 @@ def main(benchmark_dir: str) -> None:
         writers[label] = csv.DictWriter(fh, fieldnames=fieldnames)
         writers[label].writeheader()
 
+    doc_id_overrides = gold_cfg.get("doc_id_overrides", {})
+
     for row in rows:
         label = "positive" if is_positive(row) else "negative"
-        doc_id = resolve_doc_id(row.get("doi"), row.get("paper_title"))
+        doc_id = (doc_id_overrides.get(row.get("model_name"))
+                  or resolve_doc_id(row.get("doi"), row.get("paper_title")))
         out_row = {c: row.get(c, "") for c in fieldnames if c != "paperclip_doc_id"}
         out_row["paperclip_doc_id"] = doc_id or ""
         writers[label].writerow(out_row)

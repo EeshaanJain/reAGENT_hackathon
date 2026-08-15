@@ -168,16 +168,40 @@ def run_backsearch(benchmark_dir: str | Path,
         for h in hits:
             result.retrieved.setdefault(h.doc_id, h)
 
+    backend = kw.get("filter_backend", "paperclip")
+    if use_filter and filter_criterion and backend == "claude":
+        from .claude_judge import judge
+        kept = judge(result.retrieved, filter_criterion,
+                     model=kw.get("judge_model"))
+        result.retrieved = {d: h for d, h in result.retrieved.items()
+                            if d in kept}
+        return result
+
     if use_filter and filter_criterion and set_ids:
         # `paperclip merge` currently fails to find freshly created sets, so
-        # filter each query's set separately and union the survivors. A paper
-        # is kept if ANY query-set filter keeps it.
+        # filter each query's set separately and union the survivors. The LLM
+        # filter is stochastic, so run `filter_repeats` independent rounds
+        # (each round needs a fresh search — filter consumes the set) and keep
+        # a paper if any round keeps it (union vote, recall-favoring).
+        repeats = int(kw.get("filter_repeats", 1))
         kept_ids: set[str] = set()
         kept_titles: set[str] = set()
-        for set_id in set_ids:
-            for h in llm_filter(set_id, filter_criterion):
-                kept_ids.add(h.doc_id)
-                kept_titles.add(norm_title(h.title))
+
+        def one_round(round_set_ids: list[str]) -> None:
+            for set_id in round_set_ids:
+                for h in llm_filter(set_id, filter_criterion):
+                    kept_ids.add(h.doc_id)
+                    kept_titles.add(norm_title(h.title))
+
+        one_round(set_ids)
+        for _ in range(repeats - 1):
+            fresh = []
+            for q in queries:
+                _, sid = search(q, sources=sources, n=n, return_set_id=True)
+                if sid:
+                    fresh.append(sid)
+            one_round(fresh)
+
         result.retrieved = {
             d: h for d, h in result.retrieved.items()
             if d in kept_ids or norm_title(h.title) in kept_titles
