@@ -32,29 +32,29 @@ Read the publication, code repository, and deposited-data documentation before t
 
 Inspect every downloaded file before choosing an input.
 
+Use `psls_tooling.inspect_anndata` to inventory AnnData inputs.
+
 Determine matrix orientation, dimensions, sparsity, count location, and gene identifiers.
 
 Summarize every metadata column by dtype, missingness, cardinality, and representative values.
 
 Reconcile terminology across the publication, code, and deposited files.
 
-Preserve useful source columns and document every canonical mapping.
+Preserve useful source metadata and document its meaning, provenance, and any renaming.
 
-# Harmonization
-
-Use `psls_tooling.inspect_anndata` to inventory AnnData inputs.
+# Quality control
 
 Use `psls_tooling.compute_qc_metrics` and `psls_tooling.summarize_qc` to evaluate QC distributions.
-
-Use `psls_tooling.standardize_smiles`, `psls_tooling.resolve_compounds`, and `psls_tooling.drop_unresolved_treatments` for chemical harmonization.
-
-Use `psls_tooling.validate_ingested_adata` for final schema validation.
 
 Choose cell and gene QC thresholds from this dataset's distributions.
 
 Check QC behavior across batches, cell types, perturbations, doses, and controls before filtering.
 
-Filter protein-coding genes and technical outliers without removing plausible treatment responses.
+Filter for protein-coding genes.
+
+# Chemical harmonization
+
+Use `psls_tooling.standardize_smiles`, `psls_tooling.resolve_compounds`, and `psls_tooling.drop_unresolved_treatments` for chemical harmonization.
 
 Resolve chemicals from supplied structures or exact identifiers before using name-based lookups.
 
@@ -66,8 +66,6 @@ Preserve and flag a multicomponent structure when a removed fragment has more th
 
 Drop unresolved treated compounds and report the compounds and cells removed.
 
-Map every valid control to `sm_name="control"` while preserving its original label.
-
 # AnnData schema
 
 - Represent single cells as rows and genes as columns.
@@ -78,13 +76,12 @@ Map every valid control to `sm_name="control"` while preserving its original lab
 - Store the elapsed treatment time in numeric `obs["timepoint_hr"]`.
 - Store the harmonized cell identity in `obs["cell_type"]`.
 - Store the harmonized perturbation label in `obs["sm_name"]`.
+- Map every valid control to `sm_name="control"`.
 - Store the full standardized parent InChIKey in `obs["inchikey"]`.
 - Store the experimental batch identifier in `obs["batch"]`.
 - Store control status as a boolean in `obs["control"]`.
 - Allow a missing InChIKey only when `control` is true.
-- Set `uns["meta"]["control_tag"]="control"` and require that value in `obs["sm_name"]`.
 - Preserve original perturbation labels in `obs["sm_name_original"]`.
-- Preserve `SMILES`, `plate_name`, `well`, `donor_id`, `library_id`, and `sm_lincs_id` when available.
 - Use unique gene symbols as `var_names` and retain source gene identifiers in `var`.
 - Do not create a `split` column.
 

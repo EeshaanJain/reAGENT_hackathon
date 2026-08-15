@@ -22,6 +22,7 @@ REQUIRED_OBS_COLUMNS = (
     "batch",
     "control",
 )
+CONTROL_LABEL = "control"
 
 
 @dataclass
@@ -154,23 +155,14 @@ def _validate_obs(adata: Any, report: ValidationReport) -> None:
         report.errors.append('obs["control"] must have boolean dtype')
         return
 
-    meta = adata.uns.get("meta")
-    if not isinstance(meta, dict):
-        report.errors.append('uns["meta"] must be a dictionary')
-        return
-    control_tag = meta.get("control_tag")
-    if not isinstance(control_tag, str) or not control_tag:
-        report.errors.append('uns["meta"]["control_tag"] must be a non-empty string')
-        return
-
     control = obs["control"]
-    tag_matches = obs["sm_name"].astype(str).eq(control_tag)
+    tag_matches = obs["sm_name"].astype(str).eq(CONTROL_LABEL)
     if not control.any():
         report.errors.append("At least one control observation is required")
     if not tag_matches.any():
-        report.errors.append("The control tag does not occur in obs['sm_name']")
+        report.errors.append(f"The {CONTROL_LABEL!r} label does not occur in obs['sm_name']")
     if not control.equals(tag_matches):
-        report.errors.append("obs['control'] must exactly match the control tag in obs['sm_name']")
+        report.errors.append(f"obs['control'] must exactly match obs['sm_name'] == {CONTROL_LABEL!r}")
 
     treated_keys = obs.loc[~control, "inchikey"].map(normalize_inchikey)
     if treated_keys.isna().any():
