@@ -1,0 +1,27 @@
+# Search keywords for the perturbation prediction benchmark literature agent.
+# Tuned via evals/backsearch (see evals/backsearch/results/): this set reaches
+# recall 1.0 on the search-reachable gold positives.
+search:
+  sources: pmc,biorxiv,medrxiv
+  results_per_query: 20
+  queries:
+    - single-cell perturbation response prediction deep learning
+    - predicting transcriptional response to drug perturbation
+    - chemical perturbation prediction gene expression single-cell
+    - out-of-distribution prediction unseen drug single-cell RNA-seq
+    - diffusion model predicting cellular responses to perturbations
+    - flow matching generative model single-cell perturbation
+    - transferring perturbation responses across cell contexts
+    - statistical baseline drug response prediction single-cell
+  # Second stage: LLM relevance filter applied to the union of query results.
+  relevance_filter: >
+    Keep papers that introduce or evaluate computational methods (including
+    simple statistical or linear baselines) for predicting cellular
+    (transcriptional) responses to perturbations that are applicable to
+    chemical perturbations: methods that explicitly handle small molecules,
+    drugs, doses, or drug combinations, AND perturbation-type-agnostic
+    methods that condition on arbitrary perturbation labels or transfer
+    perturbation responses across cell contexts. Remove papers whose method
+    is inherently restricted to genetic perturbations (e.g. requires
+    gene-identity embeddings of the perturbed gene), and papers that are not
+    about perturbation response prediction methods.
