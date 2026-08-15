@@ -2,8 +2,12 @@
 # Tuned via evals/backsearch (see evals/backsearch/results/): this set reaches
 # recall 1.0 on the search-reachable gold positives.
 search:
-  sources: pmc,biorxiv,medrxiv
-  results_per_query: 20
+  sources: pmc,biorxiv,medrxiv,arxiv
+  results_per_query: 30
+  # LLM filter is stochastic: run N independent rounds, keep if any round keeps
+  filter_repeats: 3
+  # Filter backend: paperclip (snippet-based) or claude (abstract-based batch judge)
+  filter_backend: claude
   queries:
     - single-cell perturbation response prediction deep learning
     - predicting transcriptional response to drug perturbation
@@ -13,15 +17,22 @@ search:
     - flow matching generative model single-cell perturbation
     - transferring perturbation responses across cell contexts
     - statistical baseline drug response prediction single-cell
+    - optimal transport map single-cell perturbation drug response
+    - disentangled representation learning single-cell perturbation
+    - causal representation counterfactual prediction single-cell
+    - foundation model zero-shot molecular perturbation prediction
+    - modeling expression heterogeneity in perturbation responses
   # Second stage: LLM relevance filter applied to the union of query results.
   relevance_filter: >
-    Keep papers that introduce or evaluate computational methods (including
-    simple statistical or linear baselines) for predicting cellular
-    (transcriptional) responses to perturbations that are applicable to
-    chemical perturbations: methods that explicitly handle small molecules,
-    drugs, doses, or drug combinations, AND perturbation-type-agnostic
-    methods that condition on arbitrary perturbation labels or transfer
-    perturbation responses across cell contexts. Remove papers whose method
-    is inherently restricted to genetic perturbations (e.g. requires
-    gene-identity embeddings of the perturbed gene), and papers that are not
-    about perturbation response prediction methods.
+    Keep papers about computational methods (including simple statistical or
+    linear baselines) for predicting or modeling cellular transcriptional
+    responses to perturbations, IF the method is applicable to chemical
+    perturbations. Evidence of chemical applicability: the paper mentions
+    drugs, small molecules, compounds, treatments, doses, or chemical
+    perturbation datasets (e.g. sci-Plex, LINCS, drug screens), OR the method
+    conditions on arbitrary perturbation/treatment covariates rather than on
+    the identity of a perturbed gene, OR it transfers perturbation responses
+    across cell contexts. Remove papers whose method or evaluation is
+    exclusively about genetic (CRISPR/gene knockout) perturbations with no
+    claimed chemical applicability, and papers not about perturbation
+    response modeling at all.

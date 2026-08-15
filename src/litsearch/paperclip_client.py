@@ -10,11 +10,9 @@ import re
 import subprocess
 from dataclasses import dataclass
 
-DOC_ID_RE = re.compile(r"\b(PMC\d+|bio_[0-9a-f]+|med_[0-9a-f]+|arx_[\w.]+)\b")
+DOC_ID_RE = re.compile(r"\b(PMC\d+|bio_[0-9a-f]+|med_[0-9a-f]+|arx_[\w.]+|oa_W\d+)\b")
 
-# Full-text sources actually populated in the corpus (checked 2026-08:
-# arXiv is listed in the docs but empty, see benchmark eval notes).
-DEFAULT_SOURCES = "pmc,biorxiv,medrxiv"
+DEFAULT_SOURCES = "pmc,biorxiv,medrxiv,arxiv"
 
 
 def run(args: list[str], timeout: int = 120) -> str:
@@ -59,8 +57,14 @@ def _parse_result_set_id(out: str) -> str | None:
 
 def search(query: str, sources: str = DEFAULT_SOURCES, n: int = 10,
            since: str | None = None,
+           search_all: bool = True,
            return_set_id: bool = False):
     """Run `paperclip search` and parse ranked hits.
+
+    CAUTION: without --all, paperclip silently restricts results to recent
+    papers, and an over-filtered search is indistinguishable from an empty
+    corpus. We therefore pass --all by default; scheduled new-paper runs
+    should pass `since` instead.
 
     With return_set_id=True, returns (hits, saved_result_set_id) so the set can
     be piped into merge/filter.
@@ -68,6 +72,8 @@ def search(query: str, sources: str = DEFAULT_SOURCES, n: int = 10,
     args = ["search", query, "-s", sources, "-n", str(n)]
     if since:
         args += ["--since", since]
+    elif search_all:
+        args += ["--all"]
     out = run(args)
     hits = _parse_hits(out)
     if return_set_id:
@@ -92,8 +98,22 @@ def llm_filter(set_id: str, criterion: str,
     return _parse_hits(out)
 
 
+ARXIV_DOI_RE = re.compile(r"10\.48550/arXiv\.(\d{4}\.\d{4,5})", re.IGNORECASE)
+
+
 def resolve_doc_id(doi: str | None, title: str | None) -> str | None:
-    """Resolve a paper to a paperclip doc id, trying DOI then exact title."""
+    """Resolve a paper to a paperclip doc id.
+
+    arXiv papers are NOT in paperclip's lookup/search indexes, but their full
+    texts are in the corpus under deterministic ids (arx_<arxiv_id>), so for
+    arXiv DOIs we construct the id and verify the document exists."""
+    if doi:
+        m = ARXIV_DOI_RE.search(doi)
+        if m:
+            doc_id = f"arx_{m.group(1)}"
+            out = run(["ls", f"/papers/{doc_id}/"])
+            if "content.lines" in out:
+                return doc_id
     for field, value in (("doi", doi), ("title", title)):
         if not value:
             continue
