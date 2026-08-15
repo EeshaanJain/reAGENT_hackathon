@@ -1,0 +1,20 @@
+name,paper_title,paperclip_doc_id,doi,verdict,reviewed_on,notes
+chemCPA,Predicting Cellular Responses to Novel Drug Perturbations at a Single-Cell Resolution,arx_2204.13545,10.48550/arXiv.2204.13545,positive,2026-08-16,NeurIPS 2022; CPA + molecule embeddings for unseen drugs; DB omission
+MAP,MAP: A Knowledge-driven Framework for Predicting Single-cell Responses for Unprofiled Drugs,bio_83d59c1d7880,,positive,2026-08-16,zero-shot unprofiled compounds
+scOTM,scOTM: A Deep Learning Framework for Predicting Single-Cell Perturbation Responses with Large Language Models,PMC12383350,10.3390/bioengineering12080884,positive,2026-08-16,drug-induced responses; LLM embeddings
+OCOO-T,OCOO-T : A Simple and Scalable Virtual Cell Model for Transcriptional Perturbation Response Prediction,arx_2606.12838,10.48550/arXiv.2606.12838,positive,2026-08-16,genetic + chemical + cytokine perturbations
+OCOO-T,OCOO-T : A SIMPLE AND SCALABLE VIRTUAL CELL MODEL FOR TRANSCRIPTIONAL PERTURBATION RESPONSE PREDICTION,bio_8186d5d16c1a,,positive,2026-08-16,duplicate version of OCOO-T
+CoupleVAE,CoupleVAE: coupled variational autoencoders for predicting perturbational single-cell RNA sequencing data,PMC11966612,,positive,2026-08-16,
+OmniPert,OmniPert: A Deep Learning Foundation Model for Predicting Responses to Genetic and Chemical Perturbations in Single Cancer Cells,bio_5e8c838a6df8,,positive,2026-08-16,cancer-focused foundation model
+ScAPE,ScAPE: A lightweight multitask learning baseline method to predict transcriptomic responses to perturbations,bio_f0ffef2a7e2b,,positive,2026-08-16,method in the OP perturbation_prediction benchmark itself
+EvalFarFromStraightforward,Evaluating Single-Cell Perturbation Response Models Is Far from Straightforward,bio_c5703f786fe0,,related,2026-08-16,evaluation-metrics critique; benchmark-papers candidate
+MiTCP,Predicting transcriptional changes induced by molecules with MiTCP,PMC11756340,,negative,2026-08-16,bulk L1000 setting; not single-cell
+DEPICT,Condition-matched in silico prediction of drug transcriptional responses enables mechanism-guided screening and combination discovery,bio_4f178f009174,,negative,2026-08-16,
+scGen,Generative modeling and latent space arithmetics predict single-cell perturbation response across cell types,bio_603665126c0b,,negative,2026-08-16,canonical but judged out of scope
+LCD,Latent Causal Diffusions for Single-Cell Perturbation Modeling,PMC12869406,,negative,2026-08-16,
+D-SPIN,D-SPIN constructs gene regulatory network models from multiplexed scRNA-seq data revealing organizing principles of cellular perturbation response,PMC10153191,,positive,2026-08-16,duplicate version of gold D-SPIN
+CPA,Compositional perturbation autoencoder for single-cell response modeling,bio_199547f46cee,,positive,2026-08-16,duplicate version of gold CPA
+CPA,Learning interpretable cellular responses to complex perturbations in high-throughput screens,bio_51c22fb06f40,,positive,2026-08-16,duplicate version of gold CPA
+Biolord,Biological representation disentanglement of single-cell data,bio_aaf8afe26d8f,,positive,2026-08-16,duplicate version of gold Biolord
+scVIDR (protocol),Protocol for predicting single- and multiple-dose-dependent gene expression using deep generative learning,PMC12274909,,related,2026-08-16,STAR Protocols companion to gold scVIDR
+MichiGAN,Sampling from Disentangled Representations of Single-Cell Data Using Generative Adversarial Networks,bio_fa59a5596d15,,negative,2026-08-16,duplicate version of MichiGAN (judged not relevant)

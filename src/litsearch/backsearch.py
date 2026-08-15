@@ -157,6 +157,20 @@ def run_backsearch(benchmark_dir: str | Path,
             for row in csv.DictReader(f):
                 related_titles[norm_title(row["paper_title"])] = row["paper_title"]
 
+    # Team-reviewed verdicts on papers found by the agent but absent from the
+    # source DB (plus duplicate-version aliases of DB papers).
+    reviewed = bench / "gold" / "reviewed_papers.csv"
+    if reviewed.exists():
+        with open(reviewed) as f:
+            for row in csv.DictReader(f):
+                target = {"positive": (positives, pos_titles),
+                          "negative": (negatives, neg_titles),
+                          "related": (None, related_titles)}[row["verdict"]]
+                ids, titles = target
+                if ids is not None and row["paperclip_doc_id"]:
+                    ids[row["paperclip_doc_id"]] = row["name"]
+                titles[norm_title(row["paper_title"])] = row["name"]
+
     result = BacksearchResult(queries, positives, negatives, pos_gaps,
                               pos_titles, neg_titles, related_titles)
     set_ids = []
