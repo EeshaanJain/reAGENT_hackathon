@@ -32,8 +32,19 @@ gold:
   negative_values: ["not_established", "False", ""]
   # Manual corrections to the automatic relevance rule (by model_name),
   # e.g. papers the team judged relevant despite DB task-status columns.
+  # Team-reviewed relevance verdicts (2026-08-16), override DB task columns.
   force_positive:
     - scPerb
+    - C3TL
+    - Departures
+    - LPM
+    - PerturbDiff
+    - scDFM
+    - scDisInFact
+  # Papers the team judged NOT relevant despite matching the relevance rule
+  # (e.g. general-purpose tools whose DB row has chemical-scope columns set).
+  force_negative:
+    - TabPFN / TabICL
   # Manual doc-id resolution (e.g. journal paper only in corpus as a preprint
   # with a different title, so automatic DOI/title resolution can't find it).
   doc_id_overrides:

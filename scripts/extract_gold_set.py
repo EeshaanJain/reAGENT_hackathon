@@ -39,8 +39,11 @@ def main(benchmark_dir: str) -> None:
     negative_values = set(gold_cfg["negative_values"])
 
     force_positive = set(gold_cfg.get("force_positive", []))
+    force_negative = set(gold_cfg.get("force_negative", []))
 
     def is_positive(row: dict) -> bool:
+        if row.get("model_name") in force_negative:
+            return False
         if row.get("model_name") in force_positive:
             return True
         return any(
