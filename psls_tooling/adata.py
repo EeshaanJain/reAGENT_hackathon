@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,7 @@ REQUIRED_OBS_COLUMNS = (
     "control",
 )
 CONTROL_LABEL = "control"
+CAPTURE_ORIENTATIONS = {"3prime", "5prime", "full_length", "unknown"}
 
 
 @dataclass
@@ -169,6 +171,27 @@ def _validate_obs(adata: Any, report: ValidationReport) -> None:
         report.errors.append("Every treated observation must have a valid full InChIKey")
 
 
+def _validate_single_cell_protocol(adata: Any, report: ValidationReport) -> None:
+    protocol = adata.uns.get("single_cell_protocol")
+    if not isinstance(protocol, Mapping):
+        report.errors.append('uns["single_cell_protocol"] must be a mapping')
+        return
+
+    for field_name in ("chemistry", "capture_orientation", "source"):
+        value = protocol.get(field_name)
+        if not isinstance(value, str) or not value.strip():
+            report.errors.append(
+                f'uns["single_cell_protocol"][{field_name!r}] must be a non-empty string'
+            )
+
+    orientation = protocol.get("capture_orientation")
+    if orientation not in CAPTURE_ORIENTATIONS:
+        report.errors.append(
+            'uns["single_cell_protocol"]["capture_orientation"] must be one of '
+            f"{sorted(CAPTURE_ORIENTATIONS)}"
+        )
+
+
 def validate_ingested_adata(adata: Any, *, raise_on_error: bool = False) -> ValidationReport:
     """Validate the canonical counts-only, OP3-style ingestion contract."""
     report = ValidationReport(summary={"n_obs": int(adata.n_obs), "n_vars": int(adata.n_vars)})
@@ -190,6 +213,7 @@ def validate_ingested_adata(adata: Any, *, raise_on_error: bool = False) -> Vali
         report.errors.append("obs['split'] is downstream metadata and must not be created during ingestion")
 
     _validate_obs(adata, report)
+    _validate_single_cell_protocol(adata, report)
     report.summary["control_cells"] = int(adata.obs.get("control", pd.Series(dtype=bool)).eq(True).sum())
     if raise_on_error:
         report.raise_for_errors()

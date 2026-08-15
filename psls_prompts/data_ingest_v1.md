@@ -40,15 +40,21 @@ Summarize every metadata column by dtype, missingness, cardinality, and represen
 
 Reconcile terminology across the publication, code, and deposited files.
 
+Identify the single-cell assay chemistry and transcript-capture orientation.
+
+Classify the orientation as 3′, 5′, full-length, or unknown, and cite the supporting evidence.
+
 Preserve useful source metadata and document its meaning, provenance, and any renaming.
 
-# Quality control
+# Cell quality control
 
 Use `psls_tooling.compute_qc_metrics` and `psls_tooling.summarize_qc` to evaluate QC distributions.
 
 Choose cell and gene QC thresholds from this dataset's distributions.
 
 Check QC behavior across batches, cell types, perturbations, doses, and controls before filtering.
+
+# Gene harmonization
 
 Filter for protein-coding genes.
 
@@ -83,6 +89,7 @@ Drop unresolved treated compounds and report the compounds and cells removed.
 - Allow a missing InChIKey only when `control` is true.
 - Preserve original perturbation labels in `obs["sm_name_original"]`.
 - Use unique gene symbols as `var_names` and retain source gene identifiers in `var`.
+- Store the assay chemistry, capture orientation (`"3prime"`, `"5prime"`, `"full_length"`, or `"unknown"`), and evidence source in `uns["single_cell_protocol"]`.
 - Do not create a `split` column.
 
 # Completion criteria
