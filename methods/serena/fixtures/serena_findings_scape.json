@@ -1,0 +1,190 @@
+{
+  "analysis_timestamp": "2026-08-16T02:00:00Z",
+  "repo_path": "work/repo",
+  "serena_status": "success",
+  "serena_error": null,
+  "findings": [
+    {
+      "type": "public_api",
+      "category": "training",
+      "symbol": "train",
+      "file_path": "scape/_api.py",
+      "line_range": [2, 41],
+      "description": "Main public training API entry point",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol pattern 'train' with include_body=True in _api.py. Signature and docstring verified.",
+      "signature": "train(de_file, lfc_file, n_genes=64, output_dir=None, cv_cell='NK cells', cv_drug=None, epochs=600, batch_size=128, config_name='config', model_name='model')"
+    },
+    {
+      "type": "public_api",
+      "category": "inference",
+      "symbol": "SCAPE.predict",
+      "file_path": "scape/_model.py",
+      "line_range": [241, 280],
+      "description": "Instance method for prediction/inference",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol pattern 'SCAPE/predict' with include_body=True in _model.py",
+      "signature": "def predict(self, idx_targets, as_df=True, output_idx=0, idx_target_names=None)"
+    },
+    {
+      "type": "implementation",
+      "category": "training",
+      "symbol": "SCAPE",
+      "file_path": "scape/_model.py",
+      "line_range": [38, 188],
+      "description": "Main model class implementing training and prediction",
+      "confidence": "confirmed",
+      "evidence": "Class definition with __init__, train, predict, save, load methods found via find_symbol",
+      "related_symbols": [
+        "SCAPE/__init__",
+        "SCAPE/train",
+        "SCAPE/predict",
+        "SCAPE/save",
+        "SCAPE/load"
+      ]
+    },
+    {
+      "type": "implementation",
+      "category": "training",
+      "symbol": "create_default_model",
+      "file_path": "scape/_model.py",
+      "line_range": [531, 605],
+      "description": "Factory function that creates SCAPE model with default configuration",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol, full body obtained. Creates model_setup dict with data_sources, feature_extraction, input_mapping, output_genes, config",
+      "dependencies": ["SCAPE", "scape._util.select_top_variable"]
+    },
+    {
+      "type": "data_loader",
+      "category": "slogpvals",
+      "symbol": "load_slogpvals",
+      "file_path": "scape/_io.py",
+      "line_range": [59, 63],
+      "description": "Loader for signed log p-value differential expression data",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Parquet format, drops columns [sm_lincs_id, SMILES, control], creates MultiIndex [cell_type, sm_name]",
+      "notes": "Input shape: ~614 rows × ~18,000 genes (test data: 21,366 genes)"
+    },
+    {
+      "type": "data_loader",
+      "category": "lfc",
+      "symbol": "load_lfc",
+      "file_path": "scape/_io.py",
+      "line_range": [66, 82],
+      "description": "Loader for log fold change pseudo-count data",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Parquet input, computes -log2(treatment+1) + log2(control+1), groups by [cell_type, sm_name]",
+      "notes": "Input uses [cell_type, sm_name, donor, library, plate, well] MultiIndex; output matches load_slogpvals shape/index"
+    },
+    {
+      "type": "preprocessing",
+      "category": "feature_selection",
+      "symbol": "select_top_variable",
+      "file_path": "scape/_util.py",
+      "line_range": [4, 30],
+      "description": "Gene selection by standard deviation",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Takes DataFrame list, computes std, sorts descending, returns top-k gene names",
+      "notes": "Reduces ~18,000 genes to k=64 (default). Union of top-k across DataFrames if union=True"
+    },
+    {
+      "type": "preprocessing",
+      "category": "feature_extraction",
+      "symbol": "extract_features",
+      "file_path": "scape/_util.py",
+      "line_range": [61, 94],
+      "description": "Computes input features from data sources at training/prediction time",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. GroupBy aggregation (median) per feature name, joins to query index",
+      "dependencies": ["scape._model.create_default_model"],
+      "notes": "Feature types: slogpval_drug, lfc_drug, slogpval_cell, lfc_cell (all median-aggregated by groupby level)"
+    },
+    {
+      "type": "preprocessing",
+      "category": "data_alignment",
+      "symbol": "split_data",
+      "file_path": "scape/_util.py",
+      "line_range": [33, 51],
+      "description": "Train/validation split by cell type and drug combinations",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Filters DataFrame index by level values, returns (train_index, val_index)",
+      "notes": "Default splits out B cells, Myeloid cells, Idelalisib, Linagliptin, CHIR-99021, R428 as validation"
+    },
+    {
+      "type": "checkpoint",
+      "category": "save",
+      "symbol": "SCAPE.save",
+      "file_path": "scape/_model.py",
+      "line_range": [231, 239],
+      "description": "Saves model configuration, weights, and training results",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Creates 3 files: config_file (pickle setup), weights_file (Keras weights), results_file (pickle results)",
+      "notes": "setup dict contains data_sources, feature_extraction, input_mapping, output_genes, config"
+    },
+    {
+      "type": "checkpoint",
+      "category": "load",
+      "symbol": "SCAPE.load",
+      "file_path": "scape/_model.py",
+      "line_range": [217, 229],
+      "description": "Loads pretrained model from checkpoint files",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Static method; loads config pickle, creates SCAPE instance, loads weights, loads results",
+      "signature": "@staticmethod\ndef load(config_file, weights_file, results_file)"
+    },
+    {
+      "type": "checkpoint",
+      "category": "loss_function",
+      "symbol": "mrrmse",
+      "file_path": "scape/_losses.py",
+      "line_range": [18, 22],
+      "description": "Mean row-wise root mean squared error loss",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Computes mean(sqrt(mean(squared_diffs per sample)))",
+      "notes": "Used for model compilation and baseline comparisons during training"
+    },
+    {
+      "type": "example",
+      "category": "test_data_loading",
+      "symbol": "TestDataLoading",
+      "file_path": "tests/test_quickstart.py",
+      "line_range": [31, 90],
+      "description": "Tests for data loading functions (load_slogpvals, load_lfc)",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Contains setup_method and test methods for loaders",
+      "notes": "Validates input shape (614 × 21366), MultiIndex structure [cell_type, sm_name], alignment"
+    },
+    {
+      "type": "example",
+      "category": "test_training",
+      "symbol": "TestModelTraining",
+      "file_path": "tests/test_quickstart.py",
+      "line_range": [263, 415],
+      "description": "Tests for model training with various validation sets and baselines",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Full model setup example with data_sources, feature_extraction, input_mapping, config",
+      "notes": "Demonstrates: create model, train with val_cells/val_drugs, save/load pattern"
+    },
+    {
+      "type": "example",
+      "category": "test_prediction",
+      "symbol": "TestModelPrediction",
+      "file_path": "tests/test_quickstart.py",
+      "line_range": [418, 560],
+      "description": "Tests for model prediction with DataFrame, MultiIndex, and tuple inputs",
+      "confidence": "confirmed",
+      "evidence": "Found via find_symbol. Demonstrates predict() with various input formats, validates output shape/index/columns",
+      "notes": "Output is DataFrame(n_samples, n_genes) with MultiIndex [cell_type, sm_name] rows"
+    },
+    {
+      "type": "example",
+      "category": "entrypoint",
+      "symbol": "main",
+      "file_path": "scape/__main__.py",
+      "line_range": [1, -1],
+      "description": "CLI entry point for python -m scape",
+      "confidence": "partial",
+      "evidence": "Found via get_symbols_overview. Specific implementation would need full body retrieval"
+    }
+  ]
+}
