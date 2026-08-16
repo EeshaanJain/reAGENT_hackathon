@@ -62,3 +62,8 @@ Open Problems task repos (github.com/openproblems-bio/task_*) are built on **Via
 
 - Code in this repo is Python (`.gitignore` is already set up for it).
 - During the hackathon: no full-scale benchmark runs; work on data subsets.
+- **Never commit one-off artifacts**: throwaway scripts (plot generation,
+  one-time data munging), non-final results, eval run outputs, intermediate
+  tuning files, or data dumps. Put throwaway scripts in the scratchpad, keep
+  run outputs gitignored, and record final numbers in READMEs/figures. Only
+  reusable code, configs, gold data, and documentation belong in git.

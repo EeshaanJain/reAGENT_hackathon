@@ -73,5 +73,8 @@ python3 scripts/annotate_reachability.py benchmarks/perturbation_prediction
 python3 scripts/run_backsearch.py benchmarks/perturbation_prediction <run_name> --filter
 ```
 
-Results land in `evals/backsearch/results/<run_name>.json`; alternative query
-sets tried during tuning live in `evals/backsearch/query_sets/`.
+Results land in `evals/backsearch/results/<run_name>.json` (gitignored —
+one-off run outputs stay out of git; final numbers are summarized here and in
+the benchmark figure). Historical keyword-set versions are inlined in
+`scripts/benchmark_retrieval.py`, which compares them and the filter
+harnesses (paperclip filter vs claude judge per model) in one suite.
