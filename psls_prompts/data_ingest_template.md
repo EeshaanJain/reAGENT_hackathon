@@ -22,26 +22,15 @@ Do not perform differential expression, dataset splitting, model training, or ev
 
 ## Target subset constraint
 
-**IMPORTANT:** Construct a substantial dataset of approximately 200,000 cells. The objective is to maximize the useful retained population while respecting the strict upper bound; it is not to construct the smallest valid subset.
+**IMPORTANT:** Keep the final H5AD strictly below **200,000 cells**, including controls. Retain all eligible cells if they fit; otherwise, target **195,000-199,999 cells** while maximizing useful biological and experimental coverage. If the complete eligible population contains fewer than **190,000 cells**, retain it and document the shortfall; this alone does not invalidate the dataset.
 
-- Define the eligible sampling population during metadata-only preflight, using complete officially deposited metadata rather than expression values. Honor any dataset-specific inclusion constraints supplied with the task.
-- Do not assume that every dataset contains the same biological or technical categories. Identify the relevant design axes from the source, such as cell line or cell type, donor, tissue, perturbation, dose, timepoint, sample, batch, well, or plate, and document which axes define selection and balance.
-- When category selection is required, choose categories that preserve useful biological and experimental coverage while providing enough eligible cells to approach the target. Do not select the smallest populations merely to minimize transfer size.
-- Target **195,000-199,999 cells in the final H5AD**, including controls, and keep the final dataset strictly below **200,000 cells**.
-- If the complete eligible dataset contains fewer than **190,000 cells**, retain all eligible cells and document why the target is unattainable. Do not reject an otherwise valid dataset solely because the source is smaller than the target.
-- Include only **single-compound perturbations**. Exclude every multi-compound or combination treatment.
-- Include only the matched vehicle controls required for the retained treatments and relevant experimental strata. Derive the matching keys from the documented study design rather than assuming a particular batch, plate, or sample layout.
-- Define a biologically meaningful sampling-condition key from the available metadata, normally including perturbation, dose, cell identity, timepoint, and any other axis that changes the biological condition. Document the key explicitly.
-- If subsampling is necessary, use a fixed random seed and apply the same target cap to every eligible non-control sampling condition.
-- If a condition contains fewer cells than the target cap, retain all available cells. Do not compensate by drawing additional cells from more abundant conditions.
-- Apply expression QC before final balanced subsampling. During preflight, select a provisional population large enough that anticipated QC losses will not unnecessarily push the final output below the target range.
-- Record the available and retained cell counts for every condition so that sampling balance can be verified.
-- Resolve all selected biological identities, treatments, controls, samples, and technical strata from metadata before reading expression data.
-- Apply source-side filters before transferring cell-level expression records whenever the repository and file format support them.
-- Verify that all population counts and sampling decisions use the complete deposited metadata. A dataset-viewer preview, capped server index, or other partial service may be used only for bounded format inspection and must never define the sampling population.
-- Prefer format-appropriate selective access, such as repository queries, partition or row-group pruning, projected columns, range requests, chunked reads, or streaming, so unrelated expression records are not transferred or retained.
-- If the deposited physical layout prevents selective transfer, a single streamed pass over the required expression payload is authorized. Retain only eligible cells, do not materialize or persist unrelated cells, record the bytes transferred, and avoid a second full pass.
-- Do not substitute a smaller partial-viewer result when the complete deposited expression payload is required to reach the target.
+- During metadata-only preflight, define the eligible population from complete officially deposited metadata, never from a preview or capped index. Honor task-specific constraints; identify the relevant biological and technical axes; and resolve the selected identities, treatments, controls, samples, and technical strata before reading expression data.
+- Keep only single-compound perturbations and the matched vehicle controls required for the retained treatments. Derive control-matching strata from the documented study design.
+- Define and document a biological sampling-condition key, normally including perturbation, dose, cell identity, timepoint, and any other axis that changes the condition.
+- When category selection is required, choose categories that preserve useful coverage and provide enough eligible cells to approach the target.
+- Apply expression QC before final subsampling, and allow enough provisional cells for anticipated QC losses. Use a fixed random seed and the same cap for every eligible non-control condition; retain all cells in conditions below the cap without reallocating the unused quota.
+- Record available and retained cell counts for every condition.
+- Filter at the source and use format-appropriate selective access when supported. If the physical layout prevents selective transfer, make one streamed pass over the required expression payload, retain and persist only eligible cells, record bytes transferred, and avoid a second full pass. Do not substitute a partial-viewer result when the complete payload is needed to reach the target.
 
 # Environment
 
@@ -157,6 +146,6 @@ The report must list source URLs and checksums, mappings, QC decisions, the comp
 
 Reopen the H5AD file and run `psls_tooling.validate_ingested_adata` before finishing.
 
-Treat the upper bound as an acceptance criterion: validation fails if the reopened H5AD contains 200,000 cells or more. If it contains fewer than 190,000 cells, verify and report that the complete eligible source population could not reach the requested range.
+Validate the reopened H5AD against the target subset constraint.
 
 Stop and report a blocker if a required input is missing, no deposited count matrix exists, or a semantic ambiguity could change the biological meaning of the output.
