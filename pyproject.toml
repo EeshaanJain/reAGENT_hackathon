@@ -39,6 +39,7 @@ include = [
     "tests/**/*.py",
     "benchmarks/**/*.py",
     "scripts/render_ingest_prompt.py",
+    "scripts/run_ingest.py",
 ]
 
 [tool.ruff.lint]

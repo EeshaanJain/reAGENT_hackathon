@@ -1,0 +1,78 @@
+# Discovered ingest parameters for srivatsan_2020_sciplex3.
+#
+# Authored during ingestion, not by hand: every value here was read off the
+# publication, the deposited GEO record, or the authors' code repository, and is
+# pinned so `ingest.py` reruns byte-identically. Uniform prompt inputs live in
+# dataset.yaml; this file holds what the ingest had to go and find out.
+
+matrix_chunk_rows: 10000000
+expected_treated_compounds: 188
+required_pdata_columns:
+  - cell
+  - n.umi
+  - hash_umis_W
+  - top_to_second_best_ratio_W
+  - top_oligo_W
+  - hash_umis_P
+  - top_to_second_best_ratio_P
+  - top_oligo_P
+  - rt_well
+  - cell_type
+  - replicate
+  - time_point
+  - catalog_number
+  - dose
+  - vehicle
+  - product_name
+control:
+  source_catalog_number: S0000
+  output_label: control
+exact_identifier_fallback:
+  cas_number: 4548-34-9
+  expected_inchikey: AELCINSCMGFISI-BDAKNGLRSA-N
+  source: pubchem_exact_cas_smiles_rdkit
+  expected_rows: 1
+single_cell_protocol:
+  chemistry: sci-Plex nuclear hashing with three-level sci-RNA-seq (sci-RNA-seq3)
+  capture_orientation: 3prime
+source_files:
+  counts:
+    filename: GSM4150378_sciPlex3_A549_MCF7_K562_screen_UMI.count.matrix.gz
+    url: https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4150nnn/GSM4150378/suppl/GSM4150378_sciPlex3_A549_MCF7_K562_screen_UMI.count.matrix.gz
+    sha256: 7d632716aa6ed0fc1780996003d0abc440ff78340609bceaaa4c8ade9345d00a
+    role: "used: deposited UMI counts"
+  cell_annotations:
+    filename: GSM4150378_sciPlex3_A549_MCF7_K562_screen_cell.annotations.txt.gz
+    url: https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4150nnn/GSM4150378/suppl/GSM4150378_sciPlex3_A549_MCF7_K562_screen_cell.annotations.txt.gz
+    sha256: 5db11591747a49f07ceb90a070971d60816591911f1022171adba7d8d032f379
+    role: "used: matrix cell order"
+  gene_annotations:
+    filename: GSM4150378_sciPlex3_A549_MCF7_K562_screen_gene.annotations.txt.gz
+    url: https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4150nnn/GSM4150378/suppl/GSM4150378_sciPlex3_A549_MCF7_K562_screen_gene.annotations.txt.gz
+    sha256: fbe43028cfb75dc5ebf383cbbbb100da6b51e7be8e2e74f6354f7c59b9fda7c2
+    role: "used: matrix gene order and symbols"
+  hash_metadata:
+    filename: GSM4150378_sciPlex3_A549_MCF7_K562_hashTable_metadata.txt.gz
+    url: https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4150nnn/GSM4150378/suppl/GSM4150378_sciPlex3_A549_MCF7_K562_hashTable_metadata.txt.gz
+    sha256: 98a65191d343d149c5742cf6e7b734d403e853d165da800fa2daea41b978a2ff
+    role: "used: legal conditions, structures, and exact identifiers"
+  pdata:
+    filename: GSM4150378_sciPlex3_pData.txt.gz
+    url: https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4150nnn/GSM4150378/suppl/GSM4150378_sciPlex3_pData.txt.gz
+    sha256: 860ba5c21846e2cfe97c39c805895982ef9db4b108cdf8b841a4a91be65024c2
+    role: "used: cell-level experimental and hash-QC metadata"
+  hash_sample_sheet:
+    filename: GSM4150378_sciPlex3_hashSampleSheet.txt.gz
+    url: https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4150nnn/GSM4150378/suppl/GSM4150378_sciPlex3_hashSampleSheet.txt.gz
+    sha256: ac66d0dfdcc3c170af9beafe2843d0250a10f753f7bf99968aafe7a2e7279084
+    role: "inspected, not used: pData already contains decoded hash assignments"
+  gencode_bed:
+    filename: gencode.v27.transcripts.bed
+    url: https://raw.githubusercontent.com/cole-trapnell-lab/sci-plex/079639c50811dd43a206a779ab2f0199a147c98f/large_screen/bin/gencode.v27.transcripts.bed
+    sha256: ebe49dde9655b025ba52c85f8dadd141c5d863c1a12e607ed4c2907c704094ca
+    role: "used: publication-code GENCODE v27 gene biotypes"
+  pubchem_cas:
+    filename: pubchem_4548-34-9.json
+    url: https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/4548-34-9/property/IsomericSMILES,InChIKey/JSON
+    sha256: 7163dde8c6b3025ba7a10948b56c8c9c9f72ac8cc2da5b5f4f8df2f35863788f
+    role: "used: exact-CAS fallback for one malformed deposited structure"

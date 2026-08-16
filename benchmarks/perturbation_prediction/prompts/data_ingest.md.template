@@ -9,8 +9,9 @@ Ingest a published chemical single-cell perturbation dataset into a validated, a
 - Official deposited-data URL or accession: `${data_url_or_accession}`
 - Code URL, if available: `${code_url}`
 - Local publication PDF, if available: `${local_pdf_path}`
-- Dataset config: `${dataset_config_path}`
+${additional_sources}- Dataset config: `${dataset_config_path}`
 - Validation contract: `${ingest_contract_path}`
+- Scratch working directory: `${work_dir}`
 
 # Goal
 
@@ -24,7 +25,7 @@ Do not perform differential expression, dataset splitting, model training, or ev
 
 ## Target subset constraint
 
-**IMPORTANT:** Keep the final H5AD strictly below **200,000 cells**, including controls. Retain all eligible cells if they fit; otherwise, target **195,000-199,999 cells** while maximizing useful biological and experimental coverage. If the complete eligible population contains fewer than **190,000 cells**, retain it and document the shortfall; this alone does not invalidate the dataset.
+**IMPORTANT:** Keep the final H5AD strictly below **${max_cells_exclusive} cells**, including controls. Retain all eligible cells if they fit; otherwise, target **${target_min_cells}-${max_cells_inclusive} cells** while maximizing useful biological and experimental coverage. If the complete eligible population contains fewer than **${minimum_acceptable_cells} cells**, retain it and document the shortfall; this alone does not invalidate the dataset.
 
 - During metadata-only preflight, define the eligible population from complete officially deposited metadata, never from a preview or capped index. Honor task-specific constraints; identify the relevant biological and technical axes; and resolve the selected identities, treatments, controls, samples, and technical strata before reading expression data.
 - Keep only single-compound perturbations and the matched vehicle controls required for the retained treatments. Derive control-matching strata from the documented study design.
@@ -41,6 +42,11 @@ Use `uv` for all Python dependency management and execution.
 Declare dependencies in `pyproject.toml` and update `uv.lock`.
 
 Run Python commands, scripts, and tests with `uv run`.
+
+Write every intermediate artifact — preflight audits, chunk shards, condition counts,
+cached registry responses, downloaded scratch — under `${work_dir}`. That directory is
+gitignored. Never write intermediates into the committed dataset directory, which must
+contain only `dataset.yaml`, `ingest_params.yaml`, `ingest.py`, and `ingest_report.md`.
 
 # Execution strategy
 
@@ -96,9 +102,9 @@ Maintain a loss ledger with cells and genes removed at every applicable stage: s
 
 ## Minimum condition size
 
-Unless the task explicitly overrides it, set `MIN_CELLS_PER_CONDITION = 30`.
+Unless the task explicitly overrides it, set `MIN_CELLS_PER_CONDITION = ${minimum_condition_size}`.
 
-Define a condition for this filter as the exact combination of harmonized perturbation, time, dose, and cell type: `obs["sm_name"]` × `obs["timepoint_hr"]` × `obs["dose_uM"]` × `obs["cell_type"]`. Do not add batch or other technical fields to this condition key. Apply the same definition to treated and control cells.
+Define a condition for this filter as the exact combination of harmonized perturbation, time, dose, and cell type: ${condition_key}. Do not add batch or other technical fields to this condition key. Apply the same definition to treated and control cells.
 
 After metadata, chemical, and expression-QC filtering, remove every condition with fewer than `MIN_CELLS_PER_CONDITION` cells. Remove the complete condition rather than individual cells. Perform this filtering before final cap-based subsampling, and ensure that subsampling does not reduce any retained condition below the minimum. Recompute condition counts on the final H5AD and fail validation if any retained condition has fewer than the minimum.
 
@@ -148,8 +154,17 @@ Drop unresolved treated compounds and report the compounds and cells removed.
 
 # Completion criteria
 
+Record every discovered fact the ingest depends on — source file names, URLs and SHA-256
+checksums, the control label and how controls are identified, the assay chemistry and
+capture orientation, the pinned gene-annotation release, and any exact-identifier
+fallbacks — under
+`benchmarks/perturbation_prediction/datasets/${dataset_id}/ingest_params.yaml`.
+
 Write the ingest script under
-`benchmarks/perturbation_prediction/datasets/${dataset_id}/ingest.py`.
+`benchmarks/perturbation_prediction/datasets/${dataset_id}/ingest.py`. It must read its
+inputs from `${dataset_config_path}` and `ingest_params.yaml` rather than hardcoding
+URLs, checksums, column names, or labels as module constants, and it must be rerunnable
+end to end with `uv run`.
 
 Write the H5AD file to `data/processed/${dataset_id}.h5ad`.
 

@@ -43,8 +43,11 @@ ROOT = Path(__file__).resolve().parents[4]
 DATASET_CONFIG_PATH = DATASET_DIR / "dataset.yaml"
 DATASET_CONFIG = yaml.safe_load(DATASET_CONFIG_PATH.read_text())
 DATASET_METADATA = DATASET_CONFIG["dataset"]
-INGEST_CONFIG = DATASET_CONFIG["ingest"]
 SUBSET_CONFIG = DATASET_CONFIG["subset"]
+# Facts discovered during ingestion (source checksums, control mapping, protocol)
+# live beside the uniform prompt inputs rather than inside dataset.yaml.
+INGEST_PARAMS_PATH = DATASET_DIR / "ingest_params.yaml"
+INGEST_CONFIG = yaml.safe_load(INGEST_PARAMS_PATH.read_text())
 DATASET_ID = str(DATASET_METADATA["dataset_id"])
 GEO_ACCESSION = str(DATASET_METADATA["accession"])
 PUBLICATION_URL = str(DATASET_METADATA["publication_url"])

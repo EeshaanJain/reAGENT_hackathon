@@ -238,3 +238,5 @@ methods/scape/work/
 evals/backsearch/results/
 evals/backsearch/query_sets/
 **/rollout-*.jsonl
+tmp
+data_ingest/
