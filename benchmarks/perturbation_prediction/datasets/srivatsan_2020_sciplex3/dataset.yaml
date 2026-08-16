@@ -1,0 +1,17 @@
+dataset:
+  dataset_id: srivatsan_2020_sciplex3
+  publication_url: https://www.science.org/doi/10.1126/science.aax6234
+  data_url_or_accession: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM4150378
+  code_url: https://github.com/cole-trapnell-lab/sci-plex
+  local_pdf_path: data/Srivatsan et al. - 2020 - Massively multiplex chemical transcriptomics at single-cell resolution.pdf
+
+prompt_template: ../../prompts/data_ingest.md.template
+ingest_contract: ../../ingest_contract.yaml
+
+subset:
+  condition_columns: [sm_name, timepoint_hr, dose_uM, cell_type]
+  control_column: control
+  minimum_condition_size: 30
+  target_min_cells: 195000
+  max_cells_exclusive: 200000
+  seed: 42

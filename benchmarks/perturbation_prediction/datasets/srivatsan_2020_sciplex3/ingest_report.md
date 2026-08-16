@@ -8,8 +8,8 @@ quantification, perform differential expression, split the dataset, train a mode
 model.
 
 - Output: `data/processed/srivatsan_2020_sciplex3.h5ad`
-- Output SHA-256: `8385e818514366d015561de7012ee6f98a138028ca19ac441013272af805d89c`
-- Final dimensions: 647,840 cells x 18,413 genes
+- Output SHA-256: `627bb0e35303daeb6fee4ada76dd0f7ebf7fb0757052cef42536b4a72f9c78ab`
+- Final dimensions: 199,906 cells x 18,413 genes
 - Validation: **PASS**
 - Unresolved blockers: **None**
 
@@ -293,6 +293,27 @@ batch-by-cell-type interaction.
 | control | 2 | 0.9978584395446466 | False | 634584/633225 | 1359 |
 | sm_name | 189 | 0.9361179361179361 | Epothilone A | 1221/1143 | 78 |
 
+## Minimum condition size and target subset
+
+The final subset was selected after expression QC with `select_condition_subset`. A condition is
+the exact combination of `sm_name`, `timepoint_hr`, `dose_uM`, and `cell_type`. Every eligible
+control was retained, and treated cells were ranked by a stable SHA-256 hash of seed and cell ID.
+
+- Cells before condition filtering and subsetting: 647,840
+- Conditions before filtering: 2,448
+- Minimum cells per condition: 30
+- Undersized conditions removed: 22
+- Cells removed with undersized conditions: 303
+- Eligible conditions after the minimum-size filter: 2,426
+- Eligible cells after the minimum-size filter: 647,537
+- Uniform treated-condition cap: 77
+- Control cells retained: 14,615
+- Fixed random seed: 42
+- Final conditions: 2,426
+- Final cells: 199,906
+- Smallest final condition: 34 cells
+- Requested range: 195,000 to 199,999 cells; target met: **True**
+
 ## Final schema and validation
 
 - `X` is `None`.
@@ -303,7 +324,7 @@ batch-by-cell-type interaction.
 - `uns["single_cell_protocol"]` records chemistry, `3prime` orientation, and evidence.
 - No `split` column exists.
 - Reopened-file inventory:
-  `{"X": {"present": false}, "layers": {"counts": {"dtype": "int32", "present": true, "shape": [647840, 18413], "sparse": true, "type": "csr_matrix"}}, "obs_columns": ["dose_uM", "timepoint_hr", "cell_type", "sm_name", "sm_name_original", "inchikey", "batch", "control", "source_sample", "source_size_factor", "source_total_umis", "hash_umis_W", "pval_W", "qval_W", "top_to_second_best_ratio_W", "top_oligo_W", "hash_umis_P", "pval_P", "qval_P", "top_to_second_best_ratio_P", "top_oligo_P", "rt_well", "lig_well", "pcr_well", "pcr_plate", "culture_plate", "rt_plate", "lig_plate", "Combo", "well_oligo", "plate_oligo", "source_replicate", "source_timepoint_hr", "drug_dose", "catalog_number", "source_vehicle", "dose_pattern", "source_dose_nM", "source_treatment", "pathway_level_1", "pathway_level_2", "source_product_name", "target", "pathway", "inchikey_source", "chemical_status", "canonical_smiles", "desalted", "removed_fragments", "parent_candidate_smiles", "parent_candidate_inchikey", "multicomponent_structure", "CAS.Number", "total_counts", "n_genes_by_counts", "pct_counts_mt"], "obs_names_unique": true, "raw_X": {"present": false}, "shape": [647840, 18413], "uns_keys": ["ingest_audit", "single_cell_protocol"], "var_columns": ["source_gene_ids", "source_gene_id_count", "chromosomes", "gene_type", "gencode_release", "total_counts", "n_cells_by_counts", "mt"], "var_names_unique": true}`.
+  `{"X": {"present": false}, "layers": {"counts": {"dtype": "int32", "present": true, "shape": [199906, 18413], "sparse": true, "type": "csr_matrix"}}, "obs_columns": ["dose_uM", "timepoint_hr", "cell_type", "sm_name", "sm_name_original", "inchikey", "batch", "control", "source_sample", "source_size_factor", "source_total_umis", "hash_umis_W", "pval_W", "qval_W", "top_to_second_best_ratio_W", "top_oligo_W", "hash_umis_P", "pval_P", "qval_P", "top_to_second_best_ratio_P", "top_oligo_P", "rt_well", "lig_well", "pcr_well", "pcr_plate", "culture_plate", "rt_plate", "lig_plate", "Combo", "well_oligo", "plate_oligo", "source_replicate", "source_timepoint_hr", "drug_dose", "catalog_number", "source_vehicle", "dose_pattern", "source_dose_nM", "source_treatment", "pathway_level_1", "pathway_level_2", "source_product_name", "target", "pathway", "inchikey_source", "chemical_status", "canonical_smiles", "desalted", "removed_fragments", "parent_candidate_smiles", "parent_candidate_inchikey", "multicomponent_structure", "CAS.Number", "total_counts", "n_genes_by_counts", "pct_counts_mt"], "obs_names_unique": true, "raw_X": {"present": false}, "shape": [199906, 18413], "uns_keys": ["ingest_audit", "single_cell_protocol"], "var_columns": ["source_gene_ids", "source_gene_id_count", "chromosomes", "gene_type", "gencode_release", "total_counts", "n_cells_by_counts", "mt"], "var_names_unique": true}`.
 - `validate_ingested_adata` errors: `[]`.
 - `validate_ingested_adata` warnings: `[]`.
 
@@ -311,14 +332,14 @@ batch-by-cell-type interaction.
 
 - Path: `data/processed/srivatsan_2020_sciplex3_compressed.h5ad`.
 - Reproducible command:
-  `uv run python data_ingest/srivatsan_2020_sciplex3/compress_h5ad.py --force`.
+  `uv run python benchmarks/perturbation_prediction/datasets/srivatsan_2020_sciplex3/compress_h5ad.py --force`.
 - Compression: standard HDF5 byte shuffle followed by gzip level 4 on the CSR
   `data`, `indices`, and `indptr` arrays. The copy remains directly readable by AnnData and
   requires no third-party HDF5 compression plugin.
-- Original size: 1,874,084,207 bytes; compressed size: 1,147,354,408 bytes
-  (38.78% reduction).
+- Original size: 535,686,623 bytes; compressed size: 333,429,607 bytes
+  (37.76% reduction).
 - Compressed-copy SHA-256:
-  `b3534cfa0e78864741a5d3781e73b8d19c9605fcd7b8a03c2d9e76d4f75c3be9`.
+  `bed19ae3d715639d69754bd09bbf8040d96e2b8c236ad1429d6d3e2b03a1ad01`.
 - `h5diff -q` found no logical dataset or attribute differences from the validated source.
 - The compressed copy was reopened and passed `validate_ingested_adata` with errors `[]`
   and warnings `[]`.

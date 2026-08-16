@@ -1,0 +1,74 @@
+schema_version: 1
+
+matrix:
+  x_must_be_none: true
+  counts_layer: counts
+  require_sparse: true
+  require_numeric: true
+  require_finite: true
+  require_nonnegative: true
+  require_integral: true
+  require_unique_obs_names: true
+  require_unique_var_names: true
+
+obs:
+  required_fields:
+    dose_uM:
+      dtype: numeric
+      finite: true
+      minimum: 0
+    timepoint_hr:
+      dtype: numeric
+      finite: true
+      minimum: 0
+    cell_type:
+      dtype: string
+      nonempty: true
+    sm_name:
+      dtype: string
+      nonempty: true
+    inchikey:
+      dtype: string
+      nullable: true
+      nonempty: true
+    batch:
+      dtype: string
+      nonempty: true
+    control:
+      dtype: boolean
+  forbidden_columns:
+    - split
+  relations:
+    indicators:
+      - indicator_column: control
+        value_column: sm_name
+        equals: control
+        require_true: true
+    conditional_formats:
+      - column: inchikey
+        format: inchikey
+        when:
+          column: control
+          equals: false
+        required: true
+  group_size_rules:
+    - columns: [sm_name, timepoint_hr, dose_uM, cell_type]
+      minimum: 30
+
+uns:
+  required_fields:
+    - path: [single_cell_protocol]
+      dtype: mapping
+    - path: [single_cell_protocol, chemistry]
+      dtype: string
+      nonempty: true
+    - path: [single_cell_protocol, capture_orientation]
+      dtype: string
+      nonempty: true
+      allowed_values: [3prime, 5prime, full_length, unknown]
+    - path: [single_cell_protocol, source]
+      dtype: string
+      nonempty: true
+
+limits:
+  max_obs_exclusive: 200000

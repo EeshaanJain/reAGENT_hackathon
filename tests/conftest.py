@@ -1,9 +1,22 @@
 from __future__ import annotations
 
+from dataclasses import replace
+from pathlib import Path
+
 import anndata as ad
 import pandas as pd
 import pytest
 from scipy import sparse
+
+from psls_tooling import IngestContract, load_ingest_contract
+
+
+@pytest.fixture
+def ingest_contract() -> IngestContract:
+    path = Path("benchmarks/perturbation_prediction/ingest_contract.yaml")
+    contract = load_ingest_contract(path)
+    group_rules = tuple(replace(rule, minimum=1) for rule in contract.group_size_rules)
+    return replace(contract, group_size_rules=group_rules, max_obs_exclusive=100)
 
 
 @pytest.fixture

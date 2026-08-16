@@ -234,3 +234,4 @@ methods/scape/work/
 # Non-final outputs: eval runs, tuning artifacts (keep out of git)
 evals/backsearch/results/
 evals/backsearch/query_sets/
+**/rollout-*.jsonl

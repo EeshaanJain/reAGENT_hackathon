@@ -7,7 +7,8 @@ not alter any logical values, dtypes, AnnData fields, or metadata.
 
 Run from the repository root with::
 
-    uv run python data_ingest/srivatsan_2020_sciplex3/compress_h5ad.py
+    uv run python benchmarks/perturbation_prediction/datasets/\
+srivatsan_2020_sciplex3/compress_h5ad.py
 
 The HDF5 command-line tools ``h5repack`` and ``h5diff`` must be installed.
 They are provided by the Homebrew ``hdf5`` package on macOS.
@@ -16,17 +17,20 @@ They are provided by the Homebrew ``hdf5`` package on macOS.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import shutil
 import subprocess
 from pathlib import Path
 
 import anndata as ad
+import yaml
 
-from psls_tooling import validate_ingested_adata
+from psls_tooling import load_ingest_contract, sha256_file, validate_ingested_adata
 
-ROOT = Path(__file__).resolve().parents[2]
+DATASET_DIR = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[4]
 DATASET_ID = "srivatsan_2020_sciplex3"
+DATASET_CONFIG = yaml.safe_load((DATASET_DIR / "dataset.yaml").read_text())
+CONTRACT = load_ingest_contract((DATASET_DIR / DATASET_CONFIG["ingest_contract"]).resolve())
 DEFAULT_INPUT = ROOT / "data" / "processed" / f"{DATASET_ID}.h5ad"
 DEFAULT_OUTPUT = ROOT / "data" / "processed" / f"{DATASET_ID}_compressed.h5ad"
 CSR_DATASETS = (
@@ -34,17 +38,6 @@ CSR_DATASETS = (
     "/layers/counts/indices",
     "/layers/counts/indptr",
 )
-
-
-def sha256_file(path: Path, block_size: int = 8 * 1024 * 1024) -> str:
-    """Return the SHA-256 checksum without loading the file into memory."""
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        while block := handle.read(block_size):
-            digest.update(block)
-    return digest.hexdigest()
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
@@ -90,7 +83,7 @@ def main() -> None:
         subprocess.run((h5diff, "-q", str(source), str(temporary)), check=True)
 
         reopened = ad.read_h5ad(temporary)
-        validation = validate_ingested_adata(reopened)
+        validation = validate_ingested_adata(reopened, CONTRACT)
         if not validation.ok:
             raise RuntimeError(
                 "Compressed H5AD failed validation: "
@@ -98,8 +91,6 @@ def main() -> None:
             )
         del reopened
 
-        if output.exists():
-            output.unlink()
         temporary.replace(output)
     except BaseException:
         temporary.unlink(missing_ok=True)

@@ -4,9 +4,13 @@ Ingest a published chemical single-cell perturbation dataset into a validated, a
 
 # Input / data sources
 
-- Publication URL: https://www.biorxiv.org/content/10.1101/2025.02.20.639398v3
-- Code URL: https://huggingface.co/datasets/tahoebio/Tahoe-100M
-- Local publication PDF: data/2025.02.20.639398v3.full.pdf
+- Dataset ID: `${dataset_id}`
+- Publication URL: `${publication_url}`
+- Official deposited-data URL or accession: `${data_url_or_accession}`
+- Code URL, if available: `${code_url}`
+- Local publication PDF, if available: `${local_pdf_path}`
+- Dataset config: `${dataset_config_path}`
+- Validation contract: `${ingest_contract_path}`
 
 # Goal
 
@@ -144,14 +148,19 @@ Drop unresolved treated compounds and report the compounds and cells removed.
 
 # Completion criteria
 
-Write the ingest script to `data_ingest/<dataset_id>/ingest.py`.
+Write the ingest script under
+`benchmarks/perturbation_prediction/datasets/${dataset_id}/ingest.py`.
 
-Write the H5AD file to `data/processed/<dataset_id>.h5ad`.
+Write the H5AD file to `data/processed/${dataset_id}.h5ad`.
 
-Write the report to `data_ingest/<dataset_id>/ingest_report.md`.
+Write the report under
+`benchmarks/perturbation_prediction/datasets/${dataset_id}/ingest_report.md`.
 
 The report must list source URLs and checksums, mappings, QC decisions, the minimum-condition-size audit, the complete loss ledger, before-and-after dimensions, chemical-resolution losses, validation results, and unresolved blockers.
 
-Reopen the H5AD file and run `psls_tooling.validate_ingested_adata` before finishing.
+Load `${ingest_contract_path}` with `psls_tooling.load_ingest_contract`, reopen the H5AD file,
+and run `psls_tooling.validate_ingested_adata` with that explicit contract before finishing.
+
+Validate the reopened H5AD against the target subset constraint.
 
 Stop and report a blocker if a required input is missing, no deposited count matrix exists, or a semantic ambiguity could change the biological meaning of the output.

@@ -6,11 +6,11 @@ import pandas as pd
 import pytest
 from scipy import sparse
 
-from data_ingest.srivatsan_2020_sciplex3.create_cell_type_splits import (
+from psls_tooling import (
     create_cell_type_manifests,
+    split_adata_by_manifest,
     write_cell_type_manifests,
 )
-from psls_tooling import split_adata_by_manifest
 
 
 def _valid_manifest() -> pd.DataFrame:

@@ -1,0 +1,17 @@
+dataset:
+  dataset_id: tahoe100m
+  publication_url: https://www.biorxiv.org/content/10.1101/2025.02.20.639398v3
+  data_url_or_accession: https://huggingface.co/datasets/tahoebio/Tahoe-100M
+  code_url: Not available
+  local_pdf_path: data/2025.02.20.639398v3.full.pdf
+
+prompt_template: ../../prompts/data_ingest.md.template
+ingest_contract: ../../ingest_contract.yaml
+
+subset:
+  condition_columns: [sm_name, timepoint_hr, dose_uM, cell_type]
+  control_column: control
+  minimum_condition_size: 30
+  target_min_cells: 195000
+  max_cells_exclusive: 200000
+  seed: 42

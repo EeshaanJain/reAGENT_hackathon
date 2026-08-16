@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 import re
-import sqlite3
 from collections import Counter
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
-from pathlib import Path
+from dataclasses import dataclass
 from typing import Any
 
 import pandas as pd
-import pubchempy as pcp
 from rdkit import Chem
 from rdkit.Chem import SaltRemover, inchi
 
@@ -55,11 +52,6 @@ def normalize_inchikey(value: object) -> str | None:
         return None
     normalized = str(value).strip().upper()
     return normalized if INCHIKEY_PATTERN.fullmatch(normalized) else None
-
-
-def is_valid_inchikey(value: object) -> bool:
-    """Return whether ``value`` is a full, syntactically valid InChIKey."""
-    return normalize_inchikey(value) is not None
 
 
 def _canonical_smiles(mol: Chem.Mol) -> str:
@@ -185,51 +177,6 @@ def standardize_smiles(
     )
 
 
-def pubchem_lookup(query: object, *, namespace: str = "name") -> LookupResult:
-    """Resolve a unique PubChem result without choosing an arbitrary first hit."""
-    if query is None or query is pd.NA or not str(query).strip():
-        return LookupResult(None, None, "missing_query")
-    try:
-        compounds = pcp.get_compounds(query, namespace)
-    except (pcp.PubChemHTTPError, pcp.BadRequestError, TimeoutError, ConnectionError, ValueError):
-        return LookupResult(None, None, "lookup_error")
-
-    keys = {key for compound in compounds if (key := normalize_inchikey(compound.inchikey))}
-    if len(keys) == 1:
-        return LookupResult(keys.pop(), f"pubchem_{namespace}", "resolved")
-    if len(keys) > 1:
-        return LookupResult(None, f"pubchem_{namespace}", "ambiguous")
-    return LookupResult(None, f"pubchem_{namespace}", "not_found")
-
-
-def chembl_name_lookup(database: str | Path, names: list[str]) -> dict[str, LookupResult]:
-    """Resolve unambiguous ChEMBL preferred names or synonyms from a local database."""
-    path = Path(database).resolve()
-    connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
-    results: dict[str, LookupResult] = {}
-    query = """
-        SELECT cs.standard_inchi_key
-        FROM molecule_dictionary AS md
-        JOIN compound_structures AS cs ON md.molregno = cs.molregno
-        LEFT JOIN molecule_synonyms AS ms ON md.molregno = ms.molregno
-        WHERE md.pref_name = ? COLLATE NOCASE OR ms.synonyms = ? COLLATE NOCASE
-    """
-    try:
-        cursor = connection.cursor()
-        for name in dict.fromkeys(str(item).strip() for item in names if str(item).strip()):
-            cursor.execute(query, (name, name))
-            keys = {key for row in cursor.fetchall() if (key := normalize_inchikey(row[0]))}
-            if len(keys) == 1:
-                results[name] = LookupResult(keys.pop(), "chembl_name", "resolved")
-            elif len(keys) > 1:
-                results[name] = LookupResult(None, "chembl_name", "ambiguous")
-            else:
-                results[name] = LookupResult(None, "chembl_name", "not_found")
-    finally:
-        connection.close()
-    return results
-
-
 def resolve_compounds(
     compounds: pd.DataFrame,
     *,
@@ -296,8 +243,3 @@ def drop_unresolved_treatments(
     result = adata[~unresolved].copy()
     result.obs[inchikey_col] = result.obs[inchikey_col].map(normalize_inchikey)
     return result, report
-
-
-def structure_result_dict(result: StructureResult) -> dict[str, Any]:
-    """Convert a structure result into a JSON-serializable dictionary."""
-    return asdict(result)

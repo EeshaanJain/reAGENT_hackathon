@@ -10,9 +10,7 @@ from __future__ import annotations
 import gc
 import json
 import math
-import shutil
 import sys
-import urllib.request
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -20,16 +18,20 @@ from typing import Any
 import anndata as ad
 import numpy as np
 import pandas as pd
+import yaml
 from scipy import sparse
 
 from psls_tooling import (
     LookupResult,
     compute_qc_metrics,
+    download_file,
     drop_unresolved_treatments,
     filter_with_audit,
     inspect_anndata,
     inspect_dataframe,
+    load_ingest_contract,
     resolve_compounds,
+    select_condition_subset,
     sha256_file,
     standardize_smiles,
     summarize_qc,
@@ -39,10 +41,16 @@ from psls_tooling import (
 DATASET_ID = "srivatsan_2020_sciplex3"
 GEO_ACCESSION = "GSM4150378"
 CODE_COMMIT = "079639c50811dd43a206a779ab2f0199a147c98f"
-ROOT = Path(__file__).resolve().parents[2]
+DATASET_DIR = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[4]
+DATASET_CONFIG_PATH = DATASET_DIR / "dataset.yaml"
+DATASET_CONFIG = yaml.safe_load(DATASET_CONFIG_PATH.read_text())
+SUBSET_CONFIG = DATASET_CONFIG["subset"]
+CONTRACT_PATH = (DATASET_DIR / DATASET_CONFIG["ingest_contract"]).resolve()
+INGEST_CONTRACT = load_ingest_contract(CONTRACT_PATH)
 RAW_DIR = ROOT / "data" / "raw" / DATASET_ID
 OUTPUT = ROOT / "data" / "processed" / f"{DATASET_ID}.h5ad"
-REPORT = ROOT / "data_ingest" / DATASET_ID / "ingest_report.md"
+REPORT = DATASET_DIR / "ingest_report.md"
 PUBLICATION_PDF = ROOT / "data" / (
     "Srivatsan et al. - 2020 - Massively multiplex chemical transcriptomics "
     "at single-cell resolution.pdf"
@@ -127,11 +135,8 @@ def download_and_verify_sources() -> dict[str, Path]:
         path = RAW_DIR / source["filename"]
         paths[key] = path
         if not path.exists():
-            partial = path.with_suffix(path.suffix + ".part")
             log(f"Downloading {source['url']}")
-            with urllib.request.urlopen(source["url"]) as response, partial.open("wb") as stream:
-                shutil.copyfileobj(response, stream, length=8 * 1024 * 1024)
-            partial.replace(path)
+            download_file(source["url"], path)
         actual = sha256_file(path)
         if actual != source["sha256"]:
             raise RuntimeError(
@@ -756,6 +761,7 @@ def write_report(
     qc_audit: dict[str, Any],
     qc_summaries: dict[str, pd.DataFrame],
     retention: dict[str, pd.DataFrame],
+    selection_audit: dict[str, Any],
     final_inventory: dict[str, Any],
     validation: Any,
     output_sha256: str,
@@ -974,6 +980,29 @@ batch-by-cell-type interaction.
 
 {markdown_table(pd.DataFrame(retention_rows))}
 
+## Minimum condition size and target subset
+
+The final subset was selected after expression QC with `select_condition_subset`. Conditions use
+the exact key `{selection_audit['condition_columns']}`. Every eligible control was retained, and
+treated cells were ranked by a stable SHA-256 hash of seed and cell identifier.
+
+- Cells before condition filtering and subsetting: {selection_audit['cells_before']:,}
+- Conditions before filtering: {selection_audit['conditions_before']:,}
+- Minimum cells per condition: {selection_audit['minimum_condition_size']:,}
+- Undersized conditions removed: {selection_audit['undersized_conditions_removed']:,}
+- Cells removed with undersized conditions: {selection_audit['undersized_cells_removed']:,}
+- Eligible conditions after the minimum-size filter: {selection_audit['eligible_conditions']:,}
+- Eligible cells after the minimum-size filter: {selection_audit['eligible_cells']:,}
+- Uniform treated-condition cap: {selection_audit['treated_condition_cap']}
+- Control cells retained: {selection_audit['control_cells_retained']:,}
+- Fixed random seed: {selection_audit['seed']}
+- Final conditions: {selection_audit['conditions_after']:,}
+- Final cells: {selection_audit['cells_after']:,}
+- Smallest final condition: {selection_audit['minimum_final_condition_size']:,} cells
+- Requested range: {selection_audit['target_min_cells']:,} to
+  {selection_audit['max_cells_exclusive'] - 1:,} cells; target met:
+  **{selection_audit['target_met']}**
+
 ## Final schema and validation
 
 - `X` is `None`.
@@ -1041,6 +1070,18 @@ def main() -> None:
     initial_inventory = inspect_anndata(adata)
 
     adata, qc_audit, qc_summaries, retention = apply_qc(adata)
+    del counts
+    gc.collect()
+    selected, selection_audit = select_condition_subset(
+        adata.obs,
+        condition_columns=SUBSET_CONFIG["condition_columns"],
+        minimum_condition_size=SUBSET_CONFIG["minimum_condition_size"],
+        control_column=SUBSET_CONFIG["control_column"],
+        max_cells_exclusive=SUBSET_CONFIG["max_cells_exclusive"],
+        target_min_cells=SUBSET_CONFIG["target_min_cells"],
+        seed=SUBSET_CONFIG["seed"],
+    )
+    adata = adata[selected].copy()
     adata.uns["ingest_audit"] = {
         "dataset_id": DATASET_ID,
         "geo_accession": GEO_ACCESSION,
@@ -1050,19 +1091,20 @@ def main() -> None:
         "gene_harmonization": gene_audit,
         "matrix": matrix_audit,
         "qc_filter": qc_audit,
+        "condition_selection": selection_audit,
         "source_sha256": {key: source["sha256"] for key, source in SOURCE_FILES.items()},
     }
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     log(f"Writing {OUTPUT}")
     adata.write_h5ad(OUTPUT, compression="gzip", compression_opts=4)
-    del adata, counts
+    del adata
     gc.collect()
 
     log("Reopening and validating output")
     reopened = ad.read_h5ad(OUTPUT)
     final_inventory = inspect_anndata(reopened)
-    validation = validate_ingested_adata(reopened)
+    validation = validate_ingested_adata(reopened, INGEST_CONTRACT)
     validation.raise_for_errors()
     output_sha256 = sha256_file(OUTPUT)
     write_report(
@@ -1076,6 +1118,7 @@ def main() -> None:
         qc_audit=qc_audit,
         qc_summaries=qc_summaries,
         retention=retention,
+        selection_audit=selection_audit,
         final_inventory=final_inventory,
         validation=validation,
         output_sha256=output_sha256,

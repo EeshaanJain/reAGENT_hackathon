@@ -1,49 +1,55 @@
-"""Reusable primitives for agent-directed perturbation dataset ingestion."""
+"""Reusable primitives for benchmark-configured dataset ingestion."""
 
 from .adata import (
-    REQUIRED_OBS_COLUMNS,
+    IngestContract,
     ValidationReport,
     get_counts,
     inspect_anndata,
     inspect_dataframe,
+    load_ingest_contract,
     sha256_file,
     validate_ingested_adata,
 )
 from .chemistry import (
     LookupResult,
     StructureResult,
-    chembl_name_lookup,
     drop_unresolved_treatments,
-    is_valid_inchikey,
     normalize_inchikey,
-    pubchem_lookup,
     resolve_compounds,
     standardize_smiles,
-    structure_result_dict,
 )
+from .downloads import download_file
+from .prompts import render_ingest_prompt
 from .qc import compute_qc_metrics, filter_with_audit, summarize_qc
-from .splits import split_adata_by_manifest
+from .sampling import select_condition_subset
+from .splits import (
+    create_cell_type_manifests,
+    split_adata_by_manifest,
+    write_cell_type_manifests,
+)
 
 __all__ = [
-    "REQUIRED_OBS_COLUMNS",
+    "IngestContract",
     "LookupResult",
     "StructureResult",
     "ValidationReport",
-    "chembl_name_lookup",
     "compute_qc_metrics",
+    "create_cell_type_manifests",
+    "download_file",
     "drop_unresolved_treatments",
     "filter_with_audit",
     "get_counts",
     "inspect_anndata",
     "inspect_dataframe",
-    "is_valid_inchikey",
+    "load_ingest_contract",
     "normalize_inchikey",
-    "pubchem_lookup",
+    "render_ingest_prompt",
     "resolve_compounds",
+    "select_condition_subset",
     "sha256_file",
     "standardize_smiles",
-    "structure_result_dict",
     "summarize_qc",
     "split_adata_by_manifest",
     "validate_ingested_adata",
+    "write_cell_type_manifests",
 ]
