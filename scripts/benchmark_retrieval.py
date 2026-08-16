@@ -1,26 +1,33 @@
 #!/usr/bin/env python3
-"""Benchmark suite for the literature search agent.
+"""Benchmark suite for the literature search agent. Benchmark-agnostic.
 
-Phase 1 — keyword sets: run every query set in evals/backsearch/query_sets/
-plus the benchmark's current keywords.yaml, search stage only (no filter),
-identical n and sources, scored against the fully reviewed gold labels.
+Phase 1 — keyword sets: run every query-set YAML found in --query-sets-dir
+(each file: `search: {queries: [...]}`) plus the benchmark's current
+keywords.yaml, search stage only (no filter), identical n and sources, scored
+against the reviewed gold labels.
 
 Phase 2 — filter harnesses: on the best keyword set (by search-stage F1_db,
 ties broken by recall), compare relevance-filter backends:
   - none (search only)
   - paperclip filter (snippet-based LLM filter built into paperclip)
-  - claude judge (abstract-based batch judge) with different models
-Each stochastic backend runs `REPEATS` times to capture variance.
+  - claude judge (abstract-based batch judge) with each --judge-models model
+Each stochastic backend runs --repeats times to capture variance.
+
+Query-set files and results are one-off artifacts and stay out of git
+(gitignored); final numbers belong in the eval README / figures.
 
 Writes incremental results to evals/backsearch/results/benchmark_suite.json
 after every run, so partial progress survives interruption.
 
 Usage:
-    python3 scripts/benchmark_retrieval.py benchmarks/perturbation_prediction
+    python3 scripts/benchmark_retrieval.py benchmarks/perturbation_prediction \
+        [--query-sets-dir evals/backsearch/query_sets] [-n 30] [--repeats 3] \
+        [--sources pmc,biorxiv,medrxiv,arxiv] [--judge-models haiku,sonnet,opus]
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import time
@@ -31,11 +38,6 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from litsearch.backsearch import run_backsearch  # noqa: E402
-
-N = 30
-SOURCES = "pmc,biorxiv,medrxiv,arxiv"
-REPEATS = 3
-JUDGE_MODELS = ["haiku", "sonnet", "opus"]
 
 
 def slim(metrics: dict) -> dict:
@@ -48,69 +50,48 @@ def slim(metrics: dict) -> dict:
     return out
 
 
-def main(benchmark_dir: str) -> None:
-    bench = Path(benchmark_dir)
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("benchmark_dir")
+    ap.add_argument("--query-sets-dir", default="evals/backsearch/query_sets",
+                    help="directory of query-set YAMLs to compare (gitignored)")
+    ap.add_argument("-n", type=int, default=30, help="results per query")
+    ap.add_argument("--repeats", type=int, default=3,
+                    help="runs per stochastic filter harness")
+    ap.add_argument("--sources", default="pmc,biorxiv,medrxiv,arxiv")
+    ap.add_argument("--judge-models", default="haiku,sonnet,opus",
+                    help="comma-separated model list for the claude judge")
+    args = ap.parse_args()
+
+    bench = Path(args.benchmark_dir)
     repo_root = Path(__file__).resolve().parents[1]
-    out_path = repo_root / "evals" / "backsearch" / "results" / "benchmark_suite.json"
-    results: dict = {"config": {"n": N, "sources": SOURCES, "repeats": REPEATS},
-                     "keyword_sets": {}, "filter_harnesses": {}}
+    out_path = (repo_root / "evals" / "backsearch" / "results"
+                / "benchmark_suite.json")
+    results: dict = {
+        "config": {"n": args.n, "sources": args.sources,
+                   "repeats": args.repeats},
+        "keyword_sets": {}, "filter_harnesses": {},
+    }
 
     def save() -> None:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(results, indent=2))
 
     # ---- Phase 1: keyword sets ----
-    # 5 sets uniformly spanning the tuning history (inlined so the historical
-    # versions need not live in the repo): the very first baseline, two
-    # intermediates, the 8-query tuned set, and the current keywords.
-    query_sets: dict[str, list[str]] = {
-        "v1_baseline": [
-            "single-cell perturbation response prediction deep learning",
-            "predicting transcriptional response to drug perturbation",
-            "chemical perturbation prediction gene expression single-cell",
-            "generative model cellular response small molecule",
-            "out-of-distribution prediction unseen drug single-cell RNA-seq",
-        ],
-        "v2_chem_focus": [
-            "predicting single-cell transcriptional response to drug perturbation",
-            "chemical perturbation response prediction single-cell RNA-seq",
-            "drug-induced gene expression change prediction deep learning",
-            "in silico prediction of compound effect on gene expression",
-            "generative model single-cell drug response prediction",
-            "dose-dependent chemical perturbation gene expression model",
-            "optimal transport single-cell perturbation response",
-        ],
-        "v3_families9": [
-            "single-cell perturbation response prediction deep learning",
-            "predicting transcriptional response to drug perturbation",
-            "chemical perturbation prediction gene expression single-cell",
-            "generative model cellular response small molecule",
-            "out-of-distribution prediction unseen drug single-cell RNA-seq",
-            "diffusion model predicting cellular responses to perturbations",
-            "flow matching generative model single-cell perturbation",
-            "transferring perturbation responses across cell contexts",
-            "statistical baseline drug response prediction single-cell",
-        ],
-        "v4_tuned8": [
-            "single-cell perturbation response prediction deep learning",
-            "predicting transcriptional response to drug perturbation",
-            "chemical perturbation prediction gene expression single-cell",
-            "out-of-distribution prediction unseen drug single-cell RNA-seq",
-            "diffusion model predicting cellular responses to perturbations",
-            "flow matching generative model single-cell perturbation",
-            "transferring perturbation responses across cell contexts",
-            "statistical baseline drug response prediction single-cell",
-        ],
-    }
+    query_sets: dict[str, list[str]] = {}
+    for f in sorted(Path(args.query_sets_dir).glob("*.yaml")):
+        query_sets[f.stem] = yaml.safe_load(f.read_text())["search"]["queries"]
     current = yaml.safe_load((bench / "keywords.yaml").read_text())["search"]
     query_sets["current_keywords"] = current["queries"]
 
     for name, queries in query_sets.items():
         t0 = time.time()
         try:
-            r = run_backsearch(bench, queries=queries, n=N, sources=SOURCES,
-                               use_filter=False)
+            r = run_backsearch(bench, queries=queries, n=args.n,
+                               sources=args.sources, use_filter=False)
             entry = slim(r.metrics())
-            entry.update(n_queries=len(queries), seconds=round(time.time() - t0, 1))
+            entry.update(n_queries=len(queries),
+                         seconds=round(time.time() - t0, 1))
             results["keyword_sets"][name] = entry
             print(f"[keywords] {name}: recall={entry['recall']} "
                   f"f1_db={entry['f1_db']}", flush=True)
@@ -131,24 +112,25 @@ def main(benchmark_dir: str) -> None:
     harnesses.append(("paperclip_filter",
                       dict(use_filter=True, filter_backend="paperclip",
                            filter_repeats=1)))
-    for model in JUDGE_MODELS:
+    for model in args.judge_models.split(","):
         harnesses.append((f"claude_judge_{model}",
                           dict(use_filter=True, filter_backend="claude",
-                               judge_model=model)))
+                               judge_model=model, filter_repeats=1)))
 
     for name, kwargs in harnesses:
         runs = []
-        n_runs = 1 if name == "none" else REPEATS
+        n_runs = 1 if name == "none" else args.repeats
         for i in range(n_runs):
             t0 = time.time()
             try:
-                r = run_backsearch(bench, queries=best_queries, n=N,
-                                   sources=SOURCES, **kwargs)
+                r = run_backsearch(bench, queries=best_queries, n=args.n,
+                                   sources=args.sources, **kwargs)
                 entry = slim(r.metrics())
                 entry["seconds"] = round(time.time() - t0, 1)
                 runs.append(entry)
                 print(f"[harness] {name} run {i + 1}/{n_runs}: "
-                      f"recall={entry['recall']} precision_db={entry['precision_db']} "
+                      f"recall={entry['recall']} "
+                      f"precision_db={entry['precision_db']} "
                       f"f1_db={entry['f1_db']}", flush=True)
             except Exception:
                 runs.append({"error": traceback.format_exc()})
@@ -160,4 +142,4 @@ def main(benchmark_dir: str) -> None:
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main()

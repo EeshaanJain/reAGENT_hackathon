@@ -10,8 +10,10 @@ Scoring:
 - recall        = retrieved gold positives / eligible gold positives
 - precision_db  = TP / (TP + retrieved known negatives)   <- primary, judged
                   only against papers with a known DB label
-- precision_strict = TP / all retrieved                    <- lower bound: every
-                  unknown retrieved paper counted as irrelevant
+- precision_strict = TP / (TP + FP + unknown)   <- lower bound: every unknown
+                  retrieved paper counted as irrelevant. Papers labeled
+                  "related" (relevant but of a different kind, e.g. benchmark
+                  papers) are excluded from every precision denominator.
 - Unknown retrieved papers are NOT silently treated as false positives: they
   are written out for human review (they may be relevant papers missing from
   the gold DB).
@@ -26,7 +28,7 @@ from pathlib import Path
 
 import yaml
 
-from .paperclip_client import SearchHit, llm_filter, merge_sets, search
+from .paperclip_client import SearchHit, llm_filter, search
 
 
 def norm_title(title: str) -> str:
@@ -83,8 +85,8 @@ class BacksearchResult:
         n_pos = len(all_pos_names)
         recall = len(tp) / n_pos if n_pos else 0.0
         precision_db = len(tp) / (len(tp) + len(fp_known)) if tp or fp_known else 0.0
-        precision_strict = len(tp) / (len(tp) + len(fp_known) + len(unknown)) \
-            if retrieved_ids else 0.0
+        strict_denom = len(tp) + len(fp_known) + len(unknown)
+        precision_strict = len(tp) / strict_denom if strict_denom else 0.0
         f1_db = (2 * precision_db * recall / (precision_db + recall)
                  if precision_db + recall else 0.0)
         f1_strict = (2 * precision_strict * recall / (precision_strict + recall)
@@ -164,12 +166,16 @@ def run_backsearch(benchmark_dir: str | Path,
     # source DB (plus duplicate-version aliases of DB papers).
     reviewed = bench / "gold" / "reviewed_papers.csv"
     if reviewed.exists():
+        targets = {"positive": (positives, pos_titles),
+                   "negative": (negatives, neg_titles),
+                   "related": (None, related_titles)}
         with open(reviewed) as f:
             for row in csv.DictReader(f):
-                target = {"positive": (positives, pos_titles),
-                          "negative": (negatives, neg_titles),
-                          "related": (None, related_titles)}[row["verdict"]]
-                ids, titles = target
+                if row["verdict"] not in targets:
+                    raise ValueError(
+                        f"bad verdict {row['verdict']!r} for {row['name']!r} "
+                        f"in {reviewed} (expected one of {sorted(targets)})")
+                ids, titles = targets[row["verdict"]]
                 if ids is not None and row["paperclip_doc_id"]:
                     ids[row["paperclip_doc_id"]] = row["name"]
                 titles[norm_title(row["paper_title"])] = row["name"]
@@ -178,30 +184,34 @@ def run_backsearch(benchmark_dir: str | Path,
                               pos_titles, neg_titles, related_titles)
     set_ids = []
     for q in queries:
-        hits, set_id = search(q, sources=sources, n=n, return_set_id=True)
+        hits, set_id = search(q, sources=sources, n=n)
         result.per_query[q] = [h.doc_id for h in hits]
         if set_id:
             set_ids.append(set_id)
         for h in hits:
             result.retrieved.setdefault(h.doc_id, h)
 
+    # The LLM filters are stochastic, so both backends run `filter_repeats`
+    # independent rounds and keep a paper if ANY round keeps it (union vote,
+    # recall-favoring).
+    repeats = (filter_repeats if filter_repeats is not None
+               else int(kw.get("filter_repeats", 1)))
     backend = filter_backend or kw.get("filter_backend", "paperclip")
+
     if use_filter and filter_criterion and backend == "claude":
         from .claude_judge import judge
-        kept = judge(result.retrieved, filter_criterion,
-                     model=judge_model or kw.get("judge_model"))
+        kept: set[str] = set()
+        for _ in range(repeats):
+            kept |= judge(result.retrieved, filter_criterion,
+                          model=judge_model or kw.get("judge_model"))
         result.retrieved = {d: h for d, h in result.retrieved.items()
                             if d in kept}
         return result
 
     if use_filter and filter_criterion and set_ids:
         # `paperclip merge` currently fails to find freshly created sets, so
-        # filter each query's set separately and union the survivors. The LLM
-        # filter is stochastic, so run `filter_repeats` independent rounds
-        # (each round needs a fresh search — filter consumes the set) and keep
-        # a paper if any round keeps it (union vote, recall-favoring).
-        repeats = filter_repeats if filter_repeats is not None \
-            else int(kw.get("filter_repeats", 1))
+        # filter each query's set separately and union the survivors. Each
+        # extra round needs a fresh search — filter consumes the set.
         kept_ids: set[str] = set()
         kept_titles: set[str] = set()
 
@@ -215,7 +225,7 @@ def run_backsearch(benchmark_dir: str | Path,
         for _ in range(repeats - 1):
             fresh = []
             for q in queries:
-                _, sid = search(q, sources=sources, n=n, return_set_id=True)
+                _, sid = search(q, sources=sources, n=n)
                 if sid:
                     fresh.append(sid)
             one_round(fresh)
