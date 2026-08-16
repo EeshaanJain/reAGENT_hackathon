@@ -50,7 +50,12 @@ benchmark_adapt/
     test_no_network.py                 G4
     test_stochastic_tolerance.py       G7 (deliberately unresolved — see below)
   component_template/                  config.vsh.yaml / script.py / test.py / DEVIATIONS.md
-                                        skeletons that synthesize_adapter.py fills in
+                                        skeletons that synthesize_adapter.py fills in --
+                                        config.vsh.yaml.j2 renders a real `arguments:` block and
+                                        `engines.docker.setup` pip packages when the contract
+                                        carries Serena-derived `arguments`/`dependencies` (i.e. it
+                                        was built with contract_gen's --comprehension-engine
+                                        serena); both render empty otherwise, same as before
   examples/
     model_contract.example.yaml        a filled-in example contract (Chem-PerturBridge-style,
                                         API-native — ladder rung 1)

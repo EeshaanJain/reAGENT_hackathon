@@ -12,7 +12,10 @@ It does **not** synthesize adapters, run the Gauntlet, or open PRs — that's th
 ```
 paper repo + pinned commit  ──►  [Stage 0] ingest  ──►  [Stage 1] RepoLaunch  ──►  [Stage 2] repo
                                     (this repo)          builds a real Docker      comprehension
-                                                          image (this repo)        (this repo)
+                                                          image (this repo)        (this repo --
+                                                                                     heuristic grep,
+                                                                                     or live Serena
+                                                                                     MCP -- see below)
                                                                                         │
                                                                                         ▼
                                                                           [Stage 3] contract synthesis
@@ -32,15 +35,21 @@ contract_gen/
                                       .venv (Python >= 3.12) lives here too, gitignored by the
                                       submodule's own .gitignore.
   harness/
-    orchestrator.py                  Stages 0/2/3 driver: ingest, heuristic repo comprehension,
-                                      schema-conformant contract synthesis
+    orchestrator.py                  Stages 0/2/3 driver: ingest, repo comprehension (heuristic
+                                      grep by default, or live Serena MCP with
+                                      --comprehension-engine serena), schema-conformant contract
+                                      synthesis
     repolaunch_runner.py             Stage 1: real `launch` CLI wrapper, generalized from
                                       Cecilia's original scAPE-only smoke test
     paperclip_intake.py              Parses a Paperclip literature-agent record into a RepoLaunch
                                       instance -- the standard input path (see Quickstart)
+    serena_contract_mapping.py       Maps a methods/serena RepositoryFindings object into
+                                      model_contract.yaml cited fields (entrypoint,
+                                      prediction_level, requires_sc_counts, gene_space,
+                                      hyperparameters, arguments, dependencies) -- what
+                                      --comprehension-engine serena actually feeds Stage 3
   fixtures/
-    paperclip_scape_record.json      scAPE test input -- minimal/honest, see the file's own _note
-                                      (no real Paperclip output exists for scAPE)
+    paperclip_scape_record.json      scAPE test input -- a real Paperclip record
     repolaunch_config_scape.json     scAPE RepoLaunch run config (model, steps, timeouts --
                                       orthogonal to the paperclip record, always required)
     paperclip_cpa_record.json        CPA test input -- the single-cell-counts test case, a real
@@ -84,12 +93,17 @@ uv pip install --python .venv/bin/python -e .
 
 Verify: `RepoLaunch/.venv/bin/launch --help`
 
-### 3. Credentials (not committed anywhere — export in your own shell)
+### 3. Credentials (not committed anywhere)
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."   # RepoLaunch's own internal agent needs an LLM provider
 export TAVILY_API_KEY="tvly-..."        # RepoLaunch's web-search tool, required per its own docs
 ```
+
+Or drop both into `methods/contract_gen/.env` (`KEY=value` per line, `source`d before running) —
+the repo's root `.gitignore` ignores every `.env` file in the tree; confirm with `git check-ignore
+-v methods/contract_gen/.env` before trusting it with a real key. `--comprehension-engine serena`
+needs neither of these -- Serena itself is a language-server wrapper, not an LLM agent.
 
 ### 4. Docker
 
@@ -116,6 +130,14 @@ python -m harness.orchestrator \
     --repolaunch-config fixtures/repolaunch_config_cpa.json \
     --output output/cpa
 cat output/cpa/model_contract.yaml
+
+# Same, but with live Serena MCP for Stage 2 instead of the grep heuristic (see ../serena/README.md)
+python -m harness.orchestrator \
+    --paperclip-record fixtures/paperclip_scape_record.json \
+    --repolaunch-config fixtures/repolaunch_config_scape.json \
+    --comprehension-engine serena \
+    --output output/scape
+cat output/scape/model_contract.yaml
 ```
 
 `--instance` also accepts a raw RepoLaunch instance dict directly, as a fallback for a method with
@@ -142,17 +164,20 @@ of silently trying to force-fit it.
 
 - **RepoLaunch (Stage 1) is real.** The vendored, pinned `launch` CLI, actually invoked, actually
   building a Docker image via its own LLM-driven exploration. Not mocked.
-- **Repo comprehension (Stage 2) is a heuristic stand-in for real Serena MCP analysis**, not
-  Serena itself. It's real static analysis — grep-based signal detection, every match cited to an
-  actual `repo:file:line` — but it's pattern matching, not semantic understanding. Real Serena
-  integration needs an MCP client (Serena's actual tools — `find_symbol`, `get_symbols_overview`,
-  etc. — only run through its MCP server, not a bare CLI; confirmed by inspecting `serena --help`
-  directly) — that's follow-up work, not done here.
-- **Contract synthesis (Stage 3) is real and schema-validated**, but many fields legitimately come
-  out `"unknown"` — a heuristic static pass can flag "this repo uses AnnData/setup_anndata" from a
-  grep hit, but can't determine `gene_space.n_genes` or `checkpoint.url` without actually reading
-  and understanding the code, which is what real Serena + an LLM contract-extraction agent (per
-  `plan_unified.md` Stage 3) is for. `unknown` here is the correct, honest output — not a bug.
+- **Repo comprehension (Stage 2) has two real engines**, chosen with `--comprehension-engine`:
+  `heuristic` (default) is grep-based signal detection, every match cited to an actual
+  `repo:file:line` — real static analysis, but pattern matching, not semantic understanding.
+  `serena` opens a live Serena MCP session (`../serena/`, via `serena_contract_mapping.py`) and
+  runs real `find_symbol`/`get_symbols_overview`/... queries against the cloned repo — this is no
+  longer a stand-in; see `../serena/README.md` and `../serena/VALIDATION_SCAPE.md`. Both engines
+  still rely on the same grep pass for chemical/genetic perturbation-encoding signals, which
+  neither Serena's stages nor an LLM contract-extraction agent are aimed at.
+- **Contract synthesis (Stage 3) is real and schema-validated**, and with `--comprehension-engine
+  serena` most of the previously-`unknown` headline fields resolve from cited evidence: `model
+  .entrypoint`, `prediction_level`, `requires_sc_counts`, `gene_space.n_genes`, `hyperparameters`,
+  `arguments`, `dependencies`. Fields genuinely out of either engine's reach (`checkpoint.url`,
+  `compute.vram_gb`, ...) still legitimately come out `"unknown"` — that remains the correct,
+  honest output for evidence no static analysis (heuristic or semantic) can produce, not a bug.
 
 ## Handoff contract this lane produces
 
