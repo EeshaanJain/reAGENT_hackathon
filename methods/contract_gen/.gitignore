@@ -1,0 +1,7 @@
+work/
+output/*/
+!output/.gitkeep
+smoke_tests/results/*.json
+__pycache__/
+*.pyc
+.pytest_cache/
