@@ -73,6 +73,11 @@ Filter harnesses on the best set (3 runs each; F1 mean and min–max):
 | claude judge, sonnet | 0.81 | 0.64–0.65 | **0.72** (0.72–0.72) |
 | claude judge, opus | 0.88–0.91 | 0.59–0.61 | **0.72** (0.72–0.73) |
 
+Shipped configuration (criterion v2 — encodes the team's review distinctions —
+with sonnet judge, 3-round union voting): **recall 0.81, precision_db 0.71,
+F1_db 0.76** — the best end-to-end F1 measured; unknowns collapse to 1
+retrieved paper without a team verdict.
+
 Takeaways: keyword recall was bought by adding vocabulary-family queries
 (0.43 → 0.90) at flat precision; the abstract-based claude judge beats both
 no-filter and paperclip's snippet-based filter (which pays for its precision
