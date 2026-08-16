@@ -1,0 +1,3434 @@
+{
+  "run": {
+    "date": "2026-08-16",
+    "benchmark": "perturbation_prediction",
+    "queries": [
+      "single-cell perturbation response prediction deep learning",
+      "predicting transcriptional response to drug perturbation",
+      "chemical perturbation prediction gene expression single-cell",
+      "out-of-distribution prediction unseen drug single-cell RNA-seq",
+      "diffusion model predicting cellular responses to perturbations",
+      "flow matching generative model single-cell perturbation",
+      "transferring perturbation responses across cell contexts",
+      "statistical baseline drug response prediction single-cell",
+      "optimal transport map single-cell perturbation drug response",
+      "disentangled representation learning single-cell perturbation",
+      "causal representation counterfactual prediction single-cell",
+      "foundation model zero-shot molecular perturbation prediction",
+      "modeling expression heterogeneity in perturbation responses"
+    ],
+    "sources": "pmc,biorxiv,medrxiv,arxiv",
+    "n_per_query": 30,
+    "since": null,
+    "filter_backend": "claude",
+    "judge_model": null
+  },
+  "papers": [
+    {
+      "doc_id": "arx_2204.13545",
+      "title": "Predicting Cellular Responses to Novel Drug Perturbations at a Single-Cell Resolution",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2204.13545",
+      "source": "arxiv",
+      "pub_date": "2022-04-28",
+      "paperclip_path": "/papers/arx_2204.13545/",
+      "best_rank": 1,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "predicting transcriptional response to drug perturbation",
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "diffusion model predicting cellular responses to perturbations",
+        "transferring perturbation responses across cell contexts",
+        "statistical baseline drug response prediction single-cell",
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "chemCPA"
+    },
+    {
+      "doc_id": "PMC10630137",
+      "title": "Learning single-cell perturbation responses using neural optimal transport",
+      "doi": "10.1038/s41592-023-01969-x",
+      "url": "https://doi.org/10.1038/s41592-023-01969-x",
+      "source": "pmc",
+      "pub_date": "2023-09-28",
+      "paperclip_path": "/papers/PMC10630137/",
+      "best_rank": 1,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "flow matching generative model single-cell perturbation",
+        "transferring perturbation responses across cell contexts",
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "CellOT"
+    },
+    {
+      "doc_id": "PMC10436058",
+      "title": "Generative modeling of single-cell gene expression for dose-dependent chemical perturbations",
+      "doi": "10.1016/j.patter.2023.100817",
+      "url": "https://doi.org/10.1016/j.patter.2023.100817",
+      "source": "pmc",
+      "pub_date": "2023-08-11",
+      "paperclip_path": "/papers/PMC10436058/",
+      "best_rank": 1,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "chemical perturbation prediction gene expression single-cell",
+        "flow matching generative model single-cell perturbation",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scVIDR"
+    },
+    {
+      "doc_id": "bio_766650616e92",
+      "title": "Drug Response Prediction Provides a Biologically Relevant Benchmark for Perturbation Response Models",
+      "doi": "10.64898/2025.12.09.693213",
+      "url": "https://doi.org/10.64898/2025.12.09.693213",
+      "source": "biorxiv",
+      "pub_date": "2025-12-09",
+      "paperclip_path": "/papers/bio_766650616e92/",
+      "best_rank": 1,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation",
+        "diffusion model predicting cellular responses to perturbations",
+        "statistical baseline drug response prediction single-cell",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_287c8a786c1d",
+      "title": "Out-of-distribution prediction with disentangled representations for single-cell RNA sequencing data",
+      "doi": "10.1101/2021.09.01.458535",
+      "url": "https://doi.org/10.1101/2021.09.01.458535",
+      "source": "biorxiv",
+      "pub_date": "2021-09-01",
+      "paperclip_path": "/papers/bio_287c8a786c1d/",
+      "best_rank": 1,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "OOD-Disentangled"
+    },
+    {
+      "doc_id": "arx_2412.13478",
+      "title": "Efficient Fine-Tuning of Single-Cell Foundation Models Enables Zero-Shot Molecular Perturbation Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2412.13478",
+      "source": "arxiv",
+      "pub_date": "2024-12-18",
+      "paperclip_path": "/papers/arx_2412.13478/",
+      "best_rank": 1,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "statistical baseline drug response prediction single-cell",
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scDCA"
+    },
+    {
+      "doc_id": "bio_b63fa3f87b02",
+      "title": "CellFlow enables generative single-cell phenotype modeling with flow matching",
+      "doi": "10.1101/2025.04.11.648220",
+      "url": "https://doi.org/10.1101/2025.04.11.648220",
+      "source": "biorxiv",
+      "pub_date": "2025-04-11",
+      "paperclip_path": "/papers/bio_b63fa3f87b02/",
+      "best_rank": 1,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "CellFlow"
+    },
+    {
+      "doc_id": "bio_2c776232729c",
+      "title": "Single-cell disentangled representations for perturbation modeling and treatment effect estimation",
+      "doi": "10.1101/2025.11.21.689783",
+      "url": "https://doi.org/10.1101/2025.11.21.689783",
+      "source": "biorxiv",
+      "pub_date": "2025-11-21",
+      "paperclip_path": "/papers/bio_2c776232729c/",
+      "best_rank": 1,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "scDRP"
+    },
+    {
+      "doc_id": "bio_51c22fb06f40",
+      "title": "Learning interpretable cellular responses to complex perturbations in high-throughput screens",
+      "doi": "10.1101/2021.04.14.439903",
+      "url": "https://doi.org/10.1101/2021.04.14.439903",
+      "source": "biorxiv",
+      "pub_date": "2021-04-14",
+      "paperclip_path": "/papers/bio_51c22fb06f40/",
+      "best_rank": 2,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "CPA"
+    },
+    {
+      "doc_id": "bio_91e271016e38",
+      "title": "Learning Perturbation-specific Cell Representations for Prediction of Transcriptional Response across Cellular Contexts",
+      "doi": "10.1101/2023.03.20.533433",
+      "url": "https://doi.org/10.1101/2023.03.20.533433",
+      "source": "biorxiv",
+      "pub_date": "2023-03-20",
+      "paperclip_path": "/papers/bio_91e271016e38/",
+      "best_rank": 2,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "predicting transcriptional response to drug perturbation",
+        "diffusion model predicting cellular responses to perturbations",
+        "transferring perturbation responses across cell contexts",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "PerturbX"
+    },
+    {
+      "doc_id": "bio_99cb6b696dc2",
+      "title": "PertDiffBench: Benchmarking Diffusion Models for Single-Cell Perturbation Response Prediction",
+      "doi": "10.64898/2026.06.13.732013",
+      "url": "https://doi.org/10.64898/2026.06.13.732013",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_99cb6b696dc2/",
+      "best_rank": 2,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "diffusion model predicting cellular responses to perturbations",
+        "flow matching generative model single-cell perturbation",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC11513139",
+      "title": "Predicting transcriptional responses to novel chemical perturbations using deep generative model for drug discovery",
+      "doi": "10.1038/s41467-024-53457-1",
+      "url": "https://doi.org/10.1038/s41467-024-53457-1",
+      "source": "pmc",
+      "pub_date": "2024-10-26",
+      "paperclip_path": "/papers/PMC11513139/",
+      "best_rank": 2,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation",
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "PRnet"
+    },
+    {
+      "doc_id": "bio_b69e04d66ce4",
+      "title": "Generative Modeling of Single Cell Gene Expression for Dose-Dependent Chemical Perturbations",
+      "doi": "10.1101/2022.10.05.510890",
+      "url": "https://doi.org/10.1101/2022.10.05.510890",
+      "source": "biorxiv",
+      "pub_date": "2022-10-05",
+      "paperclip_path": "/papers/bio_b69e04d66ce4/",
+      "best_rank": 2,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell",
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scVIDR"
+    },
+    {
+      "doc_id": "PMC12261427",
+      "title": "Fast and scalable Wasserstein-1 neural optimal transport solver for single-cell perturbation prediction",
+      "doi": "10.1093/bioinformatics/btaf253",
+      "url": "https://doi.org/10.1093/bioinformatics/btaf253",
+      "source": "pmc",
+      "pub_date": "2025-07-01",
+      "paperclip_path": "/papers/PMC12261427/",
+      "best_rank": 2,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "W1-OT-solver"
+    },
+    {
+      "doc_id": "arx_2211.03553",
+      "title": "Learning Causal Representations of Single Cells via Sparse Mechanism Shift Modeling",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2211.03553",
+      "source": "arxiv",
+      "pub_date": "2022-11-07",
+      "paperclip_path": "/papers/arx_2211.03553/",
+      "best_rank": 2,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "sVAE+"
+    },
+    {
+      "doc_id": "bio_3fa2df976e60",
+      "title": "Integrating multi-covariate disentanglement with counterfactual analysis on synthetic data enables cell type discovery and counterfactual predictions",
+      "doi": "10.1101/2025.06.03.657578",
+      "url": "https://doi.org/10.1101/2025.06.03.657578",
+      "source": "biorxiv",
+      "pub_date": "2025-06-03",
+      "paperclip_path": "/papers/bio_3fa2df976e60/",
+      "best_rank": 2,
+      "matched_queries": [
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "CellDISECT"
+    },
+    {
+      "doc_id": "PMC12322087",
+      "title": "PerturbNet predicts single-cell responses to unseen chemical and genetic perturbations",
+      "doi": "10.1038/s44320-025-00131-3",
+      "url": "https://doi.org/10.1038/s44320-025-00131-3",
+      "source": "pmc",
+      "pub_date": "2025-07-10",
+      "paperclip_path": "/papers/PMC12322087/",
+      "best_rank": 3,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "chemical perturbation prediction gene expression single-cell",
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "PerturbNet"
+    },
+    {
+      "doc_id": "bio_009b27fd7099",
+      "title": "A Systematic Comparison of Single-Cell Perturbation Response Prediction Models",
+      "doi": "10.1101/2024.12.23.630036",
+      "url": "https://doi.org/10.1101/2024.12.23.630036",
+      "source": "biorxiv",
+      "pub_date": "2024-12-23",
+      "paperclip_path": "/papers/bio_009b27fd7099/",
+      "best_rank": 3,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "chemical perturbation prediction gene expression single-cell",
+        "transferring perturbation responses across cell contexts",
+        "statistical baseline drug response prediction single-cell",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_4f178f009174",
+      "title": "Condition-matched in silico prediction of drug transcriptional responses enables mechanism-guided screening and combination discovery",
+      "doi": "10.64898/2026.03.27.714886",
+      "url": "https://doi.org/10.64898/2026.03.27.714886",
+      "source": "biorxiv",
+      "pub_date": "2026-04-01",
+      "paperclip_path": "/papers/bio_4f178f009174/",
+      "best_rank": 3,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "DEPICT"
+    },
+    {
+      "doc_id": "bio_3e6239496d28",
+      "title": "Predicting cellular responses to perturbation across diverse contexts with S tate",
+      "doi": "10.1101/2025.06.26.661135",
+      "url": "https://doi.org/10.1101/2025.06.26.661135",
+      "source": "biorxiv",
+      "pub_date": "2025-06-26",
+      "paperclip_path": "/papers/bio_3e6239496d28/",
+      "best_rank": 3,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations",
+        "transferring perturbation responses across cell contexts",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "State"
+    },
+    {
+      "doc_id": "arx_2602.07103",
+      "title": "scDFM: Distributional Flow Matching Model for Robust Single-Cell Perturbation Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2602.07103",
+      "source": "arxiv",
+      "pub_date": "2026-02-10",
+      "paperclip_path": "/papers/arx_2602.07103/",
+      "best_rank": 3,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scDFM"
+    },
+    {
+      "doc_id": "arx_2606.07760",
+      "title": "scCBGM: Interpretable Single-Cell Counterfactual Editing",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2606.07760",
+      "source": "arxiv",
+      "pub_date": "2026-06-09",
+      "paperclip_path": "/papers/arx_2606.07760/",
+      "best_rank": 3,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scCBGM"
+    },
+    {
+      "doc_id": "arx_2412.19228",
+      "title": "Learning Cross-Domain Representations for Transferable Drug Perturbations on Single-Cell Transcriptional Responses",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2412.19228",
+      "source": "arxiv",
+      "pub_date": "2024-12-26",
+      "paperclip_path": "/papers/arx_2412.19228/",
+      "best_rank": 4,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation",
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "transferring perturbation responses across cell contexts",
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "XTransferCDR"
+    },
+    {
+      "doc_id": "arx_2508.08312",
+      "title": "CFM-GP: Unified Conditional Flow Matching to Learn Gene Perturbation Across Cell Types",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2508.08312",
+      "source": "arxiv",
+      "pub_date": "2025-08-09",
+      "paperclip_path": "/papers/arx_2508.08312/",
+      "best_rank": 4,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell",
+        "flow matching generative model single-cell perturbation",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "CFM-GP"
+    },
+    {
+      "doc_id": "arx_2311.10315",
+      "title": "Interpretable Modeling of Single-cell perturbation Responses to Novel Drugs Using Cycle Consistence Learning",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2311.10315",
+      "source": "arxiv",
+      "pub_date": "2023-11-17",
+      "paperclip_path": "/papers/arx_2311.10315/",
+      "best_rank": 5,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "predicting transcriptional response to drug perturbation",
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "transferring perturbation responses across cell contexts",
+        "statistical baseline drug response prediction single-cell",
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "CycleConsistNovelDrugs"
+    },
+    {
+      "doc_id": "arx_2510.11726",
+      "title": "scPPDM: A Diffusion Model for Single-Cell Drug-Response Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2510.11726",
+      "source": "arxiv",
+      "pub_date": "2025-10-08",
+      "paperclip_path": "/papers/arx_2510.11726/",
+      "best_rank": 5,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "diffusion model predicting cellular responses to perturbations",
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scPPDM"
+    },
+    {
+      "doc_id": "bio_fddc658073df",
+      "title": "Squidiff: Predicting cellular development and responses to perturbations using a diffusion model",
+      "doi": "10.1101/2024.11.16.623974",
+      "url": "https://doi.org/10.1101/2024.11.16.623974",
+      "source": "biorxiv",
+      "pub_date": "2024-11-16",
+      "paperclip_path": "/papers/bio_fddc658073df/",
+      "best_rank": 5,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "Squidiff"
+    },
+    {
+      "doc_id": "arx_2411.00614",
+      "title": "Fast and scalable Wasserstein-1 neural optimal transport solver for single-cell perturbation prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2411.00614",
+      "source": "arxiv",
+      "pub_date": "2024-11-01",
+      "paperclip_path": "/papers/arx_2411.00614/",
+      "best_rank": 5,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "W1-OT-solver"
+    },
+    {
+      "doc_id": "arx_2602.19685",
+      "title": "PerturbDiff: Functional Diffusion for Single-Cell Perturbation Modeling",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2602.19685",
+      "source": "arxiv",
+      "pub_date": "2026-02-24",
+      "paperclip_path": "/papers/arx_2602.19685/",
+      "best_rank": 6,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations",
+        "flow matching generative model single-cell perturbation",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "PerturbDiff"
+    },
+    {
+      "doc_id": "bio_581830936dad",
+      "title": "Modeling CAR Response at the Single-Cell Level Using Conditional Optimal Transport",
+      "doi": "10.1101/2024.11.11.622906",
+      "url": "https://doi.org/10.1101/2024.11.11.622906",
+      "source": "biorxiv",
+      "pub_date": "2024-11-11",
+      "paperclip_path": "/papers/bio_581830936dad/",
+      "best_rank": 6,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "CAR-CondOT"
+    },
+    {
+      "doc_id": "arx_2604.13986",
+      "title": "PRiMeFlow: Capturing Complex Expression Heterogeneity in Perturbation Response Modelling",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2604.13986",
+      "source": "arxiv",
+      "pub_date": "2026-05-14",
+      "paperclip_path": "/papers/arx_2604.13986/",
+      "best_rank": 6,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "PRiMeFlow"
+    },
+    {
+      "doc_id": "PMC10258562",
+      "title": "Predicting cellular responses to complex perturbations in high\u2010throughput screens",
+      "doi": "10.15252/msb.202211517",
+      "url": "https://doi.org/10.15252/msb.202211517",
+      "source": "pmc",
+      "pub_date": "2023-05-08",
+      "paperclip_path": "/papers/PMC10258562/",
+      "best_rank": 7,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "predicting transcriptional response to drug perturbation",
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "CPA"
+    },
+    {
+      "doc_id": "bio_f0ffef2a7e2b",
+      "title": "ScAPE: A lightweight multitask learning baseline method to predict transcriptomic responses to perturbations",
+      "doi": "10.1101/2025.09.08.674873",
+      "url": "https://doi.org/10.1101/2025.09.08.674873",
+      "source": "biorxiv",
+      "pub_date": "2025-09-08",
+      "paperclip_path": "/papers/bio_f0ffef2a7e2b/",
+      "best_rank": 7,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation",
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "ScAPE"
+    },
+    {
+      "doc_id": "arx_2604.27646",
+      "title": "Benchmarking virtual cell models for in-the-wild perturbation response",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2604.27646",
+      "source": "arxiv",
+      "pub_date": "2026-05-01",
+      "paperclip_path": "/papers/arx_2604.27646/",
+      "best_rank": 7,
+      "matched_queries": [
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2405.00838",
+      "title": "Cross-modality Matching and Prediction of Perturbation Responses with Labeled Gromov-Wasserstein Optimal Transport",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2405.00838",
+      "source": "arxiv",
+      "pub_date": "2024-05-01",
+      "paperclip_path": "/papers/arx_2405.00838/",
+      "best_rank": 7,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "LabeledGW-OT"
+    },
+    {
+      "doc_id": "bio_1b3dbb227cee",
+      "title": "PrePR-CT: Predicting Perturbation Responses in Unseen Cell Types Using Cell-Type-Specific Graphs",
+      "doi": "10.1101/2024.07.24.604816",
+      "url": "https://doi.org/10.1101/2024.07.24.604816",
+      "source": "biorxiv",
+      "pub_date": "2024-07-24",
+      "paperclip_path": "/papers/bio_1b3dbb227cee/",
+      "best_rank": 8,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "predicting transcriptional response to drug perturbation",
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "PrePR-CT"
+    },
+    {
+      "doc_id": "PMC12274909",
+      "title": "Protocol for predicting single- and multiple-dose-dependent gene expression using deep generative learning",
+      "doi": "10.1016/j.xpro.2025.103932",
+      "url": "https://doi.org/10.1016/j.xpro.2025.103932",
+      "source": "pmc",
+      "pub_date": "2025-07-11",
+      "paperclip_path": "/papers/PMC12274909/",
+      "best_rank": 8,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "related",
+      "gold_name": "scVIDR (protocol)"
+    },
+    {
+      "doc_id": "arx_2410.05292",
+      "title": "CaLMFlow: Volterra Flow Matching using Causal Language Models",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2410.05292",
+      "source": "arxiv",
+      "pub_date": "2024-10-03",
+      "paperclip_path": "/papers/arx_2410.05292/",
+      "best_rank": 8,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "CaLMFlow"
+    },
+    {
+      "doc_id": "bio_fdc693c16d2d",
+      "title": "Back to basics: Observed statistics are sufficient to predict drug responses",
+      "doi": "10.64898/2026.06.09.731197",
+      "url": "https://doi.org/10.64898/2026.06.09.731197",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_fdc693c16d2d/",
+      "best_rank": 8,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "Rhaister"
+    },
+    {
+      "doc_id": "PMC8519465",
+      "title": "DeepCellState: An autoencoder-based framework for predicting cell type specific transcriptional states induced by drug treatment",
+      "doi": "10.1371/journal.pcbi.1009465",
+      "url": "https://doi.org/10.1371/journal.pcbi.1009465",
+      "source": "pmc",
+      "pub_date": "2021-10-05",
+      "paperclip_path": "/papers/PMC8519465/",
+      "best_rank": 9,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "DeepCellState"
+    },
+    {
+      "doc_id": "arx_2511.13124",
+      "title": "Departures: Distributional Transport for Single-Cell Perturbation Prediction with Neural Schr\\\"odinger Bridges",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2511.13124",
+      "source": "arxiv",
+      "pub_date": "2025-11-17",
+      "paperclip_path": "/papers/arx_2511.13124/",
+      "best_rank": 9,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "Departures"
+    },
+    {
+      "doc_id": "bio_603665126c0b",
+      "title": "Generative modeling and latent space arithmetics predict single-cell perturbation response across cell types, studies and species",
+      "doi": "10.1101/478503",
+      "url": "https://doi.org/10.1101/478503",
+      "source": "biorxiv",
+      "pub_date": "2018-11-28",
+      "paperclip_path": "/papers/bio_603665126c0b/",
+      "best_rank": 10,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "flow matching generative model single-cell perturbation",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "scGen"
+    },
+    {
+      "doc_id": "bio_4384f9d06c42",
+      "title": "DeepCellState: an autoencoder-based framework for predicting cell type-specific transcriptional states induced by drug treatment",
+      "doi": "10.1101/2020.12.14.422792",
+      "url": "https://doi.org/10.1101/2020.12.14.422792",
+      "source": "biorxiv",
+      "pub_date": "2020-12-14",
+      "paperclip_path": "/papers/bio_4384f9d06c42/",
+      "best_rank": 10,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "DeepCellState"
+    },
+    {
+      "doc_id": "PMC12536660",
+      "title": "scPerb: Predict single-cell perturbation via style transfer-based variational autoencoder",
+      "doi": "10.1016/j.jare.2024.10.035",
+      "url": "https://doi.org/10.1016/j.jare.2024.10.035",
+      "source": "pmc",
+      "pub_date": "2024-10-31",
+      "paperclip_path": "/papers/PMC12536660/",
+      "best_rank": 10,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scPerb"
+    },
+    {
+      "doc_id": "PMC12732504",
+      "title": "What Do Single-Cell Models Already Know About Perturbations?",
+      "doi": "10.3390/genes16121439",
+      "url": "https://doi.org/10.3390/genes16121439",
+      "source": "pmc",
+      "pub_date": "2025-12-02",
+      "paperclip_path": "/papers/PMC12732504/",
+      "best_rank": 10,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell",
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "related",
+      "gold_name": "WhatDoModelsKnow"
+    },
+    {
+      "doc_id": "arx_2310.09254",
+      "title": "GENOT: Entropic (Gromov) Wasserstein Flow Matching with Applications to Single-Cell Genomics",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2310.09254",
+      "source": "arxiv",
+      "pub_date": "2023-10-13",
+      "paperclip_path": "/papers/arx_2310.09254/",
+      "best_rank": 11,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "GENOT"
+    },
+    {
+      "doc_id": "bio_aaf8afe26d8f",
+      "title": "Biological representation disentanglement of single-cell data",
+      "doi": "10.1101/2023.03.05.531195",
+      "url": "https://doi.org/10.1101/2023.03.05.531195",
+      "source": "biorxiv",
+      "pub_date": "2023-03-05",
+      "paperclip_path": "/papers/bio_aaf8afe26d8f/",
+      "best_rank": 11,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "Biolord"
+    },
+    {
+      "doc_id": "PMC12383350",
+      "title": "scOTM: A Deep Learning Framework for Predicting Single-Cell Perturbation Responses with Large Language Models",
+      "doi": "10.3390/bioengineering12080884",
+      "url": "https://doi.org/10.3390/bioengineering12080884",
+      "source": "pmc",
+      "pub_date": "2025-08-20",
+      "paperclip_path": "/papers/PMC12383350/",
+      "best_rank": 12,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scOTM"
+    },
+    {
+      "doc_id": "arx_2606.27752",
+      "title": "PerturbCellRL: Verifier-Guided Reinforcement Learning for Single-Cell Perturbation Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2606.27752",
+      "source": "arxiv",
+      "pub_date": "2026-06-29",
+      "paperclip_path": "/papers/arx_2606.27752/",
+      "best_rank": 12,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "chemical perturbation prediction gene expression single-cell",
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "PerturbCellRL"
+    },
+    {
+      "doc_id": "arx_2605.16104",
+      "title": "StateXDiff: Cell State-Contextualized Multimodal Diffusion for Single-Cell Perturbation Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2605.16104",
+      "source": "arxiv",
+      "pub_date": "2026-05-18",
+      "paperclip_path": "/papers/arx_2605.16104/",
+      "best_rank": 12,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "StateXDiff"
+    },
+    {
+      "doc_id": "PMC11256952",
+      "title": "Transfer learning of condition-specific perturbation in gene interactions improves drug response prediction",
+      "doi": "10.1093/bioinformatics/btae249",
+      "url": "https://doi.org/10.1093/bioinformatics/btae249",
+      "source": "pmc",
+      "pub_date": "2024-07-01",
+      "paperclip_path": "/papers/PMC11256952/",
+      "best_rank": 12,
+      "matched_queries": [
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "CondSpecTL"
+    },
+    {
+      "doc_id": "bio_199547f46cee",
+      "title": "Compositional perturbation autoencoder for single-cell response modeling",
+      "doi": "10.1101/2021.04.14.439903",
+      "url": "https://doi.org/10.1101/2021.04.14.439903",
+      "source": "biorxiv",
+      "pub_date": "2021-04-14",
+      "paperclip_path": "/papers/bio_199547f46cee/",
+      "best_rank": 12,
+      "matched_queries": [
+        "transferring perturbation responses across cell contexts",
+        "optimal transport map single-cell perturbation drug response",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "CPA"
+    },
+    {
+      "doc_id": "bio_ef66acc06c08",
+      "title": "Embedding single-cell experimental conditions to reveal manifold structure of cancer drug perturbation effects",
+      "doi": "10.1101/455436",
+      "url": "https://doi.org/10.1101/455436",
+      "source": "biorxiv",
+      "pub_date": "2018-10-28",
+      "paperclip_path": "/papers/bio_ef66acc06c08/",
+      "best_rank": 12,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "CondEmbedCancerDrug"
+    },
+    {
+      "doc_id": "PMC11076148",
+      "title": "scPRAM accurately predicts single-cell gene expression perturbation response based on attention mechanism",
+      "doi": "10.1093/bioinformatics/btae265",
+      "url": "https://doi.org/10.1093/bioinformatics/btae265",
+      "source": "pmc",
+      "pub_date": "2024-05-01",
+      "paperclip_path": "/papers/PMC11076148/",
+      "best_rank": 13,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "scPRAM"
+    },
+    {
+      "doc_id": "PMC7648057",
+      "title": "Learning to encode cellular responses to systematic perturbations with deep generative models",
+      "doi": "10.1038/s41540-020-00158-2",
+      "url": "https://doi.org/10.1038/s41540-020-00158-2",
+      "source": "pmc",
+      "pub_date": "2020-11-06",
+      "paperclip_path": "/papers/PMC7648057/",
+      "best_rank": 13,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "EncodeSystematicPert"
+    },
+    {
+      "doc_id": "arx_2603.13051",
+      "title": "Causal Cellular Context Transfer Learning (C3TL): An Efficient Architecture for Prediction of Unseen Perturbation Effects",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2603.13051",
+      "source": "arxiv",
+      "pub_date": "2026-03-16",
+      "paperclip_path": "/papers/arx_2603.13051/",
+      "best_rank": 13,
+      "matched_queries": [
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "C3TL"
+    },
+    {
+      "doc_id": "bio_fa59a5596d15",
+      "title": "Sampling from Disentangled Representations of Single-Cell Data Using Generative Adversarial Networks",
+      "doi": "10.1101/2021.01.15.426872",
+      "url": "https://doi.org/10.1101/2021.01.15.426872",
+      "source": "biorxiv",
+      "pub_date": "2021-01-15",
+      "paperclip_path": "/papers/bio_fa59a5596d15/",
+      "best_rank": 13,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "MichiGAN"
+    },
+    {
+      "doc_id": "PMC10630139",
+      "title": "Causal identification of single-cell experimental perturbation effects with CINEMA-OT",
+      "doi": "10.1038/s41592-023-02040-5",
+      "url": "https://doi.org/10.1038/s41592-023-02040-5",
+      "source": "pmc",
+      "pub_date": "2023-11-02",
+      "paperclip_path": "/papers/PMC10630139/",
+      "best_rank": 14,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "CINEMA-OT"
+    },
+    {
+      "doc_id": "PMC11554562",
+      "title": "Disentanglement of single-cell data with biolord",
+      "doi": "10.1038/s41587-023-02079-x",
+      "url": "https://doi.org/10.1038/s41587-023-02079-x",
+      "source": "pmc",
+      "pub_date": "2024-01-15",
+      "paperclip_path": "/papers/PMC11554562/",
+      "best_rank": 14,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "Biolord"
+    },
+    {
+      "doc_id": "PMC12638242",
+      "title": "In silico biological discovery with large perturbation models",
+      "doi": "10.1038/s43588-025-00870-1",
+      "url": "https://doi.org/10.1038/s43588-025-00870-1",
+      "source": "pmc",
+      "pub_date": "2025-10-15",
+      "paperclip_path": "/papers/PMC12638242/",
+      "best_rank": 14,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "LPM"
+    },
+    {
+      "doc_id": "bio_216b9de17539",
+      "title": "Unified multimodal learning enables generalized cellular response prediction to diverse perturbations",
+      "doi": "10.1101/2025.11.13.688367",
+      "url": "https://doi.org/10.1101/2025.11.13.688367",
+      "source": "biorxiv",
+      "pub_date": "2025-11-13",
+      "paperclip_path": "/papers/bio_216b9de17539/",
+      "best_rank": 15,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "X-Pert"
+    },
+    {
+      "doc_id": "bio_2409c6c772f2",
+      "title": "Unified modeling of cellular responses to diverse perturbation types",
+      "doi": "10.1101/2025.11.13.688367",
+      "url": "https://doi.org/10.1101/2025.11.13.688367",
+      "source": "biorxiv",
+      "pub_date": "2025-11-13",
+      "paperclip_path": "/papers/bio_2409c6c772f2/",
+      "best_rank": 15,
+      "matched_queries": [
+        "transferring perturbation responses across cell contexts",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "X-Pert"
+    },
+    {
+      "doc_id": "PMC6761940",
+      "title": "Dr.VAE: improving drug response prediction via modeling of drug perturbation effects",
+      "doi": "10.1093/bioinformatics/btz158",
+      "url": "https://doi.org/10.1093/bioinformatics/btz158",
+      "source": "pmc",
+      "pub_date": "2019-10-01",
+      "paperclip_path": "/papers/PMC6761940/",
+      "best_rank": 16,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "DrVAE"
+    },
+    {
+      "doc_id": "arx_2606.12838",
+      "title": "OCOO-T : A Simple and Scalable Virtual Cell Model for Transcriptional Perturbation Response Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2606.12838",
+      "source": "arxiv",
+      "pub_date": "2026-06-12",
+      "paperclip_path": "/papers/arx_2606.12838/",
+      "best_rank": 16,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation",
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "OCOO-T"
+    },
+    {
+      "doc_id": "bio_c59a5ee36eb5",
+      "title": "scCausalVI disentangles single-cell perturbation responses with causality-aware generative model",
+      "doi": "10.1101/2025.02.02.636136",
+      "url": "https://doi.org/10.1101/2025.02.02.636136",
+      "source": "biorxiv",
+      "pub_date": "2025-02-02",
+      "paperclip_path": "/papers/bio_c59a5ee36eb5/",
+      "best_rank": 16,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation",
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "scCausalVI"
+    },
+    {
+      "doc_id": "bio_1ae5d0616e16",
+      "title": "Genetic-to-Chemical Perturbation Transfer Learning Through Unified Multimodal Molecular Representations",
+      "doi": "10.1101/2025.02.02.635055",
+      "url": "https://doi.org/10.1101/2025.02.02.635055",
+      "source": "biorxiv",
+      "pub_date": "2025-02-02",
+      "paperclip_path": "/papers/bio_1ae5d0616e16/",
+      "best_rank": 16,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "Gen2ChemTransfer"
+    },
+    {
+      "doc_id": "PMC9825489",
+      "title": "ChemPert: mapping between chemical perturbation and transcriptional response for non-cancer cells",
+      "doi": "10.1093/nar/gkac862",
+      "url": "https://doi.org/10.1093/nar/gkac862",
+      "source": "pmc",
+      "pub_date": "2023-01-06",
+      "paperclip_path": "/papers/PMC9825489/",
+      "best_rank": 18,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC8139054",
+      "title": "MichiGAN: sampling from disentangled representations of single-cell data using generative adversarial networks",
+      "doi": "10.1186/s13059-021-02373-4",
+      "url": "https://doi.org/10.1186/s13059-021-02373-4",
+      "source": "pmc",
+      "pub_date": "2021-05-20",
+      "paperclip_path": "/papers/PMC8139054/",
+      "best_rank": 18,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "MichiGAN"
+    },
+    {
+      "doc_id": "PMC12699455",
+      "title": "Single-cell disentangled representations for perturbation modeling and treatment effect estimation",
+      "doi": "10.1101/2025.11.21.689783",
+      "url": "https://doi.org/10.1101/2025.11.21.689783",
+      "source": "pmc",
+      "pub_date": "2025-11-24",
+      "paperclip_path": "/papers/PMC12699455/",
+      "best_rank": 19,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "scDRP"
+    },
+    {
+      "doc_id": "bio_c5703f786fe0",
+      "title": "Evaluating Single-Cell Perturbation Response Models Is Far from Straightforward",
+      "doi": "10.64898/2026.02.14.705879",
+      "url": "https://doi.org/10.64898/2026.02.14.705879",
+      "source": "biorxiv",
+      "pub_date": "2026-02-14",
+      "paperclip_path": "/papers/bio_c5703f786fe0/",
+      "best_rank": 20,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "related",
+      "gold_name": "EvalFarFromStraightforward"
+    },
+    {
+      "doc_id": "bio_894193896c87",
+      "title": "Multimodal Benchmarking of Foundation Model Representations for Cellular Perturbation Response Prediction",
+      "doi": "10.1101/2025.06.26.661186",
+      "url": "https://doi.org/10.1101/2025.06.26.661186",
+      "source": "biorxiv",
+      "pub_date": "2025-06-26",
+      "paperclip_path": "/papers/bio_894193896c87/",
+      "best_rank": 20,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations",
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC10979976",
+      "title": "Modeling interpretable correspondence between cell state and perturbation response with CellCap",
+      "doi": "10.1101/2024.03.14.585078",
+      "url": "https://doi.org/10.1101/2024.03.14.585078",
+      "source": "pmc",
+      "pub_date": "2024-03-16",
+      "paperclip_path": "/papers/PMC10979976/",
+      "best_rank": 20,
+      "matched_queries": [
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "CellCap"
+    },
+    {
+      "doc_id": "arx_1706.08203",
+      "title": "Dr.VAE: Drug Response Variational Autoencoder",
+      "doi": null,
+      "url": "https://arxiv.org/abs/1706.08203",
+      "source": "arxiv",
+      "pub_date": "2017-06-26",
+      "paperclip_path": "/papers/arx_1706.08203/",
+      "best_rank": 21,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "DrVAE"
+    },
+    {
+      "doc_id": "arx_2606.30695",
+      "title": "Modeling Cell-Cycle-Aware Single-Cell Drug Perturbation Responses",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2606.30695",
+      "source": "arxiv",
+      "pub_date": "2026-07-07",
+      "paperclip_path": "/papers/arx_2606.30695/",
+      "best_rank": 21,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scCycleMol"
+    },
+    {
+      "doc_id": "arx_2606.21109",
+      "title": "Chem2Gen-Bench: Benchmarking Chemical-to-Genetic Translation in Perturbation Response Space",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2606.21109",
+      "source": "arxiv",
+      "pub_date": "2026-06-23",
+      "paperclip_path": "/papers/arx_2606.21109/",
+      "best_rank": 21,
+      "matched_queries": [
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "related",
+      "gold_name": "Chem2Gen-Bench"
+    },
+    {
+      "doc_id": "PMC10153191",
+      "title": "D-SPIN constructs gene regulatory network models from multiplexed scRNA-seq data revealing organizing principles of cellular perturbation response",
+      "doi": "10.1101/2023.04.19.537364",
+      "url": "https://doi.org/10.1101/2023.04.19.537364",
+      "source": "pmc",
+      "pub_date": "2025-05-23",
+      "paperclip_path": "/papers/PMC10153191/",
+      "best_rank": 21,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "D-SPIN"
+    },
+    {
+      "doc_id": "PMC10187255",
+      "title": "scDisInFact: disentangled learning for integration and prediction of multi-batch multi-condition single-cell RNA-sequencing data",
+      "doi": "10.1101/2023.05.01.538975",
+      "url": "https://doi.org/10.1101/2023.05.01.538975",
+      "source": "pmc",
+      "pub_date": "2023-05-02",
+      "paperclip_path": "/papers/PMC10187255/",
+      "best_rank": 22,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scDisInFact"
+    },
+    {
+      "doc_id": "bio_8186d5d16c1a",
+      "title": "OCOO-T : A SIMPLE AND SCALABLE VIRTUAL CELL MODEL FOR TRANSCRIPTIONAL PERTURBATION RESPONSE PREDICTION",
+      "doi": "10.64898/2026.06.08.731000",
+      "url": "https://doi.org/10.64898/2026.06.08.731000",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_8186d5d16c1a/",
+      "best_rank": 23,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "OCOO-T"
+    },
+    {
+      "doc_id": "PMC5753597",
+      "title": "Cell-specific prediction and application of drug-induced gene expression profiles",
+      "doi": null,
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5753597/",
+      "source": "pmc",
+      "pub_date": "2017-12-29",
+      "paperclip_path": "/papers/PMC5753597/",
+      "best_rank": 25,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "negative",
+      "gold_name": "CellSpecificDrugGEP"
+    },
+    {
+      "doc_id": "PMC10827746",
+      "title": "scDisInFact: disentangled learning for integration and prediction of multi-batch multi-condition single-cell RNA-sequencing data",
+      "doi": "10.1038/s41467-024-45227-w",
+      "url": "https://doi.org/10.1038/s41467-024-45227-w",
+      "source": "pmc",
+      "pub_date": "2024-01-30",
+      "paperclip_path": "/papers/PMC10827746/",
+      "best_rank": 25,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": true,
+      "gold_label": "positive",
+      "gold_name": "scDisInFact"
+    },
+    {
+      "doc_id": "PMC9957092",
+      "title": "scDR: Predicting Drug Response at Single-Cell Resolution",
+      "doi": "10.3390/genes14020268",
+      "url": "https://doi.org/10.3390/genes14020268",
+      "source": "pmc",
+      "pub_date": "2023-01-19",
+      "paperclip_path": "/papers/PMC9957092/",
+      "best_rank": 1,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC12869406",
+      "title": "Latent Causal Diffusions for Single-Cell Perturbation Modeling",
+      "doi": null,
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12869406/",
+      "source": "pmc",
+      "pub_date": "2026-01-20",
+      "paperclip_path": "/papers/PMC12869406/",
+      "best_rank": 1,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations",
+        "flow matching generative model single-cell perturbation",
+        "causal representation counterfactual prediction single-cell",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "LCD"
+    },
+    {
+      "doc_id": "bio_35c5d3427a47",
+      "title": "HyperMap: An Efficient Framework for Transferring Perturbation Responses Across Diverse Biological Contexts",
+      "doi": "10.64898/2026.04.23.720505",
+      "url": "https://doi.org/10.64898/2026.04.23.720505",
+      "source": "biorxiv",
+      "pub_date": "2026-04-01",
+      "paperclip_path": "/papers/bio_35c5d3427a47/",
+      "best_rank": 1,
+      "matched_queries": [
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "positive",
+      "gold_name": "HyperMap"
+    },
+    {
+      "doc_id": "PMC12287260",
+      "title": "Causal disentanglement for single-cell representations and controllable counterfactual generation",
+      "doi": "10.1038/s41467-025-62008-1",
+      "url": "https://doi.org/10.1038/s41467-025-62008-1",
+      "source": "pmc",
+      "pub_date": "2025-07-23",
+      "paperclip_path": "/papers/PMC12287260/",
+      "best_rank": 1,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_b058188d6dd0",
+      "title": "Decoding Heterogenous Single-cell Perturbation Responses",
+      "doi": "10.1101/2023.10.30.564796",
+      "url": "https://doi.org/10.1101/2023.10.30.564796",
+      "source": "biorxiv",
+      "pub_date": "2023-10-30",
+      "paperclip_path": "/papers/bio_b058188d6dd0/",
+      "best_rank": 1,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC12072357",
+      "title": "A Transfer Learning Framework for Predicting and Interpreting Drug Responses via Single-Cell RNA-Seq Data",
+      "doi": "10.3390/ijms26094365",
+      "url": "https://doi.org/10.3390/ijms26094365",
+      "source": "pmc",
+      "pub_date": "2025-05-04",
+      "paperclip_path": "/papers/PMC12072357/",
+      "best_rank": 2,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2505.13413",
+      "title": "Joint Velocity-Growth Flow Matching for Single-Cell Dynamics Modeling",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2505.13413",
+      "source": "arxiv",
+      "pub_date": "2025-05-19",
+      "paperclip_path": "/papers/arx_2505.13413/",
+      "best_rank": 2,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_2e574a8376c7",
+      "title": "Domain-adaptation deep learning models do not outperform simple baseline models in single-cell anti-cancer drug sensitivity prediction",
+      "doi": "10.64898/2026.02.24.707713",
+      "url": "https://doi.org/10.64898/2026.02.24.707713",
+      "source": "biorxiv",
+      "pub_date": "2026-02-24",
+      "paperclip_path": "/papers/bio_2e574a8376c7/",
+      "best_rank": 2,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_b16324f77b90",
+      "title": "Multimodal foundation model predicts zero-shot functional perturbations and cell fate dynamics",
+      "doi": "10.1101/2024.12.19.629561",
+      "url": "https://doi.org/10.1101/2024.12.19.629561",
+      "source": "biorxiv",
+      "pub_date": "2024-12-19",
+      "paperclip_path": "/papers/bio_b16324f77b90/",
+      "best_rank": 2,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC11906366",
+      "title": "Decoding heterogeneous single-cell perturbation responses",
+      "doi": "10.1038/s41556-025-01626-9",
+      "url": "https://doi.org/10.1038/s41556-025-01626-9",
+      "source": "pmc",
+      "pub_date": "2025-02-26",
+      "paperclip_path": "/papers/PMC11906366/",
+      "best_rank": 2,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_564e32916c9d",
+      "title": "Predicting single-cell responses to novel genetic perturbations with optimal transport",
+      "doi": "10.64898/2026.01.08.698172",
+      "url": "https://doi.org/10.64898/2026.01.08.698172",
+      "source": "biorxiv",
+      "pub_date": "2026-01-08",
+      "paperclip_path": "/papers/bio_564e32916c9d/",
+      "best_rank": 3,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "chemical perturbation prediction gene expression single-cell",
+        "transferring perturbation responses across cell contexts",
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC9747355",
+      "title": "scDrug: From single-cell RNA-seq to drug response prediction",
+      "doi": "10.1016/j.csbj.2022.11.055",
+      "url": "https://doi.org/10.1016/j.csbj.2022.11.055",
+      "source": "pmc",
+      "pub_date": "2022-12-01",
+      "paperclip_path": "/papers/PMC9747355/",
+      "best_rank": 3,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_8bc140f4890b",
+      "title": "X-Cell: Scaling Causal Perturbation Prediction Across Diverse Cellular Contexts via Diffusion Language Models",
+      "doi": "10.64898/2026.03.18.712807",
+      "url": "https://doi.org/10.64898/2026.03.18.712807",
+      "source": "biorxiv",
+      "pub_date": "2026-03-01",
+      "paperclip_path": "/papers/bio_8bc140f4890b/",
+      "best_rank": 3,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "X-Cell"
+    },
+    {
+      "doc_id": "bio_7ae7835d7204",
+      "title": "Disentangling cellular heterogeneity into interpretable biological factors through structured latent representations",
+      "doi": "10.1101/2024.11.06.622266",
+      "url": "https://doi.org/10.1101/2024.11.06.622266",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_7ae7835d7204/",
+      "best_rank": 3,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2604.16123",
+      "title": "Tabular foundation models for in-context prediction of molecular properties",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2604.16123",
+      "source": "arxiv",
+      "pub_date": "2026-04-21",
+      "paperclip_path": "/papers/arx_2604.16123/",
+      "best_rank": 3,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2606.13713",
+      "title": "CisTransCell: Single-Cell Perturbation Prediction via Gene Function, Regulatory Control, and Cellular Context",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2606.13713",
+      "source": "arxiv",
+      "pub_date": "2026-06-15",
+      "paperclip_path": "/papers/arx_2606.13713/",
+      "best_rank": 4,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "chemical perturbation prediction gene expression single-cell",
+        "diffusion model predicting cellular responses to perturbations",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "CisTransCell"
+    },
+    {
+      "doc_id": "arx_2507.02980",
+      "title": "Modeling Gene Expression Distributional Shifts for Unseen Genetic Perturbations",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2507.02980",
+      "source": "arxiv",
+      "pub_date": "2025-07-01",
+      "paperclip_path": "/papers/arx_2507.02980/",
+      "best_rank": 4,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "MLP+Hist"
+    },
+    {
+      "doc_id": "PMC9618578",
+      "title": "Deep transfer learning of cancer drug responses by integrating bulk and single-cell RNA-seq data",
+      "doi": "10.1038/s41467-022-34277-7",
+      "url": "https://doi.org/10.1038/s41467-022-34277-7",
+      "source": "pmc",
+      "pub_date": "2022-10-30",
+      "paperclip_path": "/papers/PMC9618578/",
+      "best_rank": 4,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC12405515",
+      "title": "Prediction of cellular morphology changes under perturbations with a transcriptome-guided diffusion model",
+      "doi": "10.1038/s41467-025-63478-z",
+      "url": "https://doi.org/10.1038/s41467-025-63478-z",
+      "source": "pmc",
+      "pub_date": "2025-09-02",
+      "paperclip_path": "/papers/PMC12405515/",
+      "best_rank": 4,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2504.08328",
+      "title": "Towards generalizable single-cell perturbation modeling via the Conditional Monge Gap",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2504.08328",
+      "source": "arxiv",
+      "pub_date": "2025-04-11",
+      "paperclip_path": "/papers/arx_2504.08328/",
+      "best_rank": 4,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation",
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "positive",
+      "gold_name": "CMonge"
+    },
+    {
+      "doc_id": "PMC10693176",
+      "title": "Predicting drug response from single-cell expression profiles of tumours",
+      "doi": "10.1186/s12916-023-03182-1",
+      "url": "https://doi.org/10.1186/s12916-023-03182-1",
+      "source": "pmc",
+      "pub_date": "2023-12-01",
+      "paperclip_path": "/papers/PMC10693176/",
+      "best_rank": 4,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_a58ca01c6fc1",
+      "title": "A Supervised Contrastive Framework for Learning Disentangled Representations of Cell Perturbation Data",
+      "doi": "10.1101/2024.01.05.574421",
+      "url": "https://doi.org/10.1101/2024.01.05.574421",
+      "source": "biorxiv",
+      "pub_date": "2024-01-05",
+      "paperclip_path": "/papers/bio_a58ca01c6fc1/",
+      "best_rank": 4,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2409.05804",
+      "title": "Celcomen: spatial causal disentanglement for single-cell and tissue perturbation modeling",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2409.05804",
+      "source": "arxiv",
+      "pub_date": "2024-09-09",
+      "paperclip_path": "/papers/arx_2409.05804/",
+      "best_rank": 4,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2406.12950",
+      "title": "MolecularGPT: Open Large Language Model (LLM) for Few-Shot Molecular Property Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2406.12950",
+      "source": "arxiv",
+      "pub_date": "2024-06-18",
+      "paperclip_path": "/papers/arx_2406.12950/",
+      "best_rank": 4,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_2e1dc4fb6c04",
+      "title": "Deep Transfer Learning of Drug Responses by Integrating Bulk and Single-cell RNA-seq data",
+      "doi": "10.1101/2021.08.01.454654",
+      "url": "https://doi.org/10.1101/2021.08.01.454654",
+      "source": "biorxiv",
+      "pub_date": "2021-08-01",
+      "paperclip_path": "/papers/bio_2e1dc4fb6c04/",
+      "best_rank": 5,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_942a27217139",
+      "title": "Elucidating the Design Space of Generative Models for Single-Cell Perturbation Prediction",
+      "doi": "10.64898/2026.06.15.732063",
+      "url": "https://doi.org/10.64898/2026.06.15.732063",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_942a27217139/",
+      "best_rank": 5,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "eVAE"
+    },
+    {
+      "doc_id": "arx_2409.05484",
+      "title": "CRADLE-VAE: Enhancing Single-Cell Gene Perturbation Modeling with Counterfactual Reasoning-based Artifact Disentanglement",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2409.05484",
+      "source": "arxiv",
+      "pub_date": "2024-09-09",
+      "paperclip_path": "/papers/arx_2409.05484/",
+      "best_rank": 5,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "CRADLE-VAE"
+    },
+    {
+      "doc_id": "PMC12007350",
+      "title": "Zero-shot evaluation reveals limitations of single-cell foundation models",
+      "doi": "10.1186/s13059-025-03574-x",
+      "url": "https://doi.org/10.1186/s13059-025-03574-x",
+      "source": "pmc",
+      "pub_date": "2025-04-18",
+      "paperclip_path": "/papers/PMC12007350/",
+      "best_rank": 5,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2510.07964",
+      "title": "PRESCRIBE: Predicting Single-Cell Responses with Bayesian Estimation",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2510.07964",
+      "source": "arxiv",
+      "pub_date": "2025-10-09",
+      "paperclip_path": "/papers/arx_2510.07964/",
+      "best_rank": 6,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "PRESCRIBE"
+    },
+    {
+      "doc_id": "arx_2605.25581",
+      "title": "Learning Latent Dynamical Causal Processes for Single-Cell Perturbation Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2605.25581",
+      "source": "arxiv",
+      "pub_date": "2026-05-26",
+      "paperclip_path": "/papers/arx_2605.25581/",
+      "best_rank": 6,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "chemical perturbation prediction gene expression single-cell",
+        "disentangled representation learning single-cell perturbation",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2606.24940",
+      "title": "Stable-Shift: Biologically Structured Prediction of Transcriptional Responses to Unseen Gene Perturbations",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2606.24940",
+      "source": "arxiv",
+      "pub_date": "2026-06-25",
+      "paperclip_path": "/papers/arx_2606.24940/",
+      "best_rank": 6,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation",
+        "chemical perturbation prediction gene expression single-cell",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2510.03359",
+      "title": "Predicting cell-specific gene expression profile and knockout impact through deep learning",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2510.03359",
+      "source": "arxiv",
+      "pub_date": "2025-10-03",
+      "paperclip_path": "/papers/arx_2510.03359/",
+      "best_rank": 6,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_4396c33e8195",
+      "title": "MORPH Predicts the Single-Cell Outcome of Genetic Perturbations Across Conditions and Data Modalities",
+      "doi": "10.1101/2025.06.27.661992",
+      "url": "https://doi.org/10.1101/2025.06.27.661992",
+      "source": "biorxiv",
+      "pub_date": "2025-06-27",
+      "paperclip_path": "/papers/bio_4396c33e8195/",
+      "best_rank": 6,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "MORPH"
+    },
+    {
+      "doc_id": "arx_2605.22340",
+      "title": "From Snapshots to Trajectories: Learning Single-Cell Gene Expression Dynamics via Conditional Flow Matching",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2605.22340",
+      "source": "arxiv",
+      "pub_date": "2026-05-22",
+      "paperclip_path": "/papers/arx_2605.22340/",
+      "best_rank": 6,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC4054092",
+      "title": "Clinical drug response can be predicted using baseline gene expression levels and in vitro drug sensitivity in cell lines",
+      "doi": "10.1186/gb-2014-15-3-r47",
+      "url": "https://doi.org/10.1186/gb-2014-15-3-r47",
+      "source": "pmc",
+      "pub_date": "2014-01-01",
+      "paperclip_path": "/papers/PMC4054092/",
+      "best_rank": 6,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2211.02657",
+      "title": "MolE: a molecular foundation model for drug discovery",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2211.02657",
+      "source": "arxiv",
+      "pub_date": "2022-11-03",
+      "paperclip_path": "/papers/arx_2211.02657/",
+      "best_rank": 6,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2605.19343",
+      "title": "What Makes a Representation Good for Single-Cell Perturbation Prediction?",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2605.19343",
+      "source": "arxiv",
+      "pub_date": "2026-05-20",
+      "paperclip_path": "/papers/arx_2605.19343/",
+      "best_rank": 7,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "disentangled representation learning single-cell perturbation",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "PerturbedVAE"
+    },
+    {
+      "doc_id": "PMC10104628",
+      "title": "Enabling Single\u2010Cell Drug Response Annotations from Bulk RNA\u2010Seq Using SCAD",
+      "doi": "10.1002/advs.202204113",
+      "url": "https://doi.org/10.1002/advs.202204113",
+      "source": "pmc",
+      "pub_date": "2023-02-10",
+      "paperclip_path": "/papers/PMC10104628/",
+      "best_rank": 7,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC10940637",
+      "title": "Bidirectional generation of structure and properties through a single molecular foundation model",
+      "doi": "10.1038/s41467-024-46440-3",
+      "url": "https://doi.org/10.1038/s41467-024-46440-3",
+      "source": "pmc",
+      "pub_date": "2024-03-14",
+      "paperclip_path": "/papers/PMC10940637/",
+      "best_rank": 7,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_82b0a4086dc2",
+      "title": "Gene-embedding-based prediction and functional evaluation of perturbation expression responses with PRESAGE",
+      "doi": "10.1101/2025.06.03.657653",
+      "url": "https://doi.org/10.1101/2025.06.03.657653",
+      "source": "biorxiv",
+      "pub_date": "2025-06-03",
+      "paperclip_path": "/papers/bio_82b0a4086dc2/",
+      "best_rank": 8,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell",
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "PRESAGE"
+    },
+    {
+      "doc_id": "bio_06854693715d",
+      "title": "Predicting the unseen: a diffusion-based debiasing framework for transcriptional response prediction at single-cell resolution",
+      "doi": "10.1101/2025.09.12.675662",
+      "url": "https://doi.org/10.1101/2025.09.12.675662",
+      "source": "biorxiv",
+      "pub_date": "2025-09-12",
+      "paperclip_path": "/papers/bio_06854693715d/",
+      "best_rank": 8,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "dbDiffusion"
+    },
+    {
+      "doc_id": "bio_06dbe82f7205",
+      "title": "scDisent: disentangled representation learning with causal structure for multi-omic single-cell analysis",
+      "doi": "10.64898/2026.04.12.717909",
+      "url": "https://doi.org/10.64898/2026.04.12.717909",
+      "source": "biorxiv",
+      "pub_date": "2026-04-01",
+      "paperclip_path": "/papers/bio_06dbe82f7205/",
+      "best_rank": 8,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation",
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC11414985",
+      "title": "Distilling knowledge from multiple foundation models for zero-shot image classification",
+      "doi": "10.1371/journal.pone.0310730",
+      "url": "https://doi.org/10.1371/journal.pone.0310730",
+      "source": "pmc",
+      "pub_date": "2024-01-01",
+      "paperclip_path": "/papers/PMC11414985/",
+      "best_rank": 8,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC11256949",
+      "title": "Predicting single-cell cellular responses to perturbations using cycle consistency learning",
+      "doi": "10.1093/bioinformatics/btae248",
+      "url": "https://doi.org/10.1093/bioinformatics/btae248",
+      "source": "pmc",
+      "pub_date": "2024-07-01",
+      "paperclip_path": "/papers/PMC11256949/",
+      "best_rank": 9,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "predicting transcriptional response to drug perturbation",
+        "chemical perturbation prediction gene expression single-cell",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_80bb418674c4",
+      "title": "Modeling and predicting single-cell multi-gene perturbation responses with scLAMBDA",
+      "doi": "10.1101/2024.12.04.626878",
+      "url": "https://doi.org/10.1101/2024.12.04.626878",
+      "source": "biorxiv",
+      "pub_date": "2024-12-04",
+      "paperclip_path": "/papers/bio_80bb418674c4/",
+      "best_rank": 9,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning",
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "scLAMBDA"
+    },
+    {
+      "doc_id": "bio_20f1322d6cba",
+      "title": "MorphoDiff: Cellular Morphology Painting with Diffusion Models",
+      "doi": "10.1101/2024.12.19.629451",
+      "url": "https://doi.org/10.1101/2024.12.19.629451",
+      "source": "biorxiv",
+      "pub_date": "2024-12-19",
+      "paperclip_path": "/papers/bio_20f1322d6cba/",
+      "best_rank": 9,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2407.11734",
+      "title": "Multi-Modal and Multi-Attribute Generation of Single Cells with CFGen",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2407.11734",
+      "source": "arxiv",
+      "pub_date": "2024-07-16",
+      "paperclip_path": "/papers/arx_2407.11734/",
+      "best_rank": 9,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2310.14935",
+      "title": "Causal machine learning for single-cell genomics",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2310.14935",
+      "source": "arxiv",
+      "pub_date": "2023-10-23",
+      "paperclip_path": "/papers/arx_2310.14935/",
+      "best_rank": 9,
+      "matched_queries": [
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2404.14986",
+      "title": "$\\texttt{MiniMol}$: A Parameter-Efficient Foundation Model for Molecular Learning",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2404.14986",
+      "source": "arxiv",
+      "pub_date": "2024-04-23",
+      "paperclip_path": "/papers/arx_2404.14986/",
+      "best_rank": 9,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_c87b82746c73",
+      "title": "Stochastic Modeling of Biophysical Responses to Perturbation",
+      "doi": "10.1101/2024.07.04.602131",
+      "url": "https://doi.org/10.1101/2024.07.04.602131",
+      "source": "biorxiv",
+      "pub_date": "2024-07-04",
+      "paperclip_path": "/papers/bio_c87b82746c73/",
+      "best_rank": 9,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_60d286476c23",
+      "title": "Out-of-Distribution Generalization from Labeled and Unlabeled Gene Expression Data for Drug Response Prediction",
+      "doi": "10.1101/2021.05.25.445658",
+      "url": "https://doi.org/10.1101/2021.05.25.445658",
+      "source": "biorxiv",
+      "pub_date": "2021-05-25",
+      "paperclip_path": "/papers/bio_60d286476c23/",
+      "best_rank": 10,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_3e1dc75683f1",
+      "title": "Predicting Pre-treatment Resistance or Post-treatment Effect? A Systematic Benchmarking of Single-Cell Drug Response Models",
+      "doi": "10.64898/2026.04.10.717709",
+      "url": "https://doi.org/10.64898/2026.04.10.717709",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_3e1dc75683f1/",
+      "best_rank": 10,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2510.22033",
+      "title": "Linearized Optimal Transport for Analysis of High-Dimensional Point-Cloud and Single-Cell Data",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2510.22033",
+      "source": "arxiv",
+      "pub_date": "2025-10-24",
+      "paperclip_path": "/papers/arx_2510.22033/",
+      "best_rank": 10,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2509.12497",
+      "title": "Prediction and Causality of functional MRI and synthetic signal using a Zero-Shot Time-Series Foundation Model",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2509.12497",
+      "source": "arxiv",
+      "pub_date": "2025-09-15",
+      "paperclip_path": "/papers/arx_2509.12497/",
+      "best_rank": 10,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_f2a6d9db6c2b",
+      "title": "Modeling interpretable correspondence between cell state and perturbation response with CellCap",
+      "doi": "10.1101/2024.03.14.585078",
+      "url": "https://doi.org/10.1101/2024.03.14.585078",
+      "source": "biorxiv",
+      "pub_date": "2024-03-14",
+      "paperclip_path": "/papers/bio_f2a6d9db6c2b/",
+      "best_rank": 10,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "positive",
+      "gold_name": "CellCap"
+    },
+    {
+      "doc_id": "arx_2602.18885",
+      "title": "Learning Adaptive Perturbation-Conditioned Contexts for Robust Transcriptional Response Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2602.18885",
+      "source": "arxiv",
+      "pub_date": "2026-07-07",
+      "paperclip_path": "/papers/arx_2602.18885/",
+      "best_rank": 11,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation",
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "AdaPert"
+    },
+    {
+      "doc_id": "arx_2403.05260",
+      "title": "Towards generalization of drug response prediction to single cells and patients utilizing importance-aware multi-source domain transfer learning",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2403.05260",
+      "source": "arxiv",
+      "pub_date": "2024-03-08",
+      "paperclip_path": "/papers/arx_2403.05260/",
+      "best_rank": 11,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2405.03726",
+      "title": "sc-OTGM: Single-Cell Perturbation Modeling by Solving Optimal Mass Transport on the Manifold of Gaussian Mixtures",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2405.03726",
+      "source": "arxiv",
+      "pub_date": "2024-05-06",
+      "paperclip_path": "/papers/arx_2405.03726/",
+      "best_rank": 11,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "med_1ac70df66c63",
+      "title": "Counterfactual inference for single-cell gene expression analysis",
+      "doi": "10.1101/2021.01.21.21249765",
+      "url": "https://doi.org/10.1101/2021.01.21.21249765",
+      "source": "medrxiv",
+      "pub_date": "2021-01-21",
+      "paperclip_path": "/papers/med_1ac70df66c63/",
+      "best_rank": 11,
+      "matched_queries": [
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC11557931",
+      "title": "MolE: a foundation model for molecular graphs using disentangled attention",
+      "doi": "10.1038/s41467-024-53751-y",
+      "url": "https://doi.org/10.1038/s41467-024-53751-y",
+      "source": "pmc",
+      "pub_date": "2024-11-12",
+      "paperclip_path": "/papers/PMC11557931/",
+      "best_rank": 11,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_5c6ac6e874c3",
+      "title": "Evaluation of out-of-distribution detection methods for data shifts in single-cell transcriptomics",
+      "doi": "10.1101/2025.01.24.634709",
+      "url": "https://doi.org/10.1101/2025.01.24.634709",
+      "source": "biorxiv",
+      "pub_date": "2025-01-24",
+      "paperclip_path": "/papers/bio_5c6ac6e874c3/",
+      "best_rank": 12,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC10682756",
+      "title": "Zero-shot personalization of speech foundation models for depressed mood monitoring",
+      "doi": "10.1016/j.patter.2023.100873",
+      "url": "https://doi.org/10.1016/j.patter.2023.100873",
+      "source": "pmc",
+      "pub_date": "2023-11-01",
+      "paperclip_path": "/papers/PMC10682756/",
+      "best_rank": 12,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2603.07233",
+      "title": "Retrieval-Augmented Generation for Predicting Cellular Responses to Gene Perturbation",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2603.07233",
+      "source": "arxiv",
+      "pub_date": "2026-03-10",
+      "paperclip_path": "/papers/arx_2603.07233/",
+      "best_rank": 13,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_b7b785489055",
+      "title": "Flow-Matching-Refined Dirichlet-Prior Autoencoders for Interpretable and Structurally Balanced Single-Cell Representation Learning",
+      "doi": "10.64898/2026.03.26.714651",
+      "url": "https://doi.org/10.64898/2026.03.26.714651",
+      "source": "biorxiv",
+      "pub_date": "2026-03-01",
+      "paperclip_path": "/papers/bio_b7b785489055/",
+      "best_rank": 13,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_866ea99a7170",
+      "title": "Decoding Heterogenous Single-cell Perturbation Responses",
+      "doi": "10.1101/2023.10.30.564796",
+      "url": "https://doi.org/10.1101/2023.10.30.564796",
+      "source": "biorxiv",
+      "pub_date": "2023-10-30",
+      "paperclip_path": "/papers/bio_866ea99a7170/",
+      "best_rank": 13,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2407.20553",
+      "title": "DiffusionCounterfactuals: Inferring High-dimensional Counterfactuals with Guidance of Causal Representations",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2407.20553",
+      "source": "arxiv",
+      "pub_date": "2024-07-30",
+      "paperclip_path": "/papers/arx_2407.20553/",
+      "best_rank": 13,
+      "matched_queries": [
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC11549228",
+      "title": "A molecular video-derived foundation model for scientific drug discovery",
+      "doi": "10.1038/s41467-024-53742-z",
+      "url": "https://doi.org/10.1038/s41467-024-53742-z",
+      "source": "pmc",
+      "pub_date": "2024-11-08",
+      "paperclip_path": "/papers/PMC11549228/",
+      "best_rank": 13,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2602.04901",
+      "title": "Beyond Independent Genes: Learning Module-Inductive Representations for Single-Cell Gene Perturbation Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2602.04901",
+      "source": "arxiv",
+      "pub_date": "2026-06-17",
+      "paperclip_path": "/papers/arx_2602.04901/",
+      "best_rank": 14,
+      "matched_queries": [
+        "chemical perturbation prediction gene expression single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "scBIG"
+    },
+    {
+      "doc_id": "PMC12408664",
+      "title": "A drug response prediction method for single-cell tumors combining attention networks and transfer learning",
+      "doi": "10.3389/fmed.2025.1631898",
+      "url": "https://doi.org/10.3389/fmed.2025.1631898",
+      "source": "pmc",
+      "pub_date": "2025-08-21",
+      "paperclip_path": "/papers/PMC12408664/",
+      "best_rank": 14,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2410.12730",
+      "title": "Counterfactual Generative Modeling with Variational Causal Inference",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2410.12730",
+      "source": "arxiv",
+      "pub_date": "2024-10-16",
+      "paperclip_path": "/papers/arx_2410.12730/",
+      "best_rank": 14,
+      "matched_queries": [
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "VCI"
+    },
+    {
+      "doc_id": "bio_74ec3b306d94",
+      "title": "A foundation model for bioactivity prediction using pairwise meta-learning",
+      "doi": "10.1101/2023.10.30.564861",
+      "url": "https://doi.org/10.1101/2023.10.30.564861",
+      "source": "biorxiv",
+      "pub_date": "2023-10-30",
+      "paperclip_path": "/papers/bio_74ec3b306d94/",
+      "best_rank": 14,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC12855003",
+      "title": "Scouter predicts transcriptional responses to genetic perturbations with large language model embeddings",
+      "doi": "10.1038/s43588-025-00912-8",
+      "url": "https://doi.org/10.1038/s43588-025-00912-8",
+      "source": "pmc",
+      "pub_date": "2025-12-05",
+      "paperclip_path": "/papers/PMC12855003/",
+      "best_rank": 15,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "Scouter"
+    },
+    {
+      "doc_id": "arx_2001.01006",
+      "title": "Review of Single-cell RNA-seq Data Clustering for Cell Type Identification and Characterization",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2001.01006",
+      "source": "arxiv",
+      "pub_date": "2020-01-03",
+      "paperclip_path": "/papers/arx_2001.01006/",
+      "best_rank": 15,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2604.25062",
+      "title": "Learning biophysical models of gene regulation with probability flow matching",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2604.25062",
+      "source": "arxiv",
+      "pub_date": "2026-04-29",
+      "paperclip_path": "/papers/arx_2604.25062/",
+      "best_rank": 15,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2104.08961",
+      "title": "A cross-study analysis of drug response prediction in cancer cell lines",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2104.08961",
+      "source": "arxiv",
+      "pub_date": "2021-04-18",
+      "paperclip_path": "/papers/arx_2104.08961/",
+      "best_rank": 15,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2506.17182",
+      "title": "Variational Learning of Disentangled Representations",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2506.17182",
+      "source": "arxiv",
+      "pub_date": "2026-07-08",
+      "paperclip_path": "/papers/arx_2506.17182/",
+      "best_rank": 15,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_8a704f9691d8",
+      "title": "A Root Foundation Model for Zero-Shot Segmentation",
+      "doi": "10.64898/2026.05.14.725129",
+      "url": "https://doi.org/10.64898/2026.05.14.725129",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_8a704f9691d8/",
+      "best_rank": 15,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2504.14361",
+      "title": "Integrating Single-Cell Foundation Models with Graph Neural Networks for Drug Response Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2504.14361",
+      "source": "arxiv",
+      "pub_date": "2025-04-19",
+      "paperclip_path": "/papers/arx_2504.14361/",
+      "best_rank": 16,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_246d27847079",
+      "title": "Gromov-Wasserstein optimal transport to align single-cell multi-omics data",
+      "doi": "10.1101/2020.04.28.066787",
+      "url": "https://doi.org/10.1101/2020.04.28.066787",
+      "source": "biorxiv",
+      "pub_date": "2020-04-28",
+      "paperclip_path": "/papers/bio_246d27847079/",
+      "best_rank": 16,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC8788944",
+      "title": "Integration of single cell data by disentangled representation learning",
+      "doi": "10.1093/nar/gkab978",
+      "url": "https://doi.org/10.1093/nar/gkab978",
+      "source": "pmc",
+      "pub_date": "2022-01-25",
+      "paperclip_path": "/papers/PMC8788944/",
+      "best_rank": 16,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_7a47fbc27015",
+      "title": "A Counterfactual Framework for Directional Cell\u2013Cell Interaction Analysis in Spatial Transcriptomics",
+      "doi": "10.64898/2026.04.05.716510",
+      "url": "https://doi.org/10.64898/2026.04.05.716510",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_7a47fbc27015/",
+      "best_rank": 16,
+      "matched_queries": [
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_61a5d96f714e",
+      "title": "Inference of heterogeneous effects in single-cell genetic perturbation screens",
+      "doi": "10.1101/2024.05.28.596224",
+      "url": "https://doi.org/10.1101/2024.05.28.596224",
+      "source": "biorxiv",
+      "pub_date": "2024-05-28",
+      "paperclip_path": "/papers/bio_61a5d96f714e/",
+      "best_rank": 16,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC12236822",
+      "title": "MORPH Predicts the Single-Cell Outcome of Genetic Perturbations Across Conditions and Data Modalities",
+      "doi": "10.1101/2025.06.27.661992",
+      "url": "https://doi.org/10.1101/2025.06.27.661992",
+      "source": "pmc",
+      "pub_date": "2025-07-02",
+      "paperclip_path": "/papers/PMC12236822/",
+      "best_rank": 17,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "MORPH"
+    },
+    {
+      "doc_id": "bio_cd0a14146c5e",
+      "title": "GEARS: Predicting transcriptional outcomes of novel multi-gene perturbations",
+      "doi": "10.1101/2022.07.12.499735",
+      "url": "https://doi.org/10.1101/2022.07.12.499735",
+      "source": "biorxiv",
+      "pub_date": "2022-07-12",
+      "paperclip_path": "/papers/bio_cd0a14146c5e/",
+      "best_rank": 17,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2602.10156",
+      "title": "STRAND: Sequence-Conditioned Transport for Single-Cell Perturbations",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2602.10156",
+      "source": "arxiv",
+      "pub_date": "2026-02-12",
+      "paperclip_path": "/papers/arx_2602.10156/",
+      "best_rank": 17,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "STRAND"
+    },
+    {
+      "doc_id": "bio_5fb1a7d37bc6",
+      "title": "Graph-Regularized Optimal Transport for Single-Cell Data Integration",
+      "doi": "10.1101/2024.10.30.621072",
+      "url": "https://doi.org/10.1101/2024.10.30.621072",
+      "source": "biorxiv",
+      "pub_date": "2024-10-30",
+      "paperclip_path": "/papers/bio_5fb1a7d37bc6/",
+      "best_rank": 17,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2507.09128",
+      "title": "A Generalization Theory for Zero-Shot Prediction",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2507.09128",
+      "source": "arxiv",
+      "pub_date": "2025-07-12",
+      "paperclip_path": "/papers/arx_2507.09128/",
+      "best_rank": 17,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2510.21337",
+      "title": "Morphologically Intelligent Perturbation Prediction with FORM",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2510.21337",
+      "source": "arxiv",
+      "pub_date": "2025-10-24",
+      "paperclip_path": "/papers/arx_2510.21337/",
+      "best_rank": 18,
+      "matched_queries": [
+        "diffusion model predicting cellular responses to perturbations"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2502.05241",
+      "title": "MultistageOT: Multistage optimal transport infers trajectories from a snapshot of single-cell data",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2502.05241",
+      "source": "arxiv",
+      "pub_date": "2025-02-07",
+      "paperclip_path": "/papers/arx_2502.05241/",
+      "best_rank": 18,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_240002a76f3f",
+      "title": "Single-cell-level condition-related signal estimation with batch effect removal through neural discrete representation learning",
+      "doi": "10.1101/2025.03.05.641743",
+      "url": "https://doi.org/10.1101/2025.03.05.641743",
+      "source": "biorxiv",
+      "pub_date": "2025-03-05",
+      "paperclip_path": "/papers/bio_240002a76f3f/",
+      "best_rank": 18,
+      "matched_queries": [
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "NDreamer"
+    },
+    {
+      "doc_id": "PMC12209621",
+      "title": "A narrative review of foundation models for medical image segmentation: zero-shot performance evaluation on diverse modalities",
+      "doi": "10.21037/qims-2024-2826",
+      "url": "https://doi.org/10.21037/qims-2024-2826",
+      "source": "pmc",
+      "pub_date": "2025-06-03",
+      "paperclip_path": "/papers/PMC12209621/",
+      "best_rank": 18,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC12328236",
+      "title": "Deep-learning-based gene perturbation effect prediction does not yet outperform simple linear baselines",
+      "doi": "10.1038/s41592-025-02772-6",
+      "url": "https://doi.org/10.1038/s41592-025-02772-6",
+      "source": "pmc",
+      "pub_date": "2025-08-04",
+      "paperclip_path": "/papers/PMC12328236/",
+      "best_rank": 19,
+      "matched_queries": [
+        "single-cell perturbation response prediction deep learning"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC11139989",
+      "title": "Identification of drug responsive enhancers by predicting chromatin accessibility change from perturbed gene expression profiles",
+      "doi": "10.1038/s41540-024-00388-8",
+      "url": "https://doi.org/10.1038/s41540-024-00388-8",
+      "source": "pmc",
+      "pub_date": "2024-05-30",
+      "paperclip_path": "/papers/PMC11139989/",
+      "best_rank": 19,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_43cc4aab6c0c",
+      "title": "scDoc: Correcting Drop-out Events in Single-cell RNA-seq Data",
+      "doi": "10.1101/731638",
+      "url": "https://doi.org/10.1101/731638",
+      "source": "biorxiv",
+      "pub_date": "2019-08-09",
+      "paperclip_path": "/papers/bio_43cc4aab6c0c/",
+      "best_rank": 19,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC12820318",
+      "title": "scDrugMap: benchmarking large foundation models for drug response prediction",
+      "doi": "10.1038/s41467-025-67481-2",
+      "url": "https://doi.org/10.1038/s41467-025-67481-2",
+      "source": "pmc",
+      "pub_date": "2025-12-11",
+      "paperclip_path": "/papers/PMC12820318/",
+      "best_rank": 19,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_6270399e6eb1",
+      "title": "Disentangling latent representations of single cell RNA-seq experiments",
+      "doi": "10.1101/2020.03.04.972166",
+      "url": "https://doi.org/10.1101/2020.03.04.972166",
+      "source": "biorxiv",
+      "pub_date": "2020-03-04",
+      "paperclip_path": "/papers/bio_6270399e6eb1/",
+      "best_rank": 19,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2208.09147",
+      "title": "Disentangled Representation with Causal Constraints for Counterfactual Fairness",
+      "doi": "10.1007/978-3-031-33374-3_37",
+      "url": "https://doi.org/10.1007/978-3-031-33374-3_37",
+      "source": "arxiv",
+      "pub_date": "2022-08-19",
+      "paperclip_path": "/papers/arx_2208.09147/",
+      "best_rank": 19,
+      "matched_queries": [
+        "causal representation counterfactual prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC13042461",
+      "title": "Learned Conformational Space and Pharmacophore Into Molecular Foundational Model",
+      "doi": "10.1002/advs.202513556",
+      "url": "https://doi.org/10.1002/advs.202513556",
+      "source": "pmc",
+      "pub_date": "2026-01-04",
+      "paperclip_path": "/papers/PMC13042461/",
+      "best_rank": 19,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC12597823",
+      "title": "Modeling heterogeneity in single-cell perturbation states enhances detection of response eQTLs",
+      "doi": "10.1038/s41588-025-02344-6",
+      "url": "https://doi.org/10.1038/s41588-025-02344-6",
+      "source": "pmc",
+      "pub_date": "2025-10-20",
+      "paperclip_path": "/papers/PMC12597823/",
+      "best_rank": 19,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2110.07069",
+      "title": "CloudPred: Predicting Patient Phenotypes From Single-cell RNA-seq",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2110.07069",
+      "source": "arxiv",
+      "pub_date": "2021-10-13",
+      "paperclip_path": "/papers/arx_2110.07069/",
+      "best_rank": 20,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_ebc3ccd77f72",
+      "title": "CellFluxV2 : An Image Generative Foundation Model for Virtual Cell Modeling",
+      "doi": "10.64898/2026.01.19.696785",
+      "url": "https://doi.org/10.64898/2026.01.19.696785",
+      "source": "biorxiv",
+      "pub_date": "2026-01-19",
+      "paperclip_path": "/papers/bio_ebc3ccd77f72/",
+      "best_rank": 20,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2102.01218",
+      "title": "The Gene Mover's Distance: Single-cell similarity via Optimal Transport",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2102.01218",
+      "source": "arxiv",
+      "pub_date": "2021-02-01",
+      "paperclip_path": "/papers/arx_2102.01218/",
+      "best_rank": 20,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_c6b323fa6e47",
+      "title": "Perturbation Curve models continuous transcriptional response trajectories and improves prediction of genetic modulations",
+      "doi": "10.64898/2026.06.16.732192",
+      "url": "https://doi.org/10.64898/2026.06.16.732192",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_c6b323fa6e47/",
+      "best_rank": 20,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2411.00698",
+      "title": "Wasserstein Flow Matching: Generative modeling over families of distributions",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2411.00698",
+      "source": "arxiv",
+      "pub_date": "2024-11-01",
+      "paperclip_path": "/papers/arx_2411.00698/",
+      "best_rank": 21,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2011.06593",
+      "title": "A stability-driven protocol for drug response interpretable prediction (staDRIP)",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2011.06593",
+      "source": "arxiv",
+      "pub_date": "2020-11-12",
+      "paperclip_path": "/papers/arx_2011.06593/",
+      "best_rank": 21,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2409.15080",
+      "title": "Integrating Optimal Transport and Structural Inference Models for GRN Inference from Single-cell Data",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2409.15080",
+      "source": "arxiv",
+      "pub_date": "2024-09-23",
+      "paperclip_path": "/papers/arx_2409.15080/",
+      "best_rank": 21,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_d8b1e5b0813c",
+      "title": "Decoupling Lineage and Intrinsic Information in Single-Cell Lineage Tracing Data with Deep Disentangled Representation Learning",
+      "doi": "10.64898/2026.03.10.710716",
+      "url": "https://doi.org/10.64898/2026.03.10.710716",
+      "source": "biorxiv",
+      "pub_date": "2026-03-01",
+      "paperclip_path": "/papers/bio_d8b1e5b0813c/",
+      "best_rank": 21,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2602.17634",
+      "title": "Reverso: Efficient Time Series Foundation Models for Zero-shot Forecasting",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2602.17634",
+      "source": "arxiv",
+      "pub_date": "2026-02-20",
+      "paperclip_path": "/papers/arx_2602.17634/",
+      "best_rank": 21,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC4599732",
+      "title": "A Semi-Supervised Approach for Refining Transcriptional Signatures of Drug Response and Repositioning Predictions",
+      "doi": "10.1371/journal.pone.0139446",
+      "url": "https://doi.org/10.1371/journal.pone.0139446",
+      "source": "pmc",
+      "pub_date": "2015-10-09",
+      "paperclip_path": "/papers/PMC4599732/",
+      "best_rank": 22,
+      "matched_queries": [
+        "predicting transcriptional response to drug perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC12506889",
+      "title": "Conformal inference for reliable single cell RNA-seq annotation",
+      "doi": "10.1093/bioinformatics/btaf521",
+      "url": "https://doi.org/10.1093/bioinformatics/btaf521",
+      "source": "pmc",
+      "pub_date": "2025-10-01",
+      "paperclip_path": "/papers/PMC12506889/",
+      "best_rank": 22,
+      "matched_queries": [
+        "out-of-distribution prediction unseen drug single-cell RNA-seq"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_deeeee496f3c",
+      "title": "A Systematic Comparison of Single-Cell Perturbation Response Prediction Models",
+      "doi": "10.1101/2024.12.23.630036",
+      "url": "https://doi.org/10.1101/2024.12.23.630036",
+      "source": "biorxiv",
+      "pub_date": "2024-12-23",
+      "paperclip_path": "/papers/bio_deeeee496f3c/",
+      "best_rank": 22,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_0b2079d58aae",
+      "title": "Global cell-state and gene-program representations reveal conserved and context-specific perturbation responses of cells",
+      "doi": "10.64898/2026.05.16.725005",
+      "url": "https://doi.org/10.64898/2026.05.16.725005",
+      "source": "biorxiv",
+      "pub_date": "2026-01-01",
+      "paperclip_path": "/papers/bio_0b2079d58aae/",
+      "best_rank": 22,
+      "matched_queries": [
+        "transferring perturbation responses across cell contexts"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_c8914e3c711e",
+      "title": "MetaSCDrug: Meta-Transfer Learning for Single-Cell-Level Drug Response Prediction from Transcriptome and Molecular Representations",
+      "doi": "10.1101/2024.04.25.591050",
+      "url": "https://doi.org/10.1101/2024.04.25.591050",
+      "source": "biorxiv",
+      "pub_date": "2024-04-25",
+      "paperclip_path": "/papers/bio_c8914e3c711e/",
+      "best_rank": 22,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_229b578074c6",
+      "title": "Mapping transcriptional responses to cellular perturbation dictionaries with RNA fingerprinting",
+      "doi": "10.1101/2025.09.19.676866",
+      "url": "https://doi.org/10.1101/2025.09.19.676866",
+      "source": "biorxiv",
+      "pub_date": "2025-09-19",
+      "paperclip_path": "/papers/bio_229b578074c6/",
+      "best_rank": 22,
+      "matched_queries": [
+        "optimal transport map single-cell perturbation drug response"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "RNAFingerprinting"
+    },
+    {
+      "doc_id": "arx_2209.05481",
+      "title": "A Molecular Multimodal Foundation Model Associating Molecule Graphs with Natural Language",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2209.05481",
+      "source": "arxiv",
+      "pub_date": "2022-09-12",
+      "paperclip_path": "/papers/arx_2209.05481/",
+      "best_rank": 22,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2509.21584",
+      "title": "IndiSeek learns information-guided disentangled representations",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2509.21584",
+      "source": "arxiv",
+      "pub_date": "2025-09-25",
+      "paperclip_path": "/papers/arx_2509.21584/",
+      "best_rank": 23,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "PMC10252742",
+      "title": "Generalist Vision Foundation Models for Medical Imaging: A Case Study of Segment Anything Model on Zero-Shot Medical Segmentation",
+      "doi": "10.3390/diagnostics13111947",
+      "url": "https://doi.org/10.3390/diagnostics13111947",
+      "source": "pmc",
+      "pub_date": "2023-06-02",
+      "paperclip_path": "/papers/PMC10252742/",
+      "best_rank": 23,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_1209.3820",
+      "title": "Population-expression models of immune response",
+      "doi": "10.1088/1478-3975/10/3/035010",
+      "url": "https://doi.org/10.1088/1478-3975/10/3/035010",
+      "source": "arxiv",
+      "pub_date": "2012-09-18",
+      "paperclip_path": "/papers/arx_1209.3820/",
+      "best_rank": 23,
+      "matched_queries": [
+        "modeling expression heterogeneity in perturbation responses"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_abc624ee9055",
+      "title": "Flow-Matching Refined Dirichlet Process Priors for Structurally Coherent Single-Cell Representation Learning",
+      "doi": "10.64898/2026.03.26.714611",
+      "url": "https://doi.org/10.64898/2026.03.26.714611",
+      "source": "biorxiv",
+      "pub_date": "2026-03-01",
+      "paperclip_path": "/papers/bio_abc624ee9055/",
+      "best_rank": 24,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_fcc3d3826c00",
+      "title": "Predicting patient treatment response and resistance via single-cell transcriptomics of their tumors",
+      "doi": "10.1101/2022.01.11.475728",
+      "url": "https://doi.org/10.1101/2022.01.11.475728",
+      "source": "biorxiv",
+      "pub_date": "2022-01-11",
+      "paperclip_path": "/papers/bio_fcc3d3826c00/",
+      "best_rank": 24,
+      "matched_queries": [
+        "statistical baseline drug response prediction single-cell"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2601.15341",
+      "title": "Latent Causal Diffusions for Single-Cell Perturbation Modeling",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2601.15341",
+      "source": "arxiv",
+      "pub_date": "2026-01-26",
+      "paperclip_path": "/papers/arx_2601.15341/",
+      "best_rank": 24,
+      "matched_queries": [
+        "disentangled representation learning single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "LCD"
+    },
+    {
+      "doc_id": "arx_2605.15354",
+      "title": "Controllable Molecular Generative Foundation Models",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2605.15354",
+      "source": "arxiv",
+      "pub_date": "2026-06-08",
+      "paperclip_path": "/papers/arx_2605.15354/",
+      "best_rank": 24,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "bio_c2578f1a6e15",
+      "title": "Assessing the limits of zero-shot foundation models in single-cell biology",
+      "doi": "10.1101/2023.10.16.561085",
+      "url": "https://doi.org/10.1101/2023.10.16.561085",
+      "source": "biorxiv",
+      "pub_date": "2023-10-16",
+      "paperclip_path": "/papers/bio_c2578f1a6e15/",
+      "best_rank": 25,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2312.03032",
+      "title": "ZeroReg: Zero-Shot Point Cloud Registration with Foundation Models",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2312.03032",
+      "source": "arxiv",
+      "pub_date": "2023-12-05",
+      "paperclip_path": "/papers/arx_2312.03032/",
+      "best_rank": 26,
+      "matched_queries": [
+        "foundation model zero-shot molecular perturbation prediction"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    },
+    {
+      "doc_id": "arx_2604.16776",
+      "title": "SAVE: A Generalizable Framework for Multi-Condition Single-Cell Generation with Gene Block Attention",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2604.16776",
+      "source": "arxiv",
+      "pub_date": "2026-04-21",
+      "paperclip_path": "/papers/arx_2604.16776/",
+      "best_rank": 27,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "negative",
+      "gold_name": "SAVE"
+    },
+    {
+      "doc_id": "arx_2210.02747",
+      "title": "Flow Matching for Generative Modeling",
+      "doi": null,
+      "url": "https://arxiv.org/abs/2210.02747",
+      "source": "arxiv",
+      "pub_date": "2022-10-06",
+      "paperclip_path": "/papers/arx_2210.02747/",
+      "best_rank": 28,
+      "matched_queries": [
+        "flow matching generative model single-cell perturbation"
+      ],
+      "kept_by_filter": false,
+      "gold_label": "unknown",
+      "gold_name": null
+    }
+  ]
+}

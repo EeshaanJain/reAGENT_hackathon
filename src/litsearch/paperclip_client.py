@@ -99,6 +99,19 @@ def llm_filter(set_id: str, criterion: str,
     return _parse_hits(out)
 
 
+def get_meta(doc_id: str) -> dict:
+    """Fetch and parse a paper's meta.json (empty dict on failure)."""
+    import json
+    out = run(["cat", f"/papers/{doc_id}/meta.json"])
+    start, end = out.find("{"), out.rfind("}")
+    if start == -1 or end <= start:
+        return {}
+    try:
+        return json.loads(out[start:end + 1])
+    except json.JSONDecodeError:
+        return {}
+
+
 def resolve_doc_id(doi: str | None, title: str | None) -> str | None:
     """Resolve a paper to a paperclip doc id.
 

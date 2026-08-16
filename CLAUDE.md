@@ -43,7 +43,14 @@ Workflow commands (benchmark dir as argument — works for any benchmark):
 python3 scripts/extract_gold_set.py benchmarks/<id>      # gold set from db CSV per benchmark.yaml rule
 python3 scripts/annotate_reachability.py benchmarks/<id> # mark papers reachable via search index
 python3 scripts/run_backsearch.py benchmarks/<id> <run_name> --filter  # eval, writes evals/backsearch/results/
+python3 scripts/run_search.py benchmarks/<id> [--since YYYY-MM-DD]     # production search -> <id>/results/latest_search.json
 ```
+
+The production output (`<benchmark>/results/latest_search.json`, format
+documented in `scripts/run_search.py`) is one record per retrieved paper —
+doc id, title, DOI, URL (always present), source, matched queries, filter
+verdict, gold label — and IS committed: downstream agents and other people
+consume it.
 
 ## Repository contents
 
