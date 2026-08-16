@@ -135,7 +135,10 @@ def run_backsearch(benchmark_dir: str | Path,
                    n: int | None = None,
                    sources: str | None = None,
                    use_filter: bool = False,
-                   filter_criterion: str | None = None) -> BacksearchResult:
+                   filter_criterion: str | None = None,
+                   filter_backend: str | None = None,
+                   judge_model: str | None = None,
+                   filter_repeats: int | None = None) -> BacksearchResult:
     """Two-stage retrieval: broad keyword search, then (optionally) paperclip's
     LLM relevance filter with the benchmark's `relevance_filter` criterion."""
     bench = Path(benchmark_dir)
@@ -182,11 +185,11 @@ def run_backsearch(benchmark_dir: str | Path,
         for h in hits:
             result.retrieved.setdefault(h.doc_id, h)
 
-    backend = kw.get("filter_backend", "paperclip")
+    backend = filter_backend or kw.get("filter_backend", "paperclip")
     if use_filter and filter_criterion and backend == "claude":
         from .claude_judge import judge
         kept = judge(result.retrieved, filter_criterion,
-                     model=kw.get("judge_model"))
+                     model=judge_model or kw.get("judge_model"))
         result.retrieved = {d: h for d, h in result.retrieved.items()
                             if d in kept}
         return result
@@ -197,7 +200,8 @@ def run_backsearch(benchmark_dir: str | Path,
         # filter is stochastic, so run `filter_repeats` independent rounds
         # (each round needs a fresh search — filter consumes the set) and keep
         # a paper if any round keeps it (union vote, recall-favoring).
-        repeats = int(kw.get("filter_repeats", 1))
+        repeats = filter_repeats if filter_repeats is not None \
+            else int(kw.get("filter_repeats", 1))
         kept_ids: set[str] = set()
         kept_titles: set[str] = set()
 
