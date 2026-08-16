@@ -32,6 +32,14 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 120
 target-version = "py310"
+# The root project owns the installable packages, their tests, and benchmark CLIs.
+# Method harnesses and exploratory notebooks retain their existing lint policies.
+include = [
+    "src/**/*.py",
+    "tests/**/*.py",
+    "benchmarks/**/*.py",
+    "scripts/render_ingest_prompt.py",
+]
 
 [tool.ruff.lint]
 select = ["B", "E", "F", "I", "UP", "W"]
