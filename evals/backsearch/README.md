@@ -47,16 +47,39 @@ Two stages (both configured in the benchmark's `keywords.yaml`):
 
 ## Results (perturbation_prediction)
 
-| run | queries | filter | recall | precision_db | F1_db |
-|-----|---------|--------|--------|--------------|-------|
-| baseline_v1 | 5 generic | no | 0.50 | 0.36 | 0.42 |
-| v2_chem_focus | 7 chemical-heavy | no | 0.17 | 0.20 | 0.18 |
-| v4_families | +method-family queries | no | 1.00 | 0.42 | 0.59 |
-| v7/v9 (final) | 8 tuned | yes | **1.00** | 0.75–0.89 | **0.86–0.94** |
+![Retrieval benchmark](figures/retrieval_benchmark.svg)
 
-`precision_db` judges only papers with a known DB label. The LLM filter is
-stochastic — precision varies a few points between runs; the range above is
-from repeated runs of the same config.
+Benchmark suite (2026-08-16), scored against team-reviewed gold labels
+(42 eligible positives, 79 hard negatives), n=30/query, full corpus incl.
+arXiv. Reproduce with `scripts/benchmark_retrieval.py`.
+
+Keyword-set versions (search stage only):
+
+| set | queries | recall | precision_db | F1_db |
+|-----|---------|--------|--------------|-------|
+| v1 baseline | 5 | 0.43 | 0.46 | 0.44 |
+| v2 chem-focus | 7 | 0.45 | 0.54 | 0.49 |
+| v3 families | 9 | 0.71 | 0.50 | 0.59 |
+| v4 tuned | 8 | 0.71 | 0.50 | 0.59 |
+| v5 current | 13 | **0.90** | 0.47 | **0.62** |
+
+Filter harnesses on the best set (3 runs each; F1 mean and min–max):
+
+| harness | recall | precision_db | F1_db |
+|---------|--------|--------------|-------|
+| no filter (search only) | 0.90 | 0.47 | 0.62 |
+| paperclip filter | 0.62–0.71 | 0.56–0.57 | 0.61 (0.59–0.63) |
+| claude judge, haiku | 0.83–0.91 | 0.54–0.62 | 0.70 (0.68–0.72) |
+| claude judge, sonnet | 0.81 | 0.64–0.65 | **0.72** (0.72–0.72) |
+| claude judge, opus | 0.88–0.91 | 0.59–0.61 | **0.72** (0.72–0.73) |
+
+Takeaways: keyword recall was bought by adding vocabulary-family queries
+(0.43 → 0.90) at flat precision; the abstract-based claude judge beats both
+no-filter and paperclip's snippet-based filter (which pays for its precision
+with a large recall loss — arXiv results carry no snippets); sonnet and opus
+tie on F1 with different recall/precision trade-offs, and haiku is close.
+`precision_db` judges only papers with a known DB label. The LLM filters are
+stochastic — ranges are across repeated runs of the same config.
 
 Lessons that transfer to other benchmarks:
 
