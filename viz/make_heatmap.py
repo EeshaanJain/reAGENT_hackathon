@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from benchmark_heatmap import Column, Group, fmt_bytes, fmt_duration, fmt_pct, render
+from heatmap_render import Column, Group, fmt_bytes, fmt_duration, fmt_pct, render
 
 OUT = Path(__file__).parent / "results.html"
 

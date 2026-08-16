@@ -1,12 +1,12 @@
 """
-benchmark_heatmap — generate a self-contained HTML benchmark heatmap.
+heatmap_render — generate a self-contained HTML benchmark heatmap.
 
 Methods on rows, metrics on columns, one circle per cell sized *and* coloured by
 the normalised score. Modelled on the OpenProblems results table.
 
 Usage
 -----
-    from benchmark_heatmap import Column, render
+    from heatmap_render import Column, render
 
     html = render(df, columns, controls={"zeros", "sample"})
     open("results.html", "w").write(html)

@@ -64,7 +64,7 @@ Follows `src/metrics/metric_suite.yaml` (schema 0.4.0) from
 
 | file | what it is |
 |---|---|
-| `benchmark_heatmap.py` | the generator — `render(df, columns, ...) -> str` |
+| `heatmap_render.py` | the rendering engine — `render(df, columns, ...) -> str` |
 | `make_heatmap.py` | column layout, demo data, entry point |
 | `results.html` | generated output (placeholder data — see warning above) |
 
