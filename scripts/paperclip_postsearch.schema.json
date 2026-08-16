@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Compact Paperclip paper record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "title": { "type": "string" },
+    "authors": { "type": "string" },
+    "id": { "type": "string" },
+    "source": { "type": "string" },
+    "date": { "type": "string" },
+    "url": { "type": "string" },
+    "abstract": { "type": "string" },
+    "method_name": { "type": "string" },
+    "method_folder": { "type": "string" },
+    "source_folder": { "type": "string" },
+    "metadata_status": {
+      "type": "string",
+      "enum": ["available", "unavailable"]
+    },
+    "metadata_path": { "type": "string" },
+    "full_text_status": {
+      "type": "string",
+      "enum": ["complete", "needs_review", "unavailable"]
+    },
+    "raw_full_text_path": { "type": "string" },
+    "clean_full_text_path": { "type": "string" },
+    "full_text_validation_path": { "type": "string" },
+    "code_evidence_path": { "type": "string" },
+    "github_flag": {
+      "type": "string",
+      "enum": ["candidate_found", "not_found", "ambiguous"]
+    },
+    "github_candidates": { "type": "string" },
+    "pdf_status": {
+      "type": "string",
+      "enum": ["downloaded", "unavailable"]
+    },
+    "pdf_path": { "type": "string" }
+  },
+  "required": [
+    "title",
+    "authors",
+    "id",
+    "source",
+    "date",
+    "url",
+    "abstract",
+    "method_name",
+    "method_folder",
+    "source_folder",
+    "metadata_status",
+    "metadata_path",
+    "full_text_status",
+    "raw_full_text_path",
+    "clean_full_text_path",
+    "full_text_validation_path",
+    "code_evidence_path",
+    "github_flag",
+    "github_candidates",
+    "pdf_status",
+    "pdf_path"
+  ]
+}
