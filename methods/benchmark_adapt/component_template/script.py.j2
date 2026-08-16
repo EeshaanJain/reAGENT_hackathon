@@ -4,10 +4,16 @@ import pandas as pd
 
 ## VIASH START
 par = {
+{% if requires_sc_counts %}
+    "sc_train": "resources_test/{{ method_id }}/sc_train.h5ad",
+    "id_map": "resources_test/{{ method_id }}/id_map.csv",
+    "output": "output/{{ method_id }}/prediction.h5ad",
+{% else %}
     "de_train": "resources_test/{{ method_id }}/de_train.h5ad",
     "id_map": "resources_test/{{ method_id }}/id_map.csv",
     "layer": "{{ input_layer if input_layer and input_layer != 'unknown' else 'clipped_sign_log10_pval' }}",
     "output": "output/{{ method_id }}/prediction.h5ad",
+{% endif %}
 }
 meta = {"name": "{{ method_id }}"}
 ## VIASH END
@@ -22,31 +28,40 @@ meta = {"name": "{{ method_id }}"}
 #   gene_space:             {{ gene_space }}
 #   source entrypoint:      {{ entrypoint }}
 #
-# Hard requirements (Gauntlet will enforce these -- see benchmark_adapt/gauntlet/checks.py; these
-# are real OP3 conventions, verified against src/api/file_prediction.yaml and a real shipped
-# method, src/methods/scape/script.py -- not this workstream's invention):
-#   G1  par['output'] must have a layer literally named "prediction" (always this name,
-#       regardless of par['layer']), finite, in the declared bounds. Emitting the wrong layer
-#       name (e.g. writing to "logFC" or to par['layer']'s own name) produces silently wrong
-#       scores, not an error.
-#   G2  obs_names of the output must exactly equal id_map['id'] (as strings), in order --
-#       `obs=pd.DataFrame(index=id_map["id"].astype(str))`, not cell_type/sm_name columns. No
-#       reindexing/resolve_genes-style rescue.
-#   G3  The prediction must be a genuine function of sm_name -- a model that only conditions on
-#       cell_type (ignoring the compound) will be caught by the shuffle-sm_name test.
-#   G4  No network access during inference.
-#   G6  No NaN/Inf; gene count must match de_train's gene space exactly.
+{% if requires_sc_counts %}
+# par['sc_train'] and par['id_map'] are the ONLY inputs -- this method's own entrypoint needs raw
+# single-cell counts (requires_sc_counts=true), not a DE-signature table. `--sc_train` is a LOCAL,
+# PROPOSED extension to this integration pipeline's own schema/templates -- it is NOT a real
+# wf_method.yaml argument in the upstream OP3 task today. Say so explicitly in DEVIATIONS.md, do
+# not present it as an already-accepted part of the task API.
 #
+# Output: single-cell-level predictions (rows/cells corresponding to id_map's query conditions,
+# genes as columns/var), in par['output']. This is a genuinely different shape from the
+# DE-signature `prediction`-layer convention (file_prediction.yaml) other methods in this task
+# use -- name the output layer clearly (e.g. "predicted_expression", not "prediction") and
+# document the choice. G1/G2 below (DE-signature-specific) do not apply to this output as stated;
+# G3/G4 (real sm_name-dependence, no network) still do.
+{% else %}
 # par['de_train'], par['id_map'], and par['layer'] are the ONLY inputs. There is no par['de_test']
 # -- OP3 never hands a regular method the held-out labels; do not add a code path that expects it.
 # Output uns must include "dataset_id" (copy from de_train.uns) and "method_id" (meta['name']).
-{% if requires_sc_counts == true %}
-#
-# NOTE: requires_sc_counts=true. This is the known OP3 API gap (chemCPA/CPA/biolord-class
-# methods): the method needs single-cell counts that de_train/id_map cannot express. Do not
-# attempt to fabricate counts from the DE table. File this as the API-gap finding (see
-# plan_unified.md §7 / §10) rather than writing a workaround adapter.
 {% endif %}
+#
+# Hard requirements (Gauntlet will enforce these where applicable -- see
+# benchmark_adapt/gauntlet/checks.py; these are real OP3 conventions, verified against
+# src/api/file_prediction.yaml and a real shipped method, src/methods/scape/script.py -- not this
+# workstream's invention):
+#   G1  par['output'] must have a layer literally named "prediction" (always this name,
+#       regardless of par['layer']), finite, in the declared bounds. Emitting the wrong layer
+#       name (e.g. writing to "logFC" or to par['layer']'s own name) produces silently wrong
+#       scores, not an error. (DE-signature methods only -- see note above if requires_sc_counts.)
+#   G2  obs_names of the output must exactly equal id_map['id'] (as strings), in order --
+#       `obs=pd.DataFrame(index=id_map["id"].astype(str))`, not cell_type/sm_name columns. No
+#       reindexing/resolve_genes-style rescue. (DE-signature methods only -- see note above.)
+#   G3  The prediction must be a genuine function of sm_name -- a model that only conditions on
+#       cell_type (ignoring the compound) will be caught by the shuffle-sm_name test.
+#   G4  No network access during inference.
+#   G6  No NaN/Inf; gene count must match de_train's gene space exactly. (DE-signature methods only.)
 
 raise NotImplementedError(
     "TODO(mini-swe-agent): implement the {{ method_id }} adapter per the contract above"

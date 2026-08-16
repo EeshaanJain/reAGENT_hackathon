@@ -21,7 +21,7 @@ paper repo  ──►  contract_gen/  ──►  model_contract.yaml + Docker im
 | [`contract_gen/`](contract_gen/) | Stage 0–3: ingest → RepoLaunch → repo comprehension → contract synthesis |
 | [`serena/`](serena/) | The live Serena MCP client `contract_gen`'s Stage 2 uses when run with `--comprehension-engine serena` — see "How Stage 2 works" below |
 | [`benchmark_adapt/`](benchmark_adapt/) | Stage 4–6: adapter synthesis → Gauntlet → PR |
-| [`results/`](results/) | Not part of either lane's own `output/` — cross-cutting tools plus where a full end-to-end run's final artifacts (synthesized component + real `prediction.h5ad` + metrics) get collected. `pipeline_status.py` (live run status) and `run_and_evaluate.py` (execute a synthesized component against the fixture and score it) live here. |
+| [`results/`](results/) | The canonical place a full run lands — `results/<method_id>/{component,predictions,logs}/` (see below) — plus the cross-cutting tools that drive and watch a run: `run_pipeline.py` (Stage 0-3 + Stage 4, one command), `pipeline_status.py` (live run status). |
 | [`planning/`](planning/) | Historical design docs — narrative context, not needed to run anything (see below) |
 
 `planning/` holds the docs that motivated this build, kept out of the top level so the active
@@ -79,7 +79,11 @@ Easy to conflate two different things that both sound like "what level does this
   everyone else's, it just can't get there from the input this task hands it.
 
 So for scAPE specifically: the synthesized component's output is DE-gene-level predicted values,
-never single-cell counts. See §3's `run_and_evaluate.py` for where this gets checked and scored.
+never single-cell counts — *unless* the method itself is single-cell-native (`requires_sc_counts:
+true`, e.g. CPA), in which case its output is genuinely single-cell-level and the task's usual
+`prediction` layer convention doesn't apply; see the CPA case below. See §3's
+`harness/run_component.py` for where a component actually gets run and its output verified —
+deliberately no scoring there, that's a separate concern from generation.
 
 ## Setup
 
@@ -154,13 +158,15 @@ python -m harness.orchestrator --paperclip-record fixtures/paperclip_cpa_record.
     --output output/cpa --resume-from-manifest output/cpa/repo_manifest.json
 ```
 
-**Output lands at** `methods/contract_gen/output/<method_id>/`:
+**Output lands at whatever `--output` you pass** (see §3 for the canonical `methods/results/<method_id>/`
+choice), split by kind — this lane never writes a flat pile of files:
 
 | File | Contents |
 |---|---|
-| `model_contract.yaml` | The contract — validated against `methods/model_contract.schema.json` automatically at emission. Includes a `paper` provenance block when built from a Paperclip record, and a `_serena_findings` audit trail (every finding behind every citation) when built with `--comprehension-engine serena`. |
-| `repo_manifest.json` | Resolved commit SHA, RepoLaunch status, the Docker image tag, comprehension findings |
-| `execution_log.json` | Every command this lane ran, with status and wall-clock time |
+| `<output>/component/model_contract.yaml` | The contract — validated against `methods/model_contract.schema.json` automatically at emission. Includes a `paper` provenance block when built from a Paperclip record, and a `_serena_findings` audit trail (every finding behind every citation) when built with `--comprehension-engine serena`. |
+| `<output>/logs/repo_manifest.json` | Resolved commit SHA, RepoLaunch status, the Docker image tag, comprehension findings, per-stage wall-clock (`stage_timings_s`) |
+| `<output>/logs/execution_log.json` | Every command this lane ran, with status and wall-clock time |
+| `<output>/logs/repolaunch/` | RepoLaunch's own agent workspace — `playground/<id>/llm/*.md` (per-turn transcript), `setup.log`, `result.json` |
 
 The built Docker image itself is a local Docker image (check `repo_manifest.json`'s
 `docker_image` field for its tag) — `docker image inspect <tag>` to confirm it exists.
@@ -196,102 +202,164 @@ instead of an empty skeleton. Add `--execute --model <litellm-model-id>` to actu
 synthesis agent (mini-swe-agent, separate cost from RepoLaunch's) and let it fill in `script.py`
 for real, inside the handed-off Docker image.
 
-**Output lands at** `methods/benchmark_adapt/output/<method_id>/`:
+**Output lands at** `<output-dir>/<method_id>/{component,predictions,logs}/` — three
+subdirectories for three different audiences (a reviewer wants `component/`, a debugger wants
+`logs/`, `predictions/` is real model output once something actually runs the component):
 
 | File | Contents |
 |---|---|
-| `script.py` | The adapter (a `NotImplementedError` stub, with reasoning inline, until synthesis actually runs or a hard API blocker is hit — see the CPA case below) |
-| `config.vsh.yaml` | The Viash component config |
-| `test.py` | Local Gauntlet-style test entry point |
-| `MODELSPEC.json` | Copy of the contract, travels with the component |
-| `DEVIATIONS.md` | Divergences from the paper's stated protocol, or a filed API-gap finding when no adapter is possible |
-| `synthesis_prompt.md` | The exact prompt handed to the synthesis agent |
-| `trajectory.json` | Only present after a real `--execute` run — the agent's full command log |
-| `PR_DESCRIPTION.md` | Present only when hand-authored for a specific case (see CPA) — a ready-to-use PR body, not auto-submitted |
+| `component/script.py` | The adapter (a `NotImplementedError` stub, with reasoning inline, until synthesis actually runs or a hard API blocker is hit — see the CPA case below) |
+| `component/config.vsh.yaml` | The Viash component config |
+| `component/test.py` | Local Gauntlet-style test entry point |
+| `component/MODELSPEC.json` | Copy of the contract, travels with the component |
+| `component/DEVIATIONS.md` | Divergences from the paper's stated protocol, or a filed API-gap finding when no adapter is possible |
+| `logs/synthesis_prompt.md` | The exact prompt handed to the synthesis agent |
+| `logs/trajectory.json` | Only present after a real `--execute` run — the agent's full command log |
+| `logs/stage4_timing.json` | Wall-clock for the synthesis run |
+| `predictions/` | Empty until `harness/run_component.py` (see §3) actually runs the component |
+| `PR_DESCRIPTION.md` (in `component/`) | Present only when hand-authored for a specific case (see CPA) — a ready-to-use PR body, not auto-submitted |
 
 Run the Gauntlet against any adapter (the seeded stub, or a completed one):
 
 ```bash
-scripts/run_gauntlet.sh output/<method_id>/script.py
+scripts/run_gauntlet.sh <output-dir>/<method_id>/component/script.py
 ```
 
 ### 3. Running the full pipeline autonomously, end to end
 
-With both API keys set (see Credentials above), nothing in either stage needs a human in the loop
-— RepoLaunch really builds the image, Serena really queries the repo, mini-swe-agent really writes
-the adapter inside that image:
+`methods/results/run_pipeline.py` is the canonical entry point — one command for both stages,
+landing everything at `methods/results/<method_id>/{component,predictions,logs}/` (not split
+across `contract_gen/output/` and `benchmark_adapt/output/`). With both API keys set (see
+Credentials above), nothing needs a human in the loop — RepoLaunch really builds the image, Serena
+really queries the repo, mini-swe-agent really writes the adapter inside that image:
 
 ```bash
-cd methods/contract_gen
-set -a && source .env && set +a          # or rely on your shell's own exports
+set -a && source methods/contract_gen/.env && set +a   # or rely on your shell's own exports
 
-python -m harness.orchestrator \
-    --paperclip-record fixtures/paperclip_scape_record.json \
-    --repolaunch-config fixtures/repolaunch_config_scape.json \
+python methods/results/run_pipeline.py \
+    --method-id scape \
+    --paperclip-record methods/contract_gen/fixtures/paperclip_scape_record.json \
+    --repolaunch-config methods/contract_gen/fixtures/repolaunch_config_scape.json \
     --comprehension-engine serena \
-    --output output/scape
-# -- can take up to repolaunch-timeout (default 1800s); RepoLaunch is a real exploratory agent
-
-cd ../benchmark_adapt
-python fixtures/make_tiny_fixture.py     # once
-python -m harness.synthesize_adapter \
-    --contract ../contract_gen/output/scape/model_contract.yaml \
-    --execution-log ../contract_gen/output/scape/execution_log.json \
     --execute --model anthropic/claude-sonnet-5 --cost-limit 2.0
+# -- can take ~15-20 minutes; RepoLaunch is a real exploratory agent, mini-swe-agent a second one
 ```
 
+(Each stage is still runnable standalone via `harness.orchestrator`/`harness.synthesize_adapter`
+directly, as in §1/§2 above, if you want finer control — pass `--output`/`--output-dir` pointed at
+`methods/results/<method_id>` either way and both lanes split into `component/`/`logs/`
+themselves.)
+
 **Tracking a run in progress:** both stages run for real minutes with no per-step console output
-of their own (RepoLaunch's own subprocess call buffers output until it exits; a background `nohup`
-invocation writes nothing to your terminal at all). Run `methods/results/pipeline_status.py`
-alongside it, from another terminal, to see whether anything is actually running and which stage
-it's on — including RepoLaunch's own live agent-turn count and running cost, read straight out of
-its workdir (the orchestrator's own log goes quiet during Stage 1 even though real work is
-happening):
+of their own (RepoLaunch's own subprocess call buffers output until it exits). Run
+`methods/results/pipeline_status.py` alongside it, from another terminal, to see whether anything
+is actually running and which stage it's on — including RepoLaunch's own live agent-turn count and
+running cost, read straight out of its workdir (the orchestrator's own log goes quiet during
+Stage 1 even though real work is happening):
 
 ```bash
 python methods/results/pipeline_status.py --method-id scape --watch --interval 10
 ```
 
-Then actually run the synthesized component against data and score it — a rendered
+Then actually run the synthesized component against data — a rendered
 `config.vsh.yaml`/`script.py` that were never executed against real input aren't a finished
-deliverable, they're an untested claim. `methods/results/run_and_evaluate.py` does this: runs
-`script.py` through `viash_shim` (the same par/meta substitution `viash build` would do) against
-the fixture, checks the OP3 output conventions (`prediction` layer present, `obs_names == id_map
-["id"]` in order, finite values — the same assertions as Gauntlet's G1/G2/G6), and scores it with
-MRRMSE against the fixture's held-out ground truth:
+deliverable, they're an untested claim. `methods/benchmark_adapt/harness/run_component.py` does
+exactly this and nothing more: runs `script.py` through `viash_shim` (the same par/meta
+substitution `viash build` would do) against real input data, and confirms the declared output file
+landed and is a readable AnnData. **It does not compute or save any score** — scoring a method's
+predictions is a separate, later concern from generating them, not something this pipeline does:
 
 ```bash
-cd ../..    # repo root
-python methods/results/run_and_evaluate.py scape
+cd methods/benchmark_adapt
+python fixtures/make_tiny_fixture.py     # once, if fixtures/data/ is missing
+
+python -m harness.run_component \
+    --script ../results/scape/component/script.py \
+    --par <(python -c "import json; json.dump({
+        'de_train': '$(pwd)/fixtures/data/de_train.h5ad',
+        'id_map': '$(pwd)/fixtures/data/id_map.csv',
+        'output': '$(pwd)/../results/scape/predictions/prediction.h5ad',
+    }, open(1,'w'))") \
+    --report ../results/scape/predictions/run_report.json
 ```
 
-Writes `methods/results/scape_prediction.h5ad` and `methods/results/scape_metrics.json`. The
-output file is an AnnData with one row per `(cell_type, sm_name)` query in `id_map.csv`, one column
-per gene, and a `prediction` layer of per-gene differential-expression scores — see "What the
-pipeline's final output actually is" above; it is never single-cell counts, for any method in this
-task. A real `scape_prediction.h5ad` landing on disk, openable with `anndata.read_h5ad` and scoring
-below the zero-prediction baseline, is the actual acceptance bar — not the presence of `script.py`.
+Writes `methods/results/scape/predictions/prediction.h5ad` and a `run_report.json` (shape, layer
+names, obs/uns keys — no score). The output file is an AnnData with one row per `(cell_type,
+sm_name)` query in `id_map.csv`, one column per gene, and a `prediction` layer of per-gene
+differential-expression scores — see "What the pipeline's final output actually is" above; it is
+never single-cell counts for a DE-native method like scAPE (see the CPA case for the
+`requires_sc_counts=true` shape instead). A real `prediction.h5ad` landing on disk, openable with
+`anndata.read_h5ad`, is the actual acceptance bar — not the presence of `script.py`.
 
 Every real RepoLaunch and mini-swe-agent invocation costs API budget and wall-clock — this is not
-a fixed-cost operation, and re-running it re-spends both. `execution_log.json` /
-`trajectory.json` are where that's logged.
+a fixed-cost operation, and re-running it re-spends both. `logs/execution_log.json`,
+`logs/trajectory.json`, and `logs/timing.json` (written by `run_pipeline.py`, consolidating both
+lanes' own per-stage timing) are where that's logged.
 
-### 4. The CPA case: a real run, end to end
+### 4. The CPA case: single-cell input, real training, real output
 
-CPA (`theislab/cpa`) has actually been run through this pipeline, driven by a real Paperclip
-record ([`contract_gen/fixtures/paperclip_cpa_record.json`](contract_gen/fixtures/paperclip_cpa_record.json)):
-RepoLaunch really built its environment (`docker_image: repolaunch/cpa-test:cpa_test_linux`,
-status `PASS`), heuristic comprehension found real evidence in the cloned repo
-(`requires_sc_counts: true`, cited to `repo:cpa/_api.py:L10`), and `benchmark_adapt` correctly
-produced a stub adapter with the API gap explained inline rather than a fabricated working one.
+CPA (`theislab/cpa`) needs raw single-cell counts, not the DE-signature `de_train.h5ad` scAPE
+uses — OP3's real `de_train`/`id_map` method API has no way to express that at all. An early run
+through this pipeline correctly filed that as a blocking API gap rather than faking a workaround
+(see git history / `_serena_findings` in `methods/results/cpa/component/model_contract.yaml` for
+that evidence trail — `requires_sc_counts: true`, cited to CPA's own `setup_anndata` call).
 
-That's the intended, correct outcome for this case — CPA needs raw single-cell counts, and OP3's
-`de_train`/`id_map` method API has no way to express that. See
-[`benchmark_adapt/output/cpa/DEVIATIONS.md`](benchmark_adapt/output/cpa/DEVIATIONS.md) for the
-full evidence trail and [`benchmark_adapt/output/cpa/PR_DESCRIPTION.md`](benchmark_adapt/output/cpa/PR_DESCRIPTION.md)
-for the PR this produces — filing the API gap as a finding, with a proposed `--sc_train` /
-`requires_sc_counts` extension, rather than silently skipping the method. That PR is drafted, not
-submitted — opening a real PR against an external repo needs an explicit go-ahead.
+This pipeline now has a **local, proposed extension** for exactly that case (not merged into the
+vendored `task_perturbation_prediction` submodule — a shared-infra change with a much bigger blast
+radius, deliberately out of scope here): an optional `--sc_train` argument
+(`component_template/config.vsh.yaml.j2`, gated on `requires_sc_counts`), and synthesis guidance
+(`harness/prompts/adapter_synthesis.md.j2`, `component_template/script.py.j2`) that tells the
+synthesis agent to read `par['sc_train']` instead of `par['de_train']` and produce genuinely
+single-cell-level output (a `predicted_expression` layer, not the DE-signature `prediction`
+convention) instead of filing a gap.
+
+Run it exactly as in §3, using `contract_gen/fixtures/paperclip_cpa_record.json` and
+`contract_gen/fixtures/repolaunch_config_cpa.json`. What actually happened on a real run:
+
+- `model_contract.yaml`: `requires_sc_counts: true`, `prediction_level: single_cell`, cited to
+  `repo:cpa/_api.py` — CPA has no dedicated `load_*` function (data arrives as a caller-provided
+  AnnData), so the evidence lives in `CPA.train`'s own body, not a "data loader" finding; the
+  mapping checks both.
+- `component/script.py`: reads `par['sc_train']`/`par['id_map']`, trains CPA for real (its
+  disentangled-autoencoder architecture, counterfactual decoding), and writes single-cell-level
+  predictions to `par['output']` under `layers['predicted_expression']`.
+- `component/DEVIATIONS.md`: documents the `--sc_train` argument's proposed-not-merged status,
+  plus several real implementation choices (which of CPA's generic-typed contract arguments map to
+  which of `CPA.train()`'s actual keyword arguments, by inspecting its real signature).
+
+To actually produce output, build a small single-cell fixture from real data first (there's no
+pre-built one, unlike scAPE's DE fixture — the right shape depends on what covariate columns the
+method's own entrypoint needs, confirmed from the contract's citations, not guessed up front):
+
+```bash
+cd methods/benchmark_adapt
+python fixtures/make_sc_fixture.py   # subsets data/srivatsan_2020_sciplex3_compressed.h5ad
+```
+
+Then run the component. CPA's dependencies (`torch`, `scvi-tools`, `cpa-tools`) live only inside
+the RepoLaunch-built image, not the local `reagent` env, so this one runs inside Docker directly
+rather than through `harness/run_component.py`'s local subprocess:
+
+```bash
+docker run --rm -v "$(pwd)/..":"$(pwd)/.." -w "$(pwd)/../results/cpa/component" \
+    repolaunch/cpa-test:cpa_linux python -c "
+import json
+from harness import viash_shim
+par = {
+    'sc_train': '$(pwd)/fixtures/data_sc/sc_train.h5ad',
+    'id_map': '$(pwd)/fixtures/data_sc/id_map.csv',
+    'output': '$(pwd)/../results/cpa/predictions/prediction.h5ad',
+    'max_epochs': 2,
+}
+result = viash_shim.run_component('script.py', par)
+print(result.stdout, result.stderr)
+"
+```
+
+Produces a real `predictions/prediction.h5ad` — one row per query `(cell_type, sm_name)`, genes as
+var, real CPA-decoded counterfactual expression values, no NaNs. This is the concrete difference
+from the scAPE case: same pipeline, same harnesses, genuinely different input/output shape because
+the method itself is genuinely different — not a special-cased code path for CPA specifically.
 
 ### 5. The scAPE case: live Serena end to end
 

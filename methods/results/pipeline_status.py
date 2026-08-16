@@ -73,7 +73,10 @@ def last_stage_marker(log_path: Path) -> str | None:
     if not log_path.exists():
         return None
     marker = None
-    stage_re = re.compile(r"===\s*(.+?)\s*===")
+    # requires at least one letter in the captured group -- otherwise a bare "====...====" banner
+    # line (this log's own header/footer separators) matches with an empty/junk capture, since
+    # `.+?` is non-greedy and happily matches a handful of "=" characters as "content".
+    stage_re = re.compile(r"===\s*([^=]*[A-Za-z][^=]*?)\s*===")
     for line in log_path.read_text(errors="ignore").splitlines():
         m = stage_re.search(line)
         if m:
@@ -107,14 +110,15 @@ def repolaunch_progress(output_dir: Path, instance_id: str) -> dict | None:
 
 
 def contract_gen_status(method_id: str, log_path: Path) -> dict:
-    output_dir = CONTRACT_GEN_ROOT / "output" / method_id
+    result_dir = RESULTS_ROOT / method_id
+    logs_dir = result_dir / "logs"
     status: dict = {
         "stage_marker": last_stage_marker(log_path),
         "repo_manifest": None,
         "contract_headline": None,
-        "repolaunch": repolaunch_progress(output_dir, method_id),
+        "repolaunch": repolaunch_progress(logs_dir, method_id),
     }
-    manifest_path = output_dir / "repo_manifest.json"
+    manifest_path = logs_dir / "repo_manifest.json"
     if manifest_path.exists():
         m = json.loads(manifest_path.read_text())
         status["repo_manifest"] = {
@@ -122,7 +126,7 @@ def contract_gen_status(method_id: str, log_path: Path) -> dict:
             "docker_image": m.get("docker_image"),
             "commit": m.get("resolved_commit_sha"),
         }
-    contract_path = output_dir / "model_contract.yaml"
+    contract_path = result_dir / "component" / "model_contract.yaml"
     if contract_path.exists():
         try:
             import yaml
@@ -140,22 +144,34 @@ def contract_gen_status(method_id: str, log_path: Path) -> dict:
     return status
 
 
+_MINI_STEP_RE = re.compile(r"mini-swe-agent \(step (\d+), \$([\d.]+)\)")
+
+
 def benchmark_adapt_status(method_id: str, log_path: Path | None) -> dict:
-    output_dir = BENCHMARK_ADAPT_ROOT / "output" / method_id
-    status: dict = {"seeded": output_dir.exists(), "stub": None, "trajectory": None, "log_tail": None}
-    script_path = output_dir / "script.py"
+    result_dir = RESULTS_ROOT / method_id
+    script_path = result_dir / "component" / "script.py"
+    status: dict = {"seeded": script_path.exists(), "stub": None, "trajectory": None, "log_tail": None, "mini_progress": None}
     if script_path.exists():
         status["stub"] = "NotImplementedError" in script_path.read_text()
-    traj_path = output_dir / "trajectory.json"
+    traj_path = result_dir / "logs" / "trajectory.json"
     if traj_path.exists():
         status["trajectory"] = {"mtime": time.ctime(traj_path.stat().st_mtime), "size_bytes": traj_path.stat().st_size}
     if log_path and log_path.exists():
-        lines = log_path.read_text(errors="ignore").splitlines()
+        text = log_path.read_text(errors="ignore")
+        lines = text.splitlines()
         status["log_tail"] = lines[-5:]
+        # Unlike RepoLaunch (subprocess.run(capture_output=True), buffered until exit),
+        # synthesize_adapter.py invokes mini without capturing output, so its per-step
+        # "mini-swe-agent (step N, $cost)" markers stream straight into this log in real time.
+        steps = _MINI_STEP_RE.findall(text)
+        if steps:
+            last_step, last_cost = steps[-1]
+            status["mini_progress"] = {"step": int(last_step), "cost_usd": float(last_cost)}
     return status
 
 
 def render(method_id: str, procs: dict, cg: dict, ba: dict) -> str:
+    ba_running = bool(procs.get("synthesize_adapter") or procs.get("mini"))
     lines = [f"=== Pipeline status: {method_id}  ({time.strftime('%H:%M:%S')}) ==="]
 
     lines.append("\n-- Processes --")
@@ -190,11 +206,16 @@ def render(method_id: str, procs: dict, cg: dict, ba: dict) -> str:
         lines.append("  not started yet (no output dir)")
     else:
         lines.append(f"  script.py is a stub: {ba['stub']}")
+        if ba["mini_progress"]:
+            lines.append(f"  mini-swe-agent: step {ba['mini_progress']['step']}, ~${ba['mini_progress']['cost_usd']} so far")
         if ba["trajectory"]:
             lines.append(f"  trajectory.json: {ba['trajectory']}")
-            lines.append("  >>> benchmark_adapt synthesis COMPLETE (trajectory written)")
-        elif ba["stub"] is False:
-            lines.append("  >>> script.py has real content (synthesis appears complete or in progress)")
+        if ba_running:
+            lines.append("  RUNNING -- not done yet (trajectory.json is written incrementally, its presence alone isn't completion)")
+        elif ba["trajectory"] or ba["stub"] is False:
+            lines.append("  >>> benchmark_adapt synthesis COMPLETE (no process running, and script.py/trajectory.json present)")
+        else:
+            lines.append("  seeded but neither running nor complete -- check log_tail below for what happened")
         if ba["log_tail"]:
             lines.append("  recent log lines:")
             for l in ba["log_tail"]:
@@ -206,16 +227,20 @@ def render(method_id: str, procs: dict, cg: dict, ba: dict) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--method-id", default="scape")
-    ap.add_argument("--contract-gen-log", type=Path, default=RESULTS_ROOT / "stage0-3_contract_gen.log")
-    ap.add_argument("--benchmark-adapt-log", type=Path, default=RESULTS_ROOT / "stage4_benchmark_adapt.log")
+    ap.add_argument("--contract-gen-log", type=Path, default=None, help="Default: methods/results/<method-id>/logs/stage0-3_contract_gen.log")
+    ap.add_argument("--benchmark-adapt-log", type=Path, default=None, help="Default: methods/results/<method-id>/logs/stage4_benchmark_adapt.log")
     ap.add_argument("--watch", action="store_true", help="Refresh continuously until Ctrl-C")
     ap.add_argument("--interval", type=float, default=10.0)
     args = ap.parse_args()
 
+    logs_dir = RESULTS_ROOT / args.method_id / "logs"
+    contract_gen_log = args.contract_gen_log or (logs_dir / "stage0-3_contract_gen.log")
+    benchmark_adapt_log = args.benchmark_adapt_log or (logs_dir / "stage4_benchmark_adapt.log")
+
     while True:
         procs = find_processes(_ps_aux())
-        cg = contract_gen_status(args.method_id, args.contract_gen_log)
-        ba = benchmark_adapt_status(args.method_id, args.benchmark_adapt_log)
+        cg = contract_gen_status(args.method_id, contract_gen_log)
+        ba = benchmark_adapt_status(args.method_id, benchmark_adapt_log)
         output = render(args.method_id, procs, cg, ba)
 
         if args.watch:

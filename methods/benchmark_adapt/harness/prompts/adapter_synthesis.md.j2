@@ -26,6 +26,26 @@ needed a workaround, that's relevant context, not something to silently redo dif
 Write exactly three files under `{{ output_dir }}`:
 
 1. `script.py` -- the adapter. It must:
+   {% if requires_sc_counts %}
+   - This contract has `requires_sc_counts: true` -- the method's own entrypoint (see the
+     contract's citations) needs raw single-cell counts, not a DE-signature table. Read
+     `par['sc_train']` (raw single-cell counts `.h5ad` -- cell_type/sm_name/control-style obs
+     columns; confirm the *actual* columns/structure this repo's own single-cell entrypoint (e.g.
+     a `setup_anndata`-style call) requires by reading the repo directly, don't assume scAPE's or
+     any other method's schema) and `par['id_map']` (which `(cell_type, sm_name)` combinations to
+     predict for). There is no `par['de_train']` for this component. `--sc_train` is **not** a
+     real `wf_method.yaml` argument today -- it's a local, proposed extension this pipeline is
+     testing (same status as the prior filed API-gap finding for this method, if one exists).
+     State this explicitly in `DEVIATIONS.md` rather than presenting it as an already-accepted
+     part of OP3's API.
+   - Produce `par['output']`: single-cell-level predictions (an AnnData whose rows correspond to
+     the query conditions in `id_map`, genes as columns/var). This is genuinely different from the
+     DE-signature `prediction`-layer convention other methods in this task use (see
+     `file_prediction.yaml`) -- this method operates at single-cell level natively, and forcing a
+     collapse into the DE-signature shape would need a real pseudobulk+DE computation this
+     pipeline doesn't have yet. Name the output layer clearly (e.g. `predicted_expression`, not
+     `prediction`) and document the choice in `DEVIATIONS.md`.
+   {% else %}
    - Read `par['de_train']`, `par['id_map']`, and `par['layer']` (which de_train layer to read,
      e.g. `{{ input_layer }}` -- a real `wf_method.yaml` argument, not something we invented)
      ONLY. There is no `par['de_test']` -- OP3 never hands a regular method the held-out labels.
@@ -37,15 +57,10 @@ Write exactly three files under `{{ output_dir }}`:
      order -- `obs=pd.DataFrame(index=id_map["id"].astype(str))` -- not cell_type/sm_name
      columns; `file_prediction.yaml` requires no obs columns at all. Include
      `uns={"dataset_id": de_train.uns["dataset_id"], "method_id": meta["name"]}`.
+   {% endif %}
    - Genuinely depend on `sm_name`, not just `cell_type` -- a model that collapses to the
      per-cell-type training mean will be caught and rejected by the Gauntlet's shuffle test.
    - Never access the network during inference.
-   - {% if requires_sc_counts %}This contract has `requires_sc_counts: true`. de_train/id_map
-     cannot express what this model needs (it's single-cell, not DE-signature). Do not fabricate
-     counts from the DE table. Write `script.py` as far as you honestly can, then write a clear
-     `NotImplementedError` explaining the gap -- this is the known OP3 API limitation being filed
-     as a finding, not a bug to work around.
-     {% else %}This contract is DE-signature-native -- de_train/id_map should be sufficient.{% endif %}
 
 2. `config.vsh.yaml` -- follow `component_template/config.vsh.yaml.j2`'s structure:
    `__merge__: ../../api/comp_method.yaml`, `engines.docker.image: {{ docker_image }}`, and
@@ -69,9 +84,19 @@ Do not try to make the numbers match the paper by adjusting the model. Scientifi
 the paper's method actually does, cited and logged, is the goal -- not agreement with a reported
 number.
 
-## Iterate against the fixture
+## Iterate against your input
 
+{% if requires_sc_counts %}
+No pre-built fixture exists yet for this single-cell input path -- the right shape depends on
+covariate columns only the real repo's own entrypoint can tell you (confirm by reading it, don't
+guess). Build a small synthetic `sc_train.h5ad` yourself (a few hundred cells, 2+ cell types, a
+handful of compounds + controls, matching whatever obs columns/structure the real entrypoint
+needs) to smoke-test `script.py` end-to-end before declaring done -- do not skip execution just
+because no fixture was handed to you, and say clearly in `DEVIATIONS.md` that verification used a
+self-built stand-in, not a pinned fixture.
+{% else %}
 A tiny fixture is mounted at `{{ fixture_dir }}` (`de_train.h5ad`, `id_map.csv`, gene order pinned
 by SHA256 in `fixture_manifest.json`). Run your adapter against it and inspect the output before
 declaring done. You have shell access in this container -- use it to actually execute
 `script.py`, not just read code.
+{% endif %}
