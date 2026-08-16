@@ -21,7 +21,7 @@ import pandas as pd
 import yaml
 from scipy import sparse
 
-from psls_tooling import (
+from benchmark_ingest import (
     LookupResult,
     compute_qc_metrics,
     download_file,

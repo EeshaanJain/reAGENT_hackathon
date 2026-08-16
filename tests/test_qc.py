@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from psls_tooling import compute_qc_metrics, filter_with_audit, summarize_qc
+from benchmark_ingest import compute_qc_metrics, filter_with_audit, summarize_qc
 
 
 def test_compute_and_summarize_qc(valid_adata) -> None:

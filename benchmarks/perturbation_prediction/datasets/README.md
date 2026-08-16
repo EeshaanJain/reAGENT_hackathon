@@ -2,7 +2,7 @@
 
 Each dataset has a `dataset.yaml` containing its evidence sources, prompt inputs, validation
 contract reference, and subset policy. Benchmark-wide AnnData semantics live in
-`../ingest_contract.yaml`; reusable implementation code lives in `src/psls_tooling`.
+`../ingest_contract.yaml`; reusable implementation code lives in `src/benchmark_ingest`.
 
 Render a dataset prompt without creating a divergent checked-in copy:
 

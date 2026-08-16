@@ -66,7 +66,7 @@ Read the publication, code repository, and deposited-data documentation before t
 
 Inventory every downloaded file before choosing an input. Inspect bounded samples of large matrix files during preflight and reserve their complete integrity scan for the streamed construction pass.
 
-Use `psls_tooling.inspect_anndata` to inventory AnnData inputs.
+Use `benchmark_ingest.inspect_anndata` to inventory AnnData inputs.
 
 Determine matrix orientation, dimensions, sparsity, count location, and gene identifiers.
 
@@ -82,7 +82,7 @@ Preserve useful source metadata and document its meaning, provenance, and any re
 
 # Cell quality control
 
-Use `psls_tooling.compute_qc_metrics` and `psls_tooling.summarize_qc` to evaluate QC distributions.
+Use `benchmark_ingest.compute_qc_metrics` and `benchmark_ingest.summarize_qc` to evaluate QC distributions.
 
 Distinguish source-defined identity and QC filters from newly introduced expression QC.
 
@@ -112,7 +112,7 @@ Filter for protein-coding genes. When multiple source gene identifiers map to on
 
 # Chemical harmonization
 
-Use `psls_tooling.standardize_smiles`, `psls_tooling.resolve_compounds`, and `psls_tooling.drop_unresolved_treatments` for chemical harmonization.
+Use `benchmark_ingest.standardize_smiles`, `benchmark_ingest.resolve_compounds`, and `benchmark_ingest.drop_unresolved_treatments` for chemical harmonization.
 
 Resolve chemicals from supplied structures or exact identifiers before using name-based lookups.
 
@@ -158,8 +158,8 @@ Write the report under
 
 The report must list source URLs and checksums, mappings, QC decisions, the minimum-condition-size audit, the complete loss ledger, before-and-after dimensions, chemical-resolution losses, validation results, and unresolved blockers.
 
-Load `${ingest_contract_path}` with `psls_tooling.load_ingest_contract`, reopen the H5AD file,
-and run `psls_tooling.validate_ingested_adata` with that explicit contract before finishing.
+Load `${ingest_contract_path}` with `benchmark_ingest.load_ingest_contract`, reopen the H5AD file,
+and run `benchmark_ingest.validate_ingested_adata` with that explicit contract before finishing.
 
 Validate the reopened H5AD against the target subset constraint.
 

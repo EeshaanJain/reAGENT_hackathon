@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from psls_tooling import download_file
+from benchmark_ingest import download_file
 
 
 def test_download_file_handles_urlerror_and_removes_partial(monkeypatch, tmp_path: Path) -> None:

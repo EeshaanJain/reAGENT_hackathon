@@ -5,7 +5,7 @@ import pandas as pd
 from rdkit.Chem import SaltRemover
 from scipy import sparse
 
-from psls_tooling import (
+from benchmark_ingest import (
     LookupResult,
     drop_unresolved_treatments,
     normalize_inchikey,

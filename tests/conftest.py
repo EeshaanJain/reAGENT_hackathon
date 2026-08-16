@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 from scipy import sparse
 
-from psls_tooling import IngestContract, load_ingest_contract
+from benchmark_ingest import IngestContract, load_ingest_contract
 
 
 @pytest.fixture

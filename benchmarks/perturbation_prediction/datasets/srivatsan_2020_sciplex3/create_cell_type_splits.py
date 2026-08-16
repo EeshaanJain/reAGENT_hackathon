@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from psls_tooling import write_cell_type_manifests
+from benchmark_ingest import write_cell_type_manifests
 
 DATASET_ID = "srivatsan_2020_sciplex3"
 ROOT = Path(__file__).resolve().parents[4]

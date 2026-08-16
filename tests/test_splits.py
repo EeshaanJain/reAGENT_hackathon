@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from scipy import sparse
 
-from psls_tooling import (
+from benchmark_ingest import (
     create_cell_type_manifests,
     split_adata_by_manifest,
     write_cell_type_manifests,

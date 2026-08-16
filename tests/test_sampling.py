@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from psls_tooling import select_condition_subset
+from benchmark_ingest import select_condition_subset
 
 
 def _sampling_obs() -> pd.DataFrame:

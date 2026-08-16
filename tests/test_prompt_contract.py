@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from psls_tooling import render_ingest_prompt
+from benchmark_ingest import render_ingest_prompt
 
 DATASET_CONFIGS = sorted(
     Path("benchmarks/perturbation_prediction/datasets").glob("*/dataset.yaml")
@@ -35,10 +35,10 @@ def test_rendered_prompts_have_required_contract_and_scope(path: Path) -> None:
     assert '"3prime"' in prompt
     assert '"5prime"' in prompt
     assert "Preserve useful source metadata" in prompt
-    assert "psls_tooling.inspect_anndata" in prompt
-    assert "psls_tooling.resolve_compounds" in prompt
-    assert "psls_tooling.load_ingest_contract" in prompt
-    assert "psls_tooling.validate_ingested_adata" in prompt
+    assert "benchmark_ingest.inspect_anndata" in prompt
+    assert "benchmark_ingest.resolve_compounds" in prompt
+    assert "benchmark_ingest.load_ingest_contract" in prompt
+    assert "benchmark_ingest.validate_ingested_adata" in prompt
     assert "benchmarks/perturbation_prediction/ingest_contract.yaml" in prompt
 
 

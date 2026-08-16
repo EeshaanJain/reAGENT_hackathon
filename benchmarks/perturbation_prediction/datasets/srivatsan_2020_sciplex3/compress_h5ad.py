@@ -24,7 +24,7 @@ from pathlib import Path
 import anndata as ad
 import yaml
 
-from psls_tooling import load_ingest_contract, sha256_file, validate_ingested_adata
+from benchmark_ingest import load_ingest_contract, sha256_file, validate_ingested_adata
 
 DATASET_DIR = Path(__file__).resolve().parent
 ROOT = Path(__file__).resolve().parents[4]

@@ -7,7 +7,7 @@ import anndata as ad
 import pandas as pd
 import yaml
 
-from psls_tooling import inspect_anndata, load_ingest_contract, validate_ingested_adata
+from benchmark_ingest import inspect_anndata, load_ingest_contract, validate_ingested_adata
 
 
 def test_validate_counts_only_contract(valid_adata, ingest_contract) -> None:

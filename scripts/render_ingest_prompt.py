@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from psls_tooling import render_ingest_prompt
+from benchmark_ingest import render_ingest_prompt
 
 
 def parse_args() -> argparse.Namespace:
