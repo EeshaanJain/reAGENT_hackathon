@@ -14,6 +14,16 @@ links:
 info:
   preferred_normalization: {{ preferred_normalization | default('unknown') }}
 
+{% if arguments %}
+arguments:
+{% for arg in arguments %}
+  - type: {{ arg.arg_type }}
+    name: {{ arg.name }}
+    description: {{ arg.description | tojson }}
+    default: {{ arg.value | tojson }}
+{% endfor %}
+{% endif %}
+
 resources:
   - type: python_script
     path: script.py
@@ -22,9 +32,18 @@ engines:
   - type: docker
     # Reconstructed deterministically from the handed-off image's layers (C3) -- not hand-written.
     image: {{ docker_image }}
-{% if docker_setup %}
+{% if dependencies or docker_setup %}
     setup:
+{% if dependencies %}
+      - type: python
+        packages:
+{% for dep in dependencies %}
+          - "{{ dep.package }}{{ dep.value if dep.value and dep.value != 'unknown' else '' }}"
+{% endfor %}
+{% endif %}
+{% if docker_setup %}
 {{ docker_setup }}
+{% endif %}
 {% endif %}
 
 runners:
