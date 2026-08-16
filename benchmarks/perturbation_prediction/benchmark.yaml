@@ -1,0 +1,63 @@
+# Benchmark config for the Open Problems chemical perturbation prediction task.
+# All benchmark-specific knowledge lives here; agent code must stay generic.
+id: perturbation_prediction
+name: Perturbation Prediction
+openproblems_url: https://openproblems.bio/benchmarks/perturbation_prediction/
+task_repo: https://github.com/openproblems-bio/task_perturbation_prediction
+description: >
+  Predicting how small molecules (chemical perturbations) change gene
+  expression in different cell types, from single-cell transcriptomics data.
+
+# Cadence for the scheduled literature search (daily | weekly | monthly)
+search_schedule: weekly
+
+# What the contributor pipeline should do with a confirmed-relevant paper.
+next_step_template: >
+  Integrate this {kind} into the Open Problems perturbation prediction
+  benchmark ({task_repo}).
+
+# Gold-standard data for backsearch evaluation of the literature agent.
+gold:
+  source_csv: db/perturbation_model_papers.csv
+  # Papers known to be relevant but of a different kind (benchmark papers, not
+  # methods): retrieving them is neither a true nor a false positive.
+  related_csv: db/perturbation_benchmark_papers.csv
+  # A paper is a positive for this benchmark if ANY of these columns has a
+  # value other than the listed 'negative' values.
+  relevance_columns:
+    - task_unseen_chemical_status
+    - task_chemical_combinations_status
+    - scperturbench_unseen_chemical_evaluated
+    - scperturbench_chemical_combinations_evaluated
+  negative_values: ["not_established", "False", ""]
+  # Columns copied from the source DB into the gold CSVs (schema of source_csv).
+  keep_columns:
+    - model_name
+    - paper_title
+    - bibtex_key
+    - publication_year
+    - venue
+    - doi
+    - doi_url
+    - paper_url
+    - github_repositories
+    - summary
+  # Manual corrections to the automatic relevance rule (by model_name),
+  # e.g. papers the team judged relevant despite DB task-status columns.
+  # Team-reviewed relevance verdicts (2026-08-16), override DB task columns.
+  force_positive:
+    - scPerb
+    - C3TL
+    - Departures
+    - LPM
+    - PerturbDiff
+    - scDFM
+    - scDisInFact
+  # Papers the team judged NOT relevant despite matching the relevance rule
+  # (e.g. general-purpose tools whose DB row has chemical-scope columns set).
+  force_negative:
+    - TabPFN / TabICL
+  # Manual doc-id resolution (e.g. journal paper only in corpus as a preprint
+  # with a different title, so automatic DOI/title resolution can't find it).
+  doc_id_overrides:
+    D-SPIN: bio_42aa85936e2c
