@@ -26,11 +26,29 @@ Declare dependencies in `pyproject.toml` and update `uv.lock`.
 
 Run Python commands, scripts, and tests with `uv run`.
 
+# Execution strategy
+
+Complete a metadata-only preflight before reading the entire count matrix. Require all of the following to pass:
+
+- Required source columns exist.
+- Cell, sample, and gene identifiers are unique where required, normalized consistently, and aligned by both set and order wherever the matrix format depends on annotation order.
+- Control, dose, timepoint, batch, and cell-type mappings are complete and unambiguous.
+- Gene mapping, protein-coding selection, and duplicate-symbol aggregation are finalized.
+- Chemical resolution is complete and anticipated compound and cell losses are known.
+- Output column names and dtypes, including all derived flags, are frozen.
+- The expression-QC strategy, including its deterministic formulas, floors, caps, and grouping checks, is declared.
+
+For large matrices, use bounded samples to establish the physical format, index base, orientation, count semantics, and parser behavior. Perform the complete integrity audit in the same streamed pass used to construct the sparse matrix; do not run a separate full-file scan unless the construction pass cannot provide the required evidence. Never densify the complete matrix.
+
+Treat explicit matrix headers or matching annotation tables as authoritative for matrix dimensions. Require every observed coordinate to be in bounds, but do not require every annotated row or column to occur among the nonzero coordinates.
+
+Validate all required and derived output-column dtypes before beginning the full matrix build. Persist audit results separately from matrix construction. Generate the report from those audit results and the reopened H5AD so that report-only changes do not trigger matrix reconstruction.
+
 # Evidence and exploration
 
 Read the publication, code repository, and deposited-data documentation before transforming data.
 
-Inspect every downloaded file before choosing an input.
+Inventory every downloaded file before choosing an input. Inspect bounded samples of large matrix files during preflight and reserve their complete integrity scan for the streamed construction pass.
 
 Use `psls_tooling.inspect_anndata` to inventory AnnData inputs.
 
@@ -50,13 +68,21 @@ Preserve useful source metadata and document its meaning, provenance, and any re
 
 Use `psls_tooling.compute_qc_metrics` and `psls_tooling.summarize_qc` to evaluate QC distributions.
 
-Choose cell and gene QC thresholds from this dataset's distributions.
+Distinguish source-defined identity and QC filters from newly introduced expression QC.
+
+Choose global, deterministic cell and gene QC rules before the final build and record the exact formula, quantile, floor, and cap used by each rule. Do not choose separate thresholds by perturbation, dose, cell type, or batch.
+
+Because treatment toxicity can be biological signal, use broad expression-QC thresholds intended to remove technical failures. Report group-level retention rather than adjusting thresholds to normalize retention across groups.
 
 Check QC behavior across batches, cell types, perturbations, doses, and controls before filtering.
 
+Maintain a loss ledger with cells and genes removed at every applicable stage: source-defined QC, invalid or incomplete metadata, unresolved chemistry, protein-coding filtering, expression QC, and gene-detection filtering.
+
 # Gene harmonization
 
-Filter for protein-coding genes.
+Use a gene annotation release compatible with the deposited genome build and gene identifiers, preferring the exact version used by the authors. Pin and report its source, revision, and checksum.
+
+Filter for protein-coding genes. When multiple source gene identifiers map to one gene symbol, sum their counts and retain the complete ordered list of source identifiers in `var`. Never make gene symbols unique by appending arbitrary suffixes.
 
 # Chemical harmonization
 
@@ -65,6 +91,8 @@ Use `psls_tooling.standardize_smiles`, `psls_tooling.resolve_compounds`, and `ps
 Resolve chemicals from supplied structures or exact identifiers before using name-based lookups.
 
 Standardize treated compounds to full InChIKeys and record the resolution source.
+
+Cache every external registry response used for chemical resolution. Record the query value, identifier namespace, endpoint, retrieval date, response checksum, and selected record. The ingest must replay from cached responses without requiring a live name lookup.
 
 Desalt only recognized small counterions.
 
@@ -100,7 +128,7 @@ Write the H5AD file to `data/processed/<dataset_id>.h5ad`.
 
 Write the report to `data_ingest/<dataset_id>/ingest_report.md`.
 
-The report must list source URLs and checksums, mappings, QC decisions, before-and-after dimensions, chemical-resolution losses, validation results, and unresolved blockers.
+The report must list source URLs and checksums, mappings, QC decisions, the complete loss ledger, before-and-after dimensions, chemical-resolution losses, validation results, and unresolved blockers.
 
 Reopen the H5AD file and run `psls_tooling.validate_ingested_adata` before finishing.
 

@@ -307,6 +307,22 @@ batch-by-cell-type interaction.
 - `validate_ingested_adata` errors: `[]`.
 - `validate_ingested_adata` warnings: `[]`.
 
+## Shareable compressed copy
+
+- Path: `data/processed/srivatsan_2020_sciplex3_compressed.h5ad`.
+- Reproducible command:
+  `uv run python data_ingest/srivatsan_2020_sciplex3/compress_h5ad.py --force`.
+- Compression: standard HDF5 byte shuffle followed by gzip level 4 on the CSR
+  `data`, `indices`, and `indptr` arrays. The copy remains directly readable by AnnData and
+  requires no third-party HDF5 compression plugin.
+- Original size: 1,874,084,207 bytes; compressed size: 1,147,354,408 bytes
+  (38.78% reduction).
+- Compressed-copy SHA-256:
+  `b3534cfa0e78864741a5d3781e73b8d19c9605fcd7b8a03c2d9e76d4f75c3be9`.
+- `h5diff -q` found no logical dataset or attribute differences from the validated source.
+- The compressed copy was reopened and passed `validate_ingested_adata` with errors `[]`
+  and warnings `[]`.
+
 ## Unresolved blockers
 
 None.
