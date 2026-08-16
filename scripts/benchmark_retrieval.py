@@ -59,9 +59,13 @@ def main(benchmark_dir: str) -> None:
         out_path.write_text(json.dumps(results, indent=2))
 
     # ---- Phase 1: keyword sets ----
+    # 5 sets uniformly spanning the tuning history: the very first baseline,
+    # two intermediates, the 8-query tuned set, and the current keywords.
+    SET_FILES = ["v1_baseline", "v2_chem_focus", "v4_families", "v6_tuned8"]
     query_sets: dict[str, list[str]] = {}
-    for f in sorted((repo_root / "evals" / "backsearch" / "query_sets").glob("*.yaml")):
-        query_sets[f.stem] = yaml.safe_load(f.read_text())["search"]["queries"]
+    for stem in SET_FILES:
+        f = repo_root / "evals" / "backsearch" / "query_sets" / f"{stem}.yaml"
+        query_sets[stem] = yaml.safe_load(f.read_text())["search"]["queries"]
     current = yaml.safe_load((bench / "keywords.yaml").read_text())["search"]
     query_sets["current_keywords"] = current["queries"]
 
