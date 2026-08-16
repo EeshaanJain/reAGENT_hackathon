@@ -1,0 +1,18 @@
+[project]
+name = "litsearch"
+version = "0.1.0"
+description = "Benchmark-agnostic literature search agent for maintaining Open Problems benchmarks"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
