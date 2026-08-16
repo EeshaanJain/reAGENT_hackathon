@@ -65,6 +65,23 @@ def test_resolve_compounds_uses_structure_before_fallback() -> None:
     assert result.loc[1, "inchikey_source"] == "fixture"
 
 
+def test_resolve_compounds_rejects_invalid_fallback_key_and_preserves_diagnosis() -> None:
+    compounds = pd.DataFrame({"SMILES": ["not-a-smiles"], "name": ["bad fallback"]})
+
+    def fallback(_row: pd.Series) -> LookupResult:
+        return LookupResult("BAD-KEY", "fixture", "resolved")
+
+    result = resolve_compounds(
+        compounds,
+        inchikey_col=None,
+        fallback_resolver=fallback,
+    )
+
+    assert result.loc[0, "inchikey"] is None
+    assert result.loc[0, "inchikey_source"] is None
+    assert result.loc[0, "chemical_status"] == "invalid_smiles"
+
+
 def test_drop_unresolved_treatments_retains_controls() -> None:
     obs = pd.DataFrame(
         {

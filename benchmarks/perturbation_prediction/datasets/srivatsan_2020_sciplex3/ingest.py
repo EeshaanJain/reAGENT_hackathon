@@ -38,89 +38,40 @@ from benchmark_ingest import (
     validate_ingested_adata,
 )
 
-DATASET_ID = "srivatsan_2020_sciplex3"
-GEO_ACCESSION = "GSM4150378"
-CODE_COMMIT = "079639c50811dd43a206a779ab2f0199a147c98f"
 DATASET_DIR = Path(__file__).resolve().parent
 ROOT = Path(__file__).resolve().parents[4]
 DATASET_CONFIG_PATH = DATASET_DIR / "dataset.yaml"
 DATASET_CONFIG = yaml.safe_load(DATASET_CONFIG_PATH.read_text())
+DATASET_METADATA = DATASET_CONFIG["dataset"]
+INGEST_CONFIG = DATASET_CONFIG["ingest"]
 SUBSET_CONFIG = DATASET_CONFIG["subset"]
+DATASET_ID = str(DATASET_METADATA["dataset_id"])
+GEO_ACCESSION = str(DATASET_METADATA["accession"])
+PUBLICATION_URL = str(DATASET_METADATA["publication_url"])
+CODE_URL = str(DATASET_METADATA["code_url"])
+CODE_COMMIT = str(DATASET_METADATA["code_commit"])
+GEO_URL = str(DATASET_METADATA["data_url_or_accession"])
+PROTOCOL_URL = str(DATASET_METADATA["protocol_url"])
 CONTRACT_PATH = (DATASET_DIR / DATASET_CONFIG["ingest_contract"]).resolve()
 INGEST_CONTRACT = load_ingest_contract(CONTRACT_PATH)
 RAW_DIR = ROOT / "data" / "raw" / DATASET_ID
 OUTPUT = ROOT / "data" / "processed" / f"{DATASET_ID}.h5ad"
 REPORT = DATASET_DIR / "ingest_report.md"
-PUBLICATION_PDF = ROOT / "data" / (
-    "Srivatsan et al. - 2020 - Massively multiplex chemical transcriptomics "
-    "at single-cell resolution.pdf"
-)
-
-PUBLICATION_URL = "https://www.science.org/doi/10.1126/science.aax6234"
-CODE_URL = "https://github.com/cole-trapnell-lab/sci-plex"
-GEO_URL = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM4150378"
-PROTOCOL_URL = "https://pmc.ncbi.nlm.nih.gov/articles/PMC6434952/#S13"
-GEO_BASE = "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM4150nnn/GSM4150378/suppl"
-
-SOURCE_FILES: dict[str, dict[str, str]] = {
-    "counts": {
-        "filename": "GSM4150378_sciPlex3_A549_MCF7_K562_screen_UMI.count.matrix.gz",
-        "url": f"{GEO_BASE}/GSM4150378_sciPlex3_A549_MCF7_K562_screen_UMI.count.matrix.gz",
-        "sha256": "7d632716aa6ed0fc1780996003d0abc440ff78340609bceaaa4c8ade9345d00a",
-        "role": "used: deposited UMI counts",
-    },
-    "cell_annotations": {
-        "filename": "GSM4150378_sciPlex3_A549_MCF7_K562_screen_cell.annotations.txt.gz",
-        "url": f"{GEO_BASE}/GSM4150378_sciPlex3_A549_MCF7_K562_screen_cell.annotations.txt.gz",
-        "sha256": "5db11591747a49f07ceb90a070971d60816591911f1022171adba7d8d032f379",
-        "role": "used: matrix cell order",
-    },
-    "gene_annotations": {
-        "filename": "GSM4150378_sciPlex3_A549_MCF7_K562_screen_gene.annotations.txt.gz",
-        "url": f"{GEO_BASE}/GSM4150378_sciPlex3_A549_MCF7_K562_screen_gene.annotations.txt.gz",
-        "sha256": "fbe43028cfb75dc5ebf383cbbbb100da6b51e7be8e2e74f6354f7c59b9fda7c2",
-        "role": "used: matrix gene order and symbols",
-    },
-    "hash_metadata": {
-        "filename": "GSM4150378_sciPlex3_A549_MCF7_K562_hashTable_metadata.txt.gz",
-        "url": f"{GEO_BASE}/GSM4150378_sciPlex3_A549_MCF7_K562_hashTable_metadata.txt.gz",
-        "sha256": "98a65191d343d149c5742cf6e7b734d403e853d165da800fa2daea41b978a2ff",
-        "role": "used: legal conditions, structures, and exact identifiers",
-    },
-    "pdata": {
-        "filename": "GSM4150378_sciPlex3_pData.txt.gz",
-        "url": f"{GEO_BASE}/GSM4150378_sciPlex3_pData.txt.gz",
-        "sha256": "860ba5c21846e2cfe97c39c805895982ef9db4b108cdf8b841a4a91be65024c2",
-        "role": "used: cell-level experimental and hash-QC metadata",
-    },
-    "hash_sample_sheet": {
-        "filename": "GSM4150378_sciPlex3_hashSampleSheet.txt.gz",
-        "url": f"{GEO_BASE}/GSM4150378_sciPlex3_hashSampleSheet.txt.gz",
-        "sha256": "ac66d0dfdcc3c170af9beafe2843d0250a10f753f7bf99968aafe7a2e7279084",
-        "role": "inspected, not used: pData already contains decoded hash assignments",
-    },
-    "gencode_bed": {
-        "filename": "gencode.v27.transcripts.bed",
-        "url": (
-            "https://raw.githubusercontent.com/cole-trapnell-lab/sci-plex/"
-            f"{CODE_COMMIT}/large_screen/bin/gencode.v27.transcripts.bed"
-        ),
-        "sha256": "ebe49dde9655b025ba52c85f8dadd141c5d863c1a12e607ed4c2907c704094ca",
-        "role": "used: publication-code GENCODE v27 gene biotypes",
-    },
-    "pubchem_cas": {
-        "filename": "pubchem_4548-34-9.json",
-        "url": (
-            "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/4548-34-9/"
-            "property/IsomericSMILES,InChIKey/JSON"
-        ),
-        "sha256": "7163dde8c6b3025ba7a10948b56c8c9c9f72ac8cc2da5b5f4f8df2f35863788f",
-        "role": "used: exact-CAS fallback for one malformed deposited structure",
-    },
-}
-
-PUBLICATION_PDF_SHA256 = "d6af84b4a72bf3b15f3fae037bdbe0e7b8901cf50f0b496a8e4ca1c00b6ee19e"
-MATRIX_CHUNK_ROWS = 10_000_000
+PUBLICATION_PDF = ROOT / str(DATASET_METADATA["local_pdf_path"])
+PUBLICATION_PDF_SHA256 = str(DATASET_METADATA["local_pdf_sha256"])
+SOURCE_FILES: dict[str, dict[str, str]] = INGEST_CONFIG["source_files"]
+REQUIRED_PDATA_COLUMNS = frozenset(map(str, INGEST_CONFIG["required_pdata_columns"]))
+MATRIX_CHUNK_ROWS = int(INGEST_CONFIG["matrix_chunk_rows"])
+EXPECTED_TREATED_COMPOUNDS = int(INGEST_CONFIG["expected_treated_compounds"])
+CONTROL_CONFIG = INGEST_CONFIG["control"]
+CONTROL_CATALOG_NUMBER = str(CONTROL_CONFIG["source_catalog_number"])
+CONTROL_LABEL = str(CONTROL_CONFIG["output_label"])
+FALLBACK_CONFIG = INGEST_CONFIG["exact_identifier_fallback"]
+FALLBACK_CAS_NUMBER = str(FALLBACK_CONFIG["cas_number"])
+FALLBACK_EXPECTED_INCHIKEY = str(FALLBACK_CONFIG["expected_inchikey"])
+FALLBACK_SOURCE = str(FALLBACK_CONFIG["source"])
+FALLBACK_EXPECTED_ROWS = int(FALLBACK_CONFIG["expected_rows"])
+PROTOCOL_CONFIG = INGEST_CONFIG["single_cell_protocol"]
 
 
 def log(message: str) -> None:
@@ -198,25 +149,7 @@ def read_sources(paths: dict[str, Path]) -> dict[str, pd.DataFrame]:
         raise RuntimeError("BLOCKER: pData rows do not exactly match deposited matrix cell order")
     if not np.array_equal(cells["sample"].to_numpy(), pdata["sample"].to_numpy()):
         raise RuntimeError("BLOCKER: cell-annotation and pData sample labels disagree")
-    required_pdata = {
-        "cell",
-        "n.umi",
-        "hash_umis_W",
-        "top_to_second_best_ratio_W",
-        "top_oligo_W",
-        "hash_umis_P",
-        "top_to_second_best_ratio_P",
-        "top_oligo_P",
-        "rt_well",
-        "cell_type",
-        "replicate",
-        "time_point",
-        "catalog_number",
-        "dose",
-        "vehicle",
-        "product_name",
-    }
-    missing = sorted(required_pdata - set(pdata))
+    missing = sorted(REQUIRED_PDATA_COLUMNS - set(pdata))
     if missing:
         raise RuntimeError(f"BLOCKER: required deposited pData columns are missing: {missing}")
     return frames
@@ -238,9 +171,10 @@ def resolve_chemicals(
         .sort_values("catalog_number")
         .reset_index(drop=True)
     )
-    if len(treated) != 188 or not treated["catalog_number"].is_unique:
+    if len(treated) != EXPECTED_TREATED_COMPOUNDS or not treated["catalog_number"].is_unique:
         raise RuntimeError(
-            "BLOCKER: expected 188 unique treated catalog numbers in deposited sci-Plex 3 metadata"
+            "BLOCKER: expected "
+            f"{EXPECTED_TREATED_COMPOUNDS} unique treated catalog numbers in deposited metadata"
         )
 
     # Explicit call retained for the audit even though resolve_compounds also calls it internally.
@@ -253,16 +187,16 @@ def resolve_chemicals(
         raise RuntimeError("BLOCKER: exact PubChem CAS query did not return one unique structure")
     cached_property = properties[0]
     cached_parent = standardize_smiles(cached_property.get("SMILES"))
-    if cached_parent.inchikey != "AELCINSCMGFISI-BDAKNGLRSA-N":
+    if cached_parent.inchikey != FALLBACK_EXPECTED_INCHIKEY:
         raise RuntimeError(
-            "BLOCKER: exact-CAS parent for deposited tranylcypromine record changed or is ambiguous"
+            f"BLOCKER: exact-CAS parent for {FALLBACK_CAS_NUMBER} changed or is ambiguous"
         )
 
     def exact_identifier_fallback(row: pd.Series) -> LookupResult:
-        if str(row.get("CAS.Number", "")).strip() == "4548-34-9":
+        if str(row.get("CAS.Number", "")).strip() == FALLBACK_CAS_NUMBER:
             return LookupResult(
                 cached_parent.inchikey,
-                "pubchem_exact_cas_smiles_rdkit",
+                FALLBACK_SOURCE,
                 cached_parent.status,
             )
         return LookupResult(None, "exact_identifier_only", "not_found")
@@ -274,15 +208,7 @@ def resolve_chemicals(
         fallback_resolver=exact_identifier_fallback,
     )
 
-    # resolve_compounds records the fallback key/source; add its cached standardized structure audit.
-    fallback_mask = resolved["inchikey_source"].eq("pubchem_exact_cas_smiles_rdkit")
-    if fallback_mask.sum() == 1:
-        idx = resolved.index[fallback_mask][0]
-        resolved.loc[idx, "canonical_smiles"] = cached_parent.canonical_smiles
-        resolved.loc[idx, "desalted"] = cached_parent.desalted
-        resolved.loc[idx, "removed_fragments"] = "|".join(cached_parent.removed_fragments)
-        resolved.loc[idx, "parent_candidate_smiles"] = cached_parent.parent_candidate_smiles
-        resolved.loc[idx, "parent_candidate_inchikey"] = cached_parent.parent_candidate_inchikey
+    _patch_fallback_structure_audit(resolved, cached_parent)
 
     unresolved = resolved.loc[resolved["inchikey"].isna(), "catalog_number"].tolist()
     resolved["multicomponent_structure"] = resolved["chemical_status"].isin(
@@ -309,6 +235,22 @@ def resolve_chemicals(
         },
     }
     return resolved, audit
+
+
+def _patch_fallback_structure_audit(resolved: pd.DataFrame, cached_parent: Any) -> None:
+    """Attach cached structure details to exactly the configured fallback rows."""
+    fallback_indices = resolved.index[resolved["inchikey_source"].eq(FALLBACK_SOURCE)]
+    if len(fallback_indices) != FALLBACK_EXPECTED_ROWS:
+        raise RuntimeError(
+            "BLOCKER: expected "
+            f"{FALLBACK_EXPECTED_ROWS} {FALLBACK_SOURCE!r} row(s), found {len(fallback_indices)}"
+        )
+    for idx in fallback_indices:
+        resolved.loc[idx, "canonical_smiles"] = cached_parent.canonical_smiles
+        resolved.loc[idx, "desalted"] = cached_parent.desalted
+        resolved.loc[idx, "removed_fragments"] = "|".join(cached_parent.removed_fragments)
+        resolved.loc[idx, "parent_candidate_smiles"] = cached_parent.parent_candidate_smiles
+        resolved.loc[idx, "parent_candidate_inchikey"] = cached_parent.parent_candidate_inchikey
 
 
 def build_obs(
@@ -369,13 +311,15 @@ def build_obs(
         source[column] = source["catalog_number"].map(chem[column])
 
     control = source["vehicle"].astype(bool)
-    if not control.equals(source["catalog_number"].eq("S0000")):
-        raise RuntimeError("BLOCKER: deposited vehicle flags and S0000 catalog labels disagree")
+    if not control.equals(source["catalog_number"].eq(CONTROL_CATALOG_NUMBER)):
+        raise RuntimeError(
+            "BLOCKER: deposited vehicle flags and configured control catalog labels disagree"
+        )
     if not source.loc[control, "dose"].eq(0).all():
         raise RuntimeError("BLOCKER: a deposited vehicle cell has nonzero dose")
 
     source["sm_name_original"] = source["product_name"]
-    source.loc[control, "sm_name"] = "control"
+    source.loc[control, "sm_name"] = CONTROL_LABEL
     source.loc[control, "inchikey"] = None
     source.loc[control, "inchikey_source"] = "control_not_applicable"
     source.loc[control, "chemical_status"] = "control_not_applicable"
@@ -494,8 +438,8 @@ def stream_counts(
     retained_coordinate_rows = 0
     min_count = np.iinfo(np.int32).max
     max_count = 0
-    max_gene = 0
-    max_cell = 0
+    max_gene_index = -1
+    max_cell_index = -1
     previous_gene = -1
     previous_cell = -1
 
@@ -535,8 +479,8 @@ def stream_counts(
         raw_nnz += len(chunk)
         min_count = min(min_count, int(count.min()))
         max_count = max(max_count, int(count.max()))
-        max_gene = max(max_gene, int(gene.max()) + 1)
-        max_cell = max(max_cell, int(cell.max()) + 1)
+        max_gene_index = max(max_gene_index, int(gene.max()))
+        max_cell_index = max(max_cell_index, int(cell.max()))
         raw_cell_totals += np.bincount(
             cell, weights=count, minlength=n_source_cells
         ).astype(np.int64)
@@ -564,7 +508,7 @@ def stream_counts(
     # The annotation deliberately retains genes with zero counts, so the largest
     # observed gene index need not reach the final annotation row. Every cell was
     # source-filtered at >=500 UMIs and therefore must occur in the matrix.
-    if max_cell != n_source_cells:
+    if max_cell_index != n_source_cells - 1:
         raise RuntimeError(
             "BLOCKER: count-coordinate cell maximum does not match deposited annotations"
         )
@@ -598,8 +542,8 @@ def stream_counts(
         "raw_coordinate_rows": int(raw_nnz),
         "raw_count_min": int(min_count),
         "raw_count_max": int(max_count),
-        "raw_gene_index_max": int(max_gene),
-        "raw_cell_index_max": int(max_cell),
+        "raw_gene_index_max": int(max_gene_index),
+        "raw_cell_index_max": int(max_cell_index),
         "coordinates_strictly_cell_major": True,
         "source_column_sums_match_pdata_n_umi": True,
         "protein_coding_coordinate_rows": before_symbol_sum,
@@ -840,7 +784,7 @@ def write_report(
 ## Scope and result
 
 This ingest uses the official processed UMI count matrix and official metadata for the
-188-compound sci-Plex 3 large screen ({GEO_ACCESSION}). It does not use FASTQs, rerun
+{EXPECTED_TREATED_COMPOUNDS}-compound sci-Plex 3 large screen ({GEO_ACCESSION}). It does not use FASTQs, rerun
 quantification, perform differential expression, split the dataset, train a model, or evaluate a
 model.
 
@@ -854,7 +798,7 @@ model.
 
 {source_table}
 
-The publication identifies sci-Plex 3 as the large screen of 188 compounds in A549, K562, and
+The publication identifies sci-Plex 3 as the large screen of {EXPECTED_TREATED_COMPOUNDS} compounds in A549, K562, and
 MCF7 cells and states that the primary 4-dose screen was collected 24 hours after treatment. The
 deposited legal-condition table additionally identifies the A549 72-hour subset, which is retained.
 The repository was audited at commit `{CODE_COMMIT}` ({CODE_URL}). The GEO record and processing
@@ -862,10 +806,10 @@ documentation were read at {GEO_URL}.
 
 ### Single-cell protocol and capture orientation
 
-- Chemistry: sci-Plex nuclear hashing followed by three-level sci-RNA-seq (sci-RNA-seq3).
+- Chemistry: {PROTOCOL_CONFIG['chemistry']}.
 - Assay material: single nuclei; exonic and intronic strand-specific UMIs were included in the
   deposited gene counts.
-- Capture orientation: **3prime**.
+- Capture orientation: **{PROTOCOL_CONFIG['capture_orientation']}**.
 - Evidence: the sci-Plex paper states that polyadenylated hash oligos are captured together with
   endogenous mRNA by sci-RNA-seq3. The cited sci-RNA-seq3 protocol uses an anchored oligo-dT
   reverse-transcription primer, placing transcript capture at the poly(A)/3-prime end
@@ -899,7 +843,7 @@ but not transformed because decoded assignments and their QC statistics are alre
 | `cell_type` | `cell_type` | A549, K562, or MCF7 cell line |
 | `product_name` | `sm_name_original` | Exact cell-level source perturbation label |
 | hash metadata `name` | `sm_name` | Trimmed official chemical label; all vehicles become `control` |
-| `vehicle` and `catalog_number == S0000` | `control` | Required exact boolean control mapping |
+| `vehicle` and `catalog_number == {CONTROL_CATALOG_NUMBER}` | `control` | Required exact boolean control mapping |
 | `replicate` | `batch` | Experimental replicate (`rep1` or `rep2`) |
 | GENCODE v27 `protein_coding` | retained genes | Exact versioned Ensembl ID match |
 
@@ -932,7 +876,7 @@ overwritten because `sm_name_original` is preserved.
 the structure-first resolution order. Recognized small counterions were removed with the helper's
 12-heavy-atom and one-half-parent size guards. Preserved mixtures are explicitly flagged in
 `obs["multicomponent_structure"]`. The only malformed deposited SMILES was S4246; its exact
-deposited CAS `4548-34-9` was resolved through the cached PubChem PUG response and the returned
+deposited CAS `{FALLBACK_CAS_NUMBER}` was resolved through the cached PubChem PUG response and the returned
 structure was then desalted with the same RDKit procedure. No name-based fallback was used.
 
 - Treated compounds: {chemical_audit['treated_compounds']}
@@ -1010,7 +954,7 @@ treated cells were ranked by a stable SHA-256 hash of seed and cell identifier.
 - Cells are rows; unique protein-coding gene symbols are columns.
 - Required dose, time, cell identity, perturbation, full treated InChIKey, batch, and boolean
   control fields are present; only controls lack an InChIKey.
-- `uns["single_cell_protocol"]` records chemistry, `3prime` orientation, and evidence.
+- `uns["single_cell_protocol"]` records chemistry, `{PROTOCOL_CONFIG['capture_orientation']}` orientation, and evidence.
 - No `split` column exists.
 - Reopened-file inventory:
   `{json.dumps(compact_anndata_inventory(final_inventory), sort_keys=True)}`.
@@ -1061,8 +1005,8 @@ def main() -> None:
     adata = ad.AnnData(X=None, obs=obs, var=var, shape=counts.shape)
     adata.layers["counts"] = counts
     adata.uns["single_cell_protocol"] = {
-        "chemistry": "sci-Plex nuclear hashing with three-level sci-RNA-seq (sci-RNA-seq3)",
-        "capture_orientation": "3prime",
+        "chemistry": str(PROTOCOL_CONFIG["chemistry"]),
+        "capture_orientation": str(PROTOCOL_CONFIG["capture_orientation"]),
         "source": (
             f"{PUBLICATION_URL}; anchored oligo-dT sci-RNA-seq3 protocol: {PROTOCOL_URL}"
         ),

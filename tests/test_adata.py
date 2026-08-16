@@ -41,6 +41,16 @@ def test_validation_rejects_missing_single_cell_protocol(valid_adata, ingest_con
     assert any('uns["single_cell_protocol"]' in error for error in report.errors)
 
 
+def test_validation_requires_original_perturbation_labels(valid_adata, ingest_contract) -> None:
+    invalid = valid_adata.copy()
+    invalid.obs = invalid.obs.drop(columns="sm_name_original")
+
+    report = validate_ingested_adata(invalid, ingest_contract)
+
+    assert not report.ok
+    assert any("sm_name_original" in error for error in report.errors)
+
+
 def test_counts_only_h5ad_round_trip_and_inventory(valid_adata, ingest_contract, tmp_path) -> None:
     output = tmp_path / "counts_only.h5ad"
     valid_adata.write_h5ad(output)

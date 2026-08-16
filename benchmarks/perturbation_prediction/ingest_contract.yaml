@@ -27,6 +27,9 @@ obs:
     sm_name:
       dtype: string
       nonempty: true
+    sm_name_original:
+      dtype: string
+      nonempty: true
     inchikey:
       dtype: string
       nullable: true

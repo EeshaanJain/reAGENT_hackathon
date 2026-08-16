@@ -195,15 +195,17 @@ def resolve_compounds(
         if not key and smiles_col:
             structure = standardize_smiles(row.get(smiles_col))
             key = structure.inchikey
+            chemical_status = structure.status
             if key:
                 source = "smiles_rdkit"
-                chemical_status = structure.status
 
         if not key and fallback_resolver:
             lookup = fallback_resolver(row)
-            key = normalize_inchikey(lookup.inchikey)
-            source = lookup.source
-            chemical_status = lookup.status
+            fallback_key = normalize_inchikey(lookup.inchikey)
+            if fallback_key:
+                key = fallback_key
+                source = lookup.source
+                chemical_status = lookup.status
 
         resolved = row.to_dict()
         resolved.update(

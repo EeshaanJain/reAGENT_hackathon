@@ -328,22 +328,6 @@ control was retained, and treated cells were ranked by a stable SHA-256 hash of 
 - `validate_ingested_adata` errors: `[]`.
 - `validate_ingested_adata` warnings: `[]`.
 
-## Shareable compressed copy
-
-- Path: `data/processed/srivatsan_2020_sciplex3_compressed.h5ad`.
-- Reproducible command:
-  `uv run python benchmarks/perturbation_prediction/datasets/srivatsan_2020_sciplex3/compress_h5ad.py --force`.
-- Compression: standard HDF5 byte shuffle followed by gzip level 4 on the CSR
-  `data`, `indices`, and `indptr` arrays. The copy remains directly readable by AnnData and
-  requires no third-party HDF5 compression plugin.
-- Original size: 535,686,623 bytes; compressed size: 333,429,607 bytes
-  (37.76% reduction).
-- Compressed-copy SHA-256:
-  `bed19ae3d715639d69754bd09bbf8040d96e2b8c236ad1429d6d3e2b03a1ad01`.
-- `h5diff -q` found no logical dataset or attribute differences from the validated source.
-- The compressed copy was reopened and passed `validate_ingested_adata` with errors `[]`
-  and warnings `[]`.
-
 ## Unresolved blockers
 
 None.
