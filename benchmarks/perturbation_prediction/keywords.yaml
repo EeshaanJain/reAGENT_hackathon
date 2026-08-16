@@ -1,0 +1,50 @@
+# Search keywords for the perturbation prediction benchmark literature agent.
+# Tuned via evals/backsearch (see evals/backsearch/results/): this set reaches
+# recall 1.0 on the search-reachable gold positives.
+search:
+  sources: pmc,biorxiv,medrxiv,arxiv
+  results_per_query: 30
+  # Both LLM filter backends are stochastic: run N independent rounds, keep a
+  # paper if ANY round keeps it (union vote, recall-favoring).
+  filter_repeats: 3
+  # Filter backend: paperclip (snippet-based; loses arXiv papers — their
+  # search results carry no snippets) or claude (abstract-based batch judge;
+  # won the harness benchmark, see evals/backsearch/README.md)
+  filter_backend: claude
+  judge_model: sonnet
+  queries:
+    - single-cell perturbation response prediction deep learning
+    - predicting transcriptional response to drug perturbation
+    - chemical perturbation prediction gene expression single-cell
+    - out-of-distribution prediction unseen drug single-cell RNA-seq
+    - diffusion model predicting cellular responses to perturbations
+    - flow matching generative model single-cell perturbation
+    - transferring perturbation responses across cell contexts
+    - statistical baseline drug response prediction single-cell
+    - optimal transport map single-cell perturbation drug response
+    - disentangled representation learning single-cell perturbation
+    - causal representation counterfactual prediction single-cell
+    - foundation model zero-shot molecular perturbation prediction
+    - modeling expression heterogeneity in perturbation responses
+  # Second stage: LLM relevance filter applied to the union of query results.
+  # Encodes the team's review distinctions (see gold/reviewed_papers.csv).
+  relevance_filter: >
+    Keep papers that introduce computational methods (including simple
+    statistical or linear baselines) for PREDICTING single-cell
+    transcriptional responses to perturbations, IF the method is applicable
+    to chemical perturbations. Evidence of chemical applicability: the paper
+    mentions drugs, small molecules, compounds, doses, drug combinations, or
+    chemical perturbation datasets (e.g. sci-Plex, LINCS drug screens), OR
+    the method conditions on arbitrary perturbation/treatment covariates
+    rather than on the identity of a perturbed gene, OR it transfers
+    perturbation responses across cell contexts.
+    Remove: methods restricted to genetic (CRISPR/knockout) perturbations
+    with no claimed chemical applicability; bulk-only settings (L1000/CMap
+    profiles without single-cell resolution); drug sensitivity, viability,
+    IC50, or resistance prediction; analysis- or interpretation-only methods
+    (treatment-effect estimation, causal identification, response matching
+    to reference dictionaries) that do not predict responses to new
+    perturbations or conditions; generic ML frameworks where perturbation
+    prediction is only a demo application; morphology-only outputs; dataset,
+    database, or resource papers; and papers not about perturbation response
+    modeling at all.

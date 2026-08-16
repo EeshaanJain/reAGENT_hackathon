@@ -1,3 +1,4 @@
+**/results/**/postsearch
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -226,3 +227,7 @@ work/
 smoke_tests/results/
 methods/scape/work/
 .serena/
+
+# Non-final outputs: eval runs, tuning artifacts (keep out of git)
+evals/backsearch/results/
+evals/backsearch/query_sets/
