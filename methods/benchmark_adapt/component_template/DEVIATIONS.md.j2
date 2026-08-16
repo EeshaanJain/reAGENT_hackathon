@@ -1,0 +1,18 @@
+# Deviations — {{ method_id }}
+
+Every place this adapter's harness differs from the paper's stated protocol goes here, as it's
+discovered — not written up after the fact. Per E5's acceptance criterion: an empty table is only
+legal alongside an explicit "no divergences found" assertion below; a silently blank file is not
+the same thing and should be treated as unfinished, not as a clean result.
+
+This file — not numerical agreement with the paper's reported results — is what gets scored. Two
+runs can legitimately disagree on a number because of preprocessing, gene panels, splits, or
+priors; this file is what tells a reviewer whether that's expected or a bug.
+
+| # | What differs | Why | Source citation |
+|---|---|---|---|
+<!-- | 1 | e.g. used default learning rate 1e-3 instead of paper's 3e-4 | paper's LR schedule requires a scheduler this harness doesn't wire up | PAPER_ID:{{ method_id }}:L120-L124 | -->
+
+**Status:** _TODO — either fill in every divergence found during synthesis, or replace this line
+with an explicit "No divergences found between this adapter and the paper's stated protocol,
+verified against `PAPER_ID` and `repo:{{ method_id }}` as cited in MODELSPEC.json."_

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benchmark Adapt — Tool Spec</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;  /* deterministic / tooling */
+    --series-2:       #eb6834;  /* agentic / LLM */
+    --series-3:       #1baf7a;  /* verification / Gauntlet */
+    --define:         #9b7a1e;  /* jargon-definition callouts -- this doc's own accent */
+    --fill-1:         rgba(42,120,214,0.10);
+    --fill-2:         rgba(235,104,52,0.10);
+    --fill-3:         rgba(27,175,122,0.10);
+    --fill-define:    rgba(155,122,30,0.09);
+    --ink-link:       #1c5cab;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --series-1:       #3987e5;
+      --series-2:       #d95926;
+      --series-3:       #199e70;
+      --define:         #cda23e;
+      --fill-1:         rgba(57,135,229,0.16);
+      --fill-2:         rgba(217,89,38,0.16);
+      --fill-3:         rgba(25,158,112,0.16);
+      --fill-define:    rgba(205,162,62,0.14);
+      --ink-link:       #3987e5;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --series-1:       #3987e5;
+    --series-2:       #d95926;
+    --series-3:       #199e70;
+    --define:         #cda23e;
+    --fill-1:         rgba(57,135,229,0.16);
+    --fill-2:         rgba(217,89,38,0.16);
+    --fill-3:         rgba(25,158,112,0.16);
+    --fill-define:    rgba(205,162,62,0.14);
+    --ink-link:       #3987e5;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font: 15.5px/1.62 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 44px 24px 96px; }
+
+  header.hd { border-bottom: 1px solid var(--border); padding-bottom: 22px; margin-bottom: 28px; }
+  .kicker { font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
+  h1 { font-size: 29px; line-height: 1.2; letter-spacing: -.015em; margin: 0 0 12px; font-weight: 660; text-wrap: balance; }
+  .dek { font-size: 16px; color: var(--text-secondary); margin: 0; max-width: 66ch; }
+  .byline { font-size: 12.5px; color: var(--text-muted); margin: 14px 0 0; }
+
+  h2 { font-size: 19px; letter-spacing: -.008em; margin: 46px 0 6px; font-weight: 640; }
+  h2 .num { color: var(--text-muted); font-weight: 500; margin-right: 9px; font-variant-numeric: tabular-nums; }
+  h3 { font-size: 15px; margin: 0 0 6px; font-weight: 650; }
+  p { margin: 0 0 13px; }
+  .lede { color: var(--text-secondary); font-size: 15px; margin-bottom: 22px; max-width: 70ch; }
+  ul { margin: 0 0 13px; padding-left: 20px; }
+  li { margin-bottom: 5px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .87em; background: var(--fill-1); padding: .1em .34em; border-radius: 3px; }
+  a { color: var(--ink-link); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  /* legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 18px 22px; margin: 0 0 8px; font-size: 13px; color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+
+  /* jargon glossary */
+  .glossary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; margin: 18px 0 8px; }
+  @media (max-width: 660px) { .glossary { grid-template-columns: 1fr; } }
+  .glossary dt { font-size: 13.5px; font-weight: 650; color: var(--define); }
+  .glossary dd { margin: 2px 0 0; font-size: 13.5px; color: var(--text-secondary); }
+
+  figure { margin: 18px 0 8px; }
+  figcaption { font-size: 12.5px; color: var(--text-muted); margin-top: 10px; max-width: 78ch; }
+  .figframe { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 6px; overflow-x: auto; }
+  svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+  /* tool cards */
+  .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+  @media (max-width: 660px) { .tools { grid-template-columns: 1fr; } }
+  .tool {
+    background: var(--surface-1); border: 1px solid var(--border); border-top-width: 3px;
+    border-radius: 10px; padding: 16px 18px;
+  }
+  .tool.t1 { border-top-color: var(--series-1); }
+  .tool.t2 { border-top-color: var(--series-2); }
+  .tool.t3 { border-top-color: var(--series-3); }
+  .tool .role { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 3px; }
+  .tool p { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 10px; }
+  .tool .define {
+    background: var(--fill-define); border-left: 2.5px solid var(--define);
+    border-radius: 0 6px 6px 0; padding: 8px 11px; font-size: 13px; color: var(--text-primary);
+  }
+  .tool .define b { color: var(--define); font-weight: 650; }
+  .tool .breaks { font-size: 12.5px; color: var(--text-muted); margin-top: 10px; }
+  .tool .breaks b { color: var(--text-primary); font-weight: 620; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 16px 0; }
+  th, td { text-align: left; padding: 9px 11px; border-bottom: 1px solid var(--gridline); vertical-align: top; }
+  thead th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 620; border-bottom: 1px solid var(--baseline); }
+  tbody tr:last-child td { border-bottom: none; }
+  .tbl-wrap { overflow-x: auto; }
+
+  .pill { display: inline-block; font-size: 10.5px; padding: 1.5px 7px; border-radius: 99px; border: 1px solid var(--border); color: var(--text-secondary); white-space: nowrap; }
+  .pill.det   { background: var(--fill-1); border-color: var(--series-1); color: var(--text-primary); }
+  .pill.agent { background: var(--fill-2); border-color: var(--series-2); color: var(--text-primary); }
+  .pill.gate  { background: var(--fill-3); border-color: var(--series-3); color: var(--text-primary); }
+
+  .aside {
+    border-left: 3px solid var(--baseline); background: var(--surface-1); border-radius: 0 10px 10px 0;
+    padding: 14px 18px; margin: 20px 0; font-size: 13.5px; color: var(--text-secondary);
+  }
+  .aside b { color: var(--text-primary); }
+
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hd">
+  <p class="kicker">methods/benchmark_adapt · tool spec</p>
+  <h1>What each tool in this harness actually does</h1>
+  <p class="dek">Written for a computational biologist reading this codebase for the first time.
+  You don't need prior familiarity with agent frameworks to follow it — every agentic-development
+  term is defined inline, at first use, in the amber callouts below.</p>
+  <p class="byline">Companion to <code>README.md</code> (setup + commands) and
+  <code>../planning/plan_unified.md</code> (the full pipeline this harness is half of).</p>
+</header>
+
+<p class="lede">This folder answers one question: given a paper's model already wrapped in a
+working Docker image, and a structured description of what that model expects
+(<code>model_contract.yaml</code>), how do you turn it into a tested, PR-ready benchmark
+component? Below is the mechanism, then each tool's job in it.</p>
+
+<h2><span class="num">1</span>Core terms used throughout</h2>
+<dl class="glossary">
+  <dt>Agent</dt>
+  <dd>A program that loops: read some state, ask a language model what to do next, run that one
+  action, observe the result, repeat — until the task is done or a limit is hit. Distinct from a
+  single one-shot LLM call.</dd>
+  <dt>LLM (large language model)</dt>
+  <dd>The model being called at each loop step to decide the next action — e.g. GPT- or
+  Claude-family models. It has no memory between calls except what the agent explicitly re-sends.</dd>
+  <dt>Non-deterministic</dt>
+  <dd>Running the same input twice can produce different output. True of any step that calls an
+  LLM; false of everything else in this harness (see the diagram below).</dd>
+  <dt>Container / image</dt>
+  <dd>A Docker image is a snapshot of a filesystem plus installed software; a container is one
+  running instance of that snapshot. "Built image" means dependencies are already installed —
+  nothing gets `pip install`-ed at run time.</dd>
+  <dt>Sandbox</dt>
+  <dd>An isolated execution environment (here, a container) that untrusted or agent-generated code
+  runs inside, so it can't touch the host filesystem or credentials.</dd>
+  <dt>Trajectory</dt>
+  <dd>The full, ordered log of every command an agent ran and every result it saw during one task
+  — the record that lets a human reconstruct why the agent did what it did.</dd>
+</dl>
+
+<h2><span class="num">2</span>The mechanism</h2>
+<div class="legend">
+  <span><span class="swatch" style="background:var(--series-1)"></span>deterministic / fixed data</span>
+  <span><span class="swatch" style="background:var(--series-2)"></span>agent (non-deterministic, costs money)</span>
+  <span><span class="swatch" style="background:var(--series-3)"></span>verification (runs the same code repeatedly)</span>
+</div>
+
+<figure>
+  <div class="figframe">
+  <svg viewBox="0 0 860 400" width="860" role="img" aria-label="Three input artifacts feed a synthesis agent that writes script.py once; the Gauntlet then runs that same script.py four separate times under different conditions before a human reviews the result.">
+    <text x="8" y="18" font-size="10.5" letter-spacing=".07em" fill="var(--text-muted)">HANDED OFF FROM THE OTHER HALF OF THE PIPELINE</text>
+    <g font-size="11.5" fill="var(--text-primary)">
+      <rect x="8" y="30" width="190" height="34" rx="6" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.4"/>
+      <text x="20" y="51">model_contract.yaml</text>
+      <rect x="8" y="70" width="190" height="34" rx="6" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.4"/>
+      <text x="20" y="91">built Docker image</text>
+      <rect x="8" y="110" width="190" height="34" rx="6" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.4"/>
+      <text x="20" y="131">execution_log.json</text>
+    </g>
+    <path d="M198 47 H236" stroke="var(--baseline)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+    <path d="M198 87 H220 V47 H236" stroke="var(--baseline)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+    <path d="M198 127 H220 V47 H236" stroke="var(--baseline)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+
+    <rect x="240" y="20" width="180" height="56" rx="7" fill="var(--fill-2)" stroke="var(--series-2)" stroke-width="1.6"/>
+    <text x="252" y="42" font-size="11" fill="var(--text-muted)">mini-swe-agent</text>
+    <text x="252" y="59" font-size="12.5" font-weight="620" fill="var(--text-primary)">synthesize_adapter</text>
+
+    <path d="M420 48 H458" stroke="var(--baseline)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+
+    <rect x="462" y="20" width="150" height="56" rx="7" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.6"/>
+    <text x="474" y="42" font-size="11" fill="var(--text-muted)">produced</text>
+    <text x="474" y="59" font-size="12.5" font-weight="620" fill="var(--text-primary)">script.py</text>
+
+    <text x="8" y="142" font-size="10.5" letter-spacing=".07em" fill="var(--text-muted)">THE GAUNTLET -- runs that ONE script.py four different ways</text>
+
+    <path d="M537 76 V150" stroke="var(--baseline)" stroke-width="1.5" fill="none"/>
+    <path d="M98 150 H674" stroke="var(--baseline)" stroke-width="1.5" fill="none"/>
+    <path d="M98 150 V186" stroke="var(--baseline)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+    <path d="M290 150 V186" stroke="var(--baseline)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+    <path d="M482 150 V186" stroke="var(--baseline)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+    <path d="M674 150 V186" stroke="var(--baseline)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+
+    <g font-size="11">
+      <rect x="14" y="190" width="168" height="50" rx="6" fill="var(--fill-3)" stroke="var(--series-3)" stroke-width="1.4"/>
+      <text x="24" y="209" fill="var(--text-muted)" font-size="10">real id_map</text>
+      <text x="24" y="226" fill="var(--text-primary)" font-weight="600">G1 · G2 · G6</text>
+
+      <rect x="206" y="190" width="168" height="50" rx="6" fill="var(--fill-3)" stroke="var(--series-3)" stroke-width="1.4"/>
+      <text x="216" y="209" fill="var(--text-muted)" font-size="10">shuffled sm_name</text>
+      <text x="216" y="226" fill="var(--text-primary)" font-weight="600">G3 sensitivity</text>
+
+      <rect x="398" y="190" width="168" height="50" rx="6" fill="var(--fill-3)" stroke="var(--series-3)" stroke-width="1.4"/>
+      <text x="408" y="209" fill="var(--text-muted)" font-size="10">network blocked</text>
+      <text x="408" y="226" fill="var(--text-primary)" font-weight="600">G4 no leak</text>
+
+      <rect x="590" y="190" width="168" height="50" rx="6" fill="var(--fill-3)" stroke="var(--series-3)" stroke-width="1.4"/>
+      <text x="600" y="209" fill="var(--text-muted)" font-size="10">re-run, same input</text>
+      <text x="600" y="226" fill="var(--text-primary)" font-weight="600">G7 tolerance</text>
+    </g>
+
+    <path d="M98 240 V266" stroke="var(--baseline)" stroke-width="1.5" fill="none"/>
+    <path d="M290 240 V266" stroke="var(--baseline)" stroke-width="1.5" fill="none"/>
+    <path d="M482 240 V266" stroke="var(--baseline)" stroke-width="1.5" fill="none"/>
+    <path d="M674 240 V266" stroke="var(--baseline)" stroke-width="1.5" fill="none"/>
+    <path d="M98 266 H674" stroke="var(--baseline)" stroke-width="1.5" fill="none"/>
+    <path d="M386 266 V296" stroke="var(--baseline)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+
+    <rect x="286" y="300" width="200" height="50" rx="7" fill="none" stroke="var(--baseline)" stroke-width="1.6"/>
+    <text x="298" y="320" font-size="11" fill="var(--text-muted)">human</text>
+    <text x="298" y="337" font-size="12.5" font-weight="620" fill="var(--text-primary)">review, then PR</text>
+
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0 1 L9 5 L0 9 z" fill="var(--baseline)"/>
+      </marker>
+    </defs>
+  </svg>
+  </div>
+  <figcaption>The agent (orange) touches the code exactly once, to write <code>script.py</code>.
+  Everything after that — the four boxes under "The Gauntlet" — is the same file executed
+  repeatedly under different conditions, with no LLM in the loop. That's deliberate: it's the
+  only way "did this pass" means the same thing on every run.</figcaption>
+</figure>
+
+<h2><span class="num">3</span>The tools</h2>
+<p class="lede">Each card: what it is, any jargon it introduces, and what specifically breaks in
+this harness if it's missing.</p>
+
+<div class="tools">
+
+  <div class="tool t2">
+    <div class="role">Agent · writes code once</div>
+    <h3>mini-swe-agent</h3>
+    <p>A minimal, bash-only agent (see glossary above): read a file, decide on one shell command,
+    run it, look at the output, repeat. It's what actually writes <code>script.py</code> in
+    <code>harness/synthesize_adapter.py</code>, running inside the handed-off Docker image so it
+    can execute the real model, not just read its source.</p>
+    <div class="define"><b>Jargon:</b> "bash-only" means the agent's only tool is running shell
+    commands — no separate file-edit/search/browser tools, just <code>bash</code>. That
+    constraint is deliberate: it keeps the trajectory a plain, linear list of commands, which is
+    what makes it auditable.</div>
+    <div class="breaks"><b>Missing it:</b> nothing writes the adapter — <code>script.py</code>
+    stays the <code>NotImplementedError</code> stub the templates seed.</div>
+  </div>
+
+  <div class="tool t1">
+    <div class="role">Deterministic · the environment</div>
+    <h3>The built Docker image</h3>
+    <p>Not built here — handed off from the other half of the pipeline (RepoLaunch, upstream).
+    This harness only ever <em>points at</em> an image tag; it never constructs one, and the
+    agent never hand-writes install steps.</p>
+    <div class="define"><b>Jargon:</b> "image tag" is just the name:version string Docker uses to
+    identify a specific built image (e.g. <code>example-chem-perturbridge:a1b2c3d</code>) — not a
+    metadata label, just an address.</div>
+    <div class="breaks"><b>Missing it:</b> the agent has nowhere to actually execute the model,
+    so it can only guess at behavior from reading source — exactly the failure mode this harness
+    exists to avoid.</div>
+  </div>
+
+  <div class="tool t1">
+    <div class="role">Deterministic · the interface contract</div>
+    <h3>Viash convention (+ <code>viash_shim.py</code>)</h3>
+    <p>Every OP3 method is a <code>config.vsh.yaml</code> + <code>script.py</code> pair following
+    a fixed convention: a <code>par</code> dict carries inputs in, a fixed output path carries
+    predictions out. <code>harness/viash_shim.py</code> runs a raw script this way locally,
+    standing in for the full <code>viash</code> build tool until it's on the machine.</p>
+    <div class="define"><b>Jargon:</b> a "component," in Viash's vocabulary, is one script plus
+    its config file. <code>par</code> is just a Python dict — Viash's build step injects real
+    values into it in place of the placeholder defaults a script ships with for local testing.</div>
+    <div class="breaks"><b>Missing it:</b> every method would need its own bespoke runner, and
+    <code>viash ns test</code> (the eventual real gate) would have nothing to build.</div>
+  </div>
+
+  <div class="tool t3">
+    <div class="role">Verification · runs the adapter, never writes it</div>
+    <h3>pytest — "the Gauntlet"</h3>
+    <p>Six checks in <code>gauntlet/</code>, each running the synthesized <code>script.py</code>
+    under a different condition (see the diagram above) and asserting something about the output.
+    No LLM anywhere in this stage, by design — the whole point is a standard the agent can't argue
+    with.</p>
+    <div class="define"><b>Jargon:</b> pytest is a Python testing framework — a "fixture" is a
+    piece of setup code (here, the frozen dataset and the already-run predictions) that multiple
+    checks reuse instead of each rebuilding it; an "assertion" is a statement that halts the test
+    with a message if it's false.</div>
+    <div class="breaks"><b>Missing it:</b> a model that collapsed to predicting the training mean,
+    or emitted the wrong layer entirely, would score "successfully" with zero indication anything
+    was wrong.</div>
+  </div>
+
+  <div class="tool t1">
+    <div class="role">Deterministic · the data structure</div>
+    <h3>AnnData + the tiny fixture</h3>
+    <p><code>fixtures/make_tiny_fixture.py</code> generates a frozen, seeded
+    <code>de_train.h5ad</code> / <code>id_map.csv</code> pair: 500 genes, 2 cell types, 8
+    compounds, gene order pinned by a recorded SHA256. Small enough that the whole Gauntlet runs
+    in under two seconds.</p>
+    <div class="define"><b>Jargon:</b> "seeded" means the random-number generator's starting state
+    is fixed, so re-running the generator produces byte-identical output every time — not a
+    statement about the data's biological meaning.</div>
+    <div class="breaks"><b>Missing it:</b> every Gauntlet check needs something concrete to run
+    the adapter against; without a frozen fixture, "does the gene order match" isn't answerable.</div>
+  </div>
+
+  <div class="tool t1">
+    <div class="role">Deterministic · citation discipline</div>
+    <h3>JSON Schema (<code>harness/contract.py</code>)</h3>
+    <p>Validates <code>model_contract.yaml</code> before anything downstream trusts it: every
+    scientific field must either say <code>"unknown"</code> or carry a citation like
+    <code>PAPER_ID:L210-L225</code> that resolves to a real line. A value with no citation is a
+    validation error, not a warning.</p>
+    <div class="define"><b>Jargon:</b> a JSON Schema is a machine-checkable description of what
+    shape a data file is allowed to take — here, enforcing that every field is either the literal
+    string <code>"unknown"</code> or a value paired with a citation, nothing else.</div>
+    <div class="breaks"><b>Missing it:</b> a wrong-but-confident field (say, the wrong gene count)
+    would corrupt every score downstream with nothing catching it before the adapter gets written.</div>
+  </div>
+
+</div>
+
+<div class="aside">
+  <b>Not used directly in this folder:</b> Serena and RepoLaunch belong to the other half of the
+  pipeline (repository comprehension + environment build) — they're what produces the Docker
+  image and the contract this harness consumes, not something <code>benchmark_adapt/</code>
+  calls itself. Modal (cloud GPU) is discussed in the broader plan but isn't wired into anything
+  here — see <code>../planning/method-integration-todo.html</code> item C5.
+</div>
+
+<h2><span class="num">4</span>The Gauntlet, check by check</h2>
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>Check</th><th>What it does</th><th>What it's actually catching</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="pill gate">G1</span> layer/unit conformance</td>
+      <td>Output layer literally named <code>prediction</code> (never the input layer's own name)
+      must be finite, in range</td>
+      <td>A model emitting the wrong quantity under the right-looking column name — scores
+      silently, with no runtime error</td>
+    </tr>
+    <tr>
+      <td><span class="pill gate">G2</span> id_map / gene-space alignment</td>
+      <td><code>obs_names</code> must equal <code>id_map['id']</code> exactly, in order (not
+      cell_type/sm_name columns); gene identity must match, no reindexing</td>
+      <td>Any reliance on an automatic "fix the alignment for me" fallback, which would hide a real
+      mismatch instead of failing on it</td>
+    </tr>
+    <tr>
+      <td><span class="pill gate">G3</span> perturbation sensitivity</td>
+      <td>Shuffle <code>sm_name</code>, require the prediction to change</td>
+      <td>A model that collapsed to predicting the per-cell-type training mean, ignoring the
+      compound entirely, while still scoring plausibly</td>
+    </tr>
+    <tr>
+      <td><span class="pill gate">G4</span> no network at inference</td>
+      <td>Blocks any socket call during prediction, inside the actual subprocess</td>
+      <td>A model quietly re-downloading a copy of evaluation data during inference</td>
+    </tr>
+    <tr>
+      <td><span class="pill gate">G6</span> output sanity</td>
+      <td>Correct shape, no NaN/Inf</td>
+      <td>Basic execution failures that would otherwise surface only as a downstream crash</td>
+    </tr>
+    <tr>
+      <td><span class="pill gate">G7</span> stochastic tolerance</td>
+      <td>Re-run, compare — <em>left unresolved on purpose</em></td>
+      <td>Nothing yet — no tolerance number has been decided by the team. The check skips loudly
+      rather than silently passing on an invented threshold.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<footer>
+  <p>See <code>README.md</code> for setup and the exact commands to run all of this yourself, and
+  <code>../planning/plan_unified.md</code> for how this folder's output feeds into the rest of the
+  pipeline.</p>
+</footer>
+
+</div>
+</body>
+</html>

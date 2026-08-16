@@ -1,7 +1,10 @@
+**/results/**/postsearch
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
 *$py.class
+.vscode/
+.claude/
 
 # C extensions
 *.so
@@ -216,8 +219,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-
 # Local data
 /data/
 .DS_Store
 tmp_code/
+
+# Temporary working directories (method integration pipeline)
+temp/
+work/
+smoke_tests/results/
+methods/scape/work/
+.serena/
+
+# Non-final outputs: eval runs, tuning artifacts (keep out of git)
+evals/backsearch/results/
+evals/backsearch/query_sets/

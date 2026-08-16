@@ -1,0 +1,23 @@
+{
+  "title": "ScAPE: A lightweight multitask learning baseline method to predict transcriptomic responses to perturbations",
+  "authors": "Sergio Romero-Tapiador, Pablo Rodriguez-Mier *, Martin Garrido-Rodriguez *, Ruben Tolosana, Aythami ...",
+  "id": "bio_f0ffef2a7e2b",
+  "source": "bioRxiv",
+  "date": "2025-09-08",
+  "url": "https://doi.org/10.1101/2025.09.08.674873",
+  "abstract": "ScAPE, a lightweight multitask learning method, predicts transcriptomic responses to perturbations using aggregated gene-level statistics. It achieves strong performance, serving as an effective baseline for evaluating new prediction methods.",
+  "method_name": "scape",
+  "method_folder": "scape",
+  "source_folder": "scape/sources/bio_f0ffef2a7e2b",
+  "metadata_status": "available",
+  "metadata_path": "scape/sources/bio_f0ffef2a7e2b/meta.json",
+  "full_text_status": "needs_review",
+  "raw_full_text_path": "scape/sources/bio_f0ffef2a7e2b/full_text.raw.lines",
+  "clean_full_text_path": "scape/sources/bio_f0ffef2a7e2b/full_text.txt",
+  "full_text_validation_path": "scape/sources/bio_f0ffef2a7e2b/full_text.validation.json",
+  "code_evidence_path": "scape/sources/bio_f0ffef2a7e2b/code_matches.txt",
+  "github_flag": "candidate_found",
+  "github_candidates": "https://github.com/scapeML/scape",
+  "pdf_status": "unavailable",
+  "pdf_path": ""
+}

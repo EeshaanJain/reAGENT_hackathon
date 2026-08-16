@@ -1,0 +1,20 @@
+[project]
+name = "benchmark-adapt"
+version = "0.1.0"
+description = "Sei's lane: adapter synthesis (stage 4) + Gauntlet (stage 5) harness. Consumes a model_contract.yaml and a built Docker image handed off from the comprehension lane; produces a Viash method component."
+requires-python = ">=3.10"
+dependencies = [
+  "anndata>=0.10",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "scipy>=1.12",
+  "pyyaml>=6.0",
+  "jsonschema>=4.22",
+  "pytest>=8.0",
+  "jinja2>=3.1",
+  "mini-swe-agent>=1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["gauntlet"]
+pythonpath = ["."]
