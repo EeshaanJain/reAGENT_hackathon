@@ -1,0 +1,3 @@
+[submodule "task_perturbation_prediction"]
+	path = task_perturbation_prediction
+	url = https://github.com/openproblems-bio/task_perturbation_prediction
