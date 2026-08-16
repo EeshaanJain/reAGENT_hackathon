@@ -219,3 +219,10 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 .claude/
+
+# Temporary working directories (method integration pipeline)
+temp/
+work/
+smoke_tests/results/
+methods/scape/work/
+.serena/
