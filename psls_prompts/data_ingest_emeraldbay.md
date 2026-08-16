@@ -4,11 +4,9 @@ Ingest a published chemical single-cell perturbation dataset into a validated, a
 
 # Input / data sources
 
-- Dataset ID: `<dataset_id>`
-- Publication URL: `<publication_url>`
-- Official deposited-data URL or accession: `<data_url_or_accession>`
-- Code URL, if available: `<code_url>`
-- Local publication PDF, if available: `<local_pdf_path>`
+- Publication URL: https://www.biorxiv.org/content/10.64898/2026.06.09.731197v1
+- Code URL: https://huggingface.co/datasets/tahoebio/EmeraldBay
+- Local publication PDF: data/2026.06.09.731197.full.pdf
 
 # Goal
 
@@ -156,6 +154,6 @@ The report must list source URLs and checksums, mappings, QC decisions, the mini
 
 Reopen the H5AD file and run `psls_tooling.validate_ingested_adata` before finishing.
 
-Validate the reopened H5AD against the target subset constraint.
+Treat the upper bound as an acceptance criterion: validation fails if the reopened H5AD contains 200,000 cells or more. If it contains fewer than 190,000 cells, verify and report that the complete eligible source population could not reach the requested range.
 
 Stop and report a blocker if a required input is missing, no deposited count matrix exists, or a semantic ambiguity could change the biological meaning of the output.

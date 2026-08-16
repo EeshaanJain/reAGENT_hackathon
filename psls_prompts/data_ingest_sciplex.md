@@ -78,6 +78,16 @@ Check QC behavior across batches, cell types, perturbations, doses, and controls
 
 Maintain a loss ledger with cells and genes removed at every applicable stage: source-defined QC, invalid or incomplete metadata, unresolved chemistry, protein-coding filtering, expression QC, and gene-detection filtering.
 
+## Minimum condition size
+
+Unless the task explicitly overrides it, set `MIN_CELLS_PER_CONDITION = 30`.
+
+Define a condition for this filter as the exact combination of harmonized perturbation, time, dose, and cell type: `obs["sm_name"]` × `obs["timepoint_hr"]` × `obs["dose_uM"]` × `obs["cell_type"]`. Do not add batch or other technical fields to this condition key. Apply the same definition to treated and control cells.
+
+After metadata, chemical, and expression-QC filtering, remove every condition with fewer than `MIN_CELLS_PER_CONDITION` cells. Remove the complete condition rather than individual cells. Perform this filtering before final cap-based subsampling, and ensure that subsampling does not reduce any retained condition below the minimum. Recompute condition counts on the final H5AD and fail validation if any retained condition has fewer than the minimum.
+
+Record the threshold, condition key, pre-filter counts, dropped conditions and cells, and final per-condition counts in the audit artifacts and ingest report. Include condition-size removals as a distinct stage in the loss ledger.
+
 # Gene harmonization
 
 Use a gene annotation release compatible with the deposited genome build and gene identifiers, preferring the exact version used by the authors. Pin and report its source, revision, and checksum.
@@ -128,7 +138,7 @@ Write the H5AD file to `data/processed/<dataset_id>.h5ad`.
 
 Write the report to `data_ingest/<dataset_id>/ingest_report.md`.
 
-The report must list source URLs and checksums, mappings, QC decisions, the complete loss ledger, before-and-after dimensions, chemical-resolution losses, validation results, and unresolved blockers.
+The report must list source URLs and checksums, mappings, QC decisions, the minimum-condition-size audit, the complete loss ledger, before-and-after dimensions, chemical-resolution losses, validation results, and unresolved blockers.
 
 Reopen the H5AD file and run `psls_tooling.validate_ingested_adata` before finishing.
 

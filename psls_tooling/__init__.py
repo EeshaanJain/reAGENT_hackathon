@@ -22,6 +22,7 @@ from .chemistry import (
     structure_result_dict,
 )
 from .qc import compute_qc_metrics, filter_with_audit, summarize_qc
+from .splits import split_adata_by_manifest
 
 __all__ = [
     "REQUIRED_OBS_COLUMNS",
@@ -43,5 +44,6 @@ __all__ = [
     "standardize_smiles",
     "structure_result_dict",
     "summarize_qc",
+    "split_adata_by_manifest",
     "validate_ingested_adata",
 ]
