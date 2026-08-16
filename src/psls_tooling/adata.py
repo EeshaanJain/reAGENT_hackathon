@@ -303,12 +303,17 @@ def _backed_layers_inventory(adata: Any) -> dict[str, dict[str, Any]]:
     return layers
 
 
+def _x_or_none(adata: Any) -> Any:
+    """Return ``X`` while treating an absent backed HDF5 element as ``None``."""
+    try:
+        return adata.X
+    except KeyError:
+        return None
+
+
 def inspect_anndata(adata: Any, *, sample_size: int = 5) -> dict[str, Any]:
     """Return a JSON-serializable inventory of an AnnData object."""
-    try:
-        x = adata.X
-    except KeyError:
-        x = None
+    x = _x_or_none(adata)
     try:
         raw_x = None if adata.raw is None else adata.raw.X
     except KeyError:
@@ -490,7 +495,7 @@ def validate_ingested_adata(
     """Validate an AnnData object against an explicit benchmark contract."""
     report = ValidationReport(summary={"n_obs": int(adata.n_obs), "n_vars": int(adata.n_vars)})
     matrix_contract = contract.matrix
-    if matrix_contract.x_must_be_none and adata.X is not None:
+    if matrix_contract.x_must_be_none and _x_or_none(adata) is not None:
         report.errors.append("X must be None")
     if matrix_contract.counts_layer not in adata.layers:
         report.errors.append(f"Required layer {matrix_contract.counts_layer!r} is missing")

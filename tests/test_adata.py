@@ -55,6 +55,7 @@ def test_counts_only_h5ad_round_trip_and_inventory(valid_adata, ingest_contract,
     backed = ad.read_h5ad(output, backed="r")
     try:
         assert inspect_anndata(backed)["layers"]["counts"]["shape"] == [3, 3]
+        assert validate_ingested_adata(backed, ingest_contract).ok
     finally:
         backed.file.close()
 
