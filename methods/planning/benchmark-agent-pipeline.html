@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Benchmark Runner — Chemical Perturbation</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;  /* deterministic code */
+    --series-2:       #eb6834;  /* LLM agent */
+    --series-3:       #1baf7a;  /* verification gate */
+    --fill-1:         rgba(42,120,214,0.10);
+    --fill-2:         rgba(235,104,52,0.10);
+    --fill-3:         rgba(27,175,122,0.10);
+    --status-good:    #0ca30c;
+    --status-warning: #fab219;
+    --status-serious: #ec835a;
+    --status-critical:#d03b3b;
+    --seq-150:        #b7d3f6;
+    --seq-450:        #2a78d6;
+    --seq-700:        #0d366b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --series-1:       #3987e5;
+      --series-2:       #d95926;
+      --series-3:       #199e70;
+      --fill-1:         rgba(57,135,229,0.16);
+      --fill-2:         rgba(217,89,38,0.16);
+      --fill-3:         rgba(25,158,112,0.16);
+      --seq-150:        #184f95;
+      --seq-450:        #3987e5;
+      --seq-700:        #cde2fb;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --series-1:       #3987e5;
+    --series-2:       #d95926;
+    --series-3:       #199e70;
+    --fill-1:         rgba(57,135,229,0.16);
+    --fill-2:         rgba(217,89,38,0.16);
+    --fill-3:         rgba(25,158,112,0.16);
+    --seq-150:        #184f95;
+    --seq-450:        #3987e5;
+    --seq-700:        #cde2fb;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body.viz-root {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font: 15px/1.62 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 44px 24px 96px; }
+
+  header.hd { border-bottom: 1px solid var(--border); padding-bottom: 22px; margin-bottom: 30px; }
+  .kicker { font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
+  h1 { font-size: 30px; line-height: 1.22; letter-spacing: -.015em; margin: 0 0 12px; font-weight: 640; }
+  .dek { font-size: 16.5px; color: var(--text-secondary); margin: 0; max-width: 68ch; }
+  .byline { font-size: 12.5px; color: var(--text-muted); margin: 14px 0 0; }
+
+  h2 { font-size: 20px; letter-spacing: -.01em; margin: 52px 0 6px; font-weight: 630; }
+  h2 .num { color: var(--text-muted); font-weight: 500; margin-right: 9px; font-variant-numeric: tabular-nums; }
+  h3 { font-size: 15.5px; margin: 30px 0 8px; font-weight: 630; }
+  h4 { font-size: 13px; margin: 20px 0 6px; font-weight: 640; letter-spacing: .01em; }
+  p { margin: 0 0 13px; }
+  .lede { color: var(--text-secondary); font-size: 15.5px; margin-bottom: 20px; max-width: 74ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 21px; }
+  li { margin-bottom: 6px; }
+  strong { font-weight: 620; }
+  code, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875em; }
+  code { background: var(--fill-1); padding: .1em .34em; border-radius: 3px; }
+  a { color: var(--series-1); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 22px; margin: 20px 0;
+  }
+  .scope { border-left: 3px solid var(--series-3); }
+  .scope h4 { margin-top: 0; }
+  .scope .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 700px) { .scope .cols { grid-template-columns: 1fr; } }
+
+  pre {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+    padding: 15px 17px; overflow-x: auto; margin: 14px 0;
+    font: 12.5px/1.62 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text-primary);
+  }
+  pre .c { color: var(--text-muted); }
+  pre .k { color: var(--series-1); }
+  pre .s { color: var(--series-3); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 16px 0; }
+  th, td { text-align: left; padding: 9px 11px; border-bottom: 1px solid var(--gridline); vertical-align: top; }
+  thead th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 620; border-bottom: 1px solid var(--baseline); }
+  td.num { font-variant-numeric: tabular-nums; }
+  tbody tr:last-child td { border-bottom: none; }
+  .tbl-wrap { overflow-x: auto; }
+
+  /* stat tiles */
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 26px 0 8px; }
+  @media (max-width: 760px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 15px 16px; }
+  .tile .v { font-size: 30px; line-height: 1.05; font-weight: 660; letter-spacing: -.02em; display: block; }
+  .tile .l { font-size: 12px; color: var(--text-secondary); margin-top: 7px; display: block; }
+  .tile.t1 .v { color: var(--series-1); }
+  .tile.t2 .v { color: var(--series-2); }
+  .tile.t3 .v { color: var(--series-3); }
+
+  /* legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 4px 0 14px; font-size: 12.5px; color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+
+  figure { margin: 18px 0 8px; }
+  figcaption { font-size: 12.5px; color: var(--text-muted); margin-top: 10px; max-width: 78ch; }
+  .figframe { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 8px 4px; overflow-x: auto; }
+  svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+  /* provenance panels */
+  .prov { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .prov { grid-template-columns: 1fr; } }
+  .pv { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 0 0 14px; overflow: hidden; }
+  .pv .rule { height: 3px; }
+  .pv.a .rule { background: var(--series-1); }
+  .pv.b .rule { background: var(--series-2); }
+  .pv h5 { margin: 14px 16px 3px; font-size: 13.5px; font-weight: 640; }
+  .pv .src { margin: 0 16px 10px; font-size: 11.5px; color: var(--text-muted); font-family: ui-monospace, Menlo, monospace; }
+  .pv ul { margin: 0; padding-left: 34px; font-size: 13px; color: var(--text-secondary); }
+  .merge {
+    margin-top: 14px; background: var(--fill-3); border: 1px solid var(--border);
+    border-left: 3px solid var(--series-3); border-radius: 10px; padding: 15px 18px; font-size: 13.5px;
+  }
+  .merge b { color: var(--text-primary); }
+  .arrows { text-align: center; color: var(--text-muted); font-size: 15px; margin: 8px 0 0; letter-spacing: .6em; }
+
+  /* gate ladder */
+  .ladder { margin: 18px 0 8px; }
+  .rung { display: grid; grid-template-columns: 30px 1fr; gap: 13px; padding: 13px 0; border-bottom: 1px solid var(--gridline); }
+  .rung:last-child { border-bottom: none; }
+  .rung .ic { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; color: #fff; margin-top: 1px; }
+  .rung .nm { font-size: 14px; font-weight: 620; margin-bottom: 3px; }
+  .rung .ds { font-size: 13px; color: var(--text-secondary); }
+  .rung .tg { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+
+  .callout { border-left: 3px solid var(--status-critical); background: var(--surface-1); border-radius: 0 10px 10px 0; padding: 15px 18px; margin: 20px 0; font-size: 14px; }
+  .callout .hd2 { font-weight: 650; margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
+  .callout .hd2 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--status-critical); flex: none; }
+
+  .pill { display: inline-block; font-size: 11px; padding: 1.5px 8px; border-radius: 99px; border: 1px solid var(--border); color: var(--text-secondary); white-space: nowrap; }
+  .pill.reuse { background: var(--fill-3); border-color: var(--series-3); color: var(--text-primary); }
+  .pill.build { background: var(--fill-2); border-color: var(--series-2); color: var(--text-primary); }
+  .pill.caution { background: var(--surface-1); border-color: var(--status-warning); color: var(--text-primary); }
+
+  details { margin: 12px 0; font-size: 13.5px; }
+  summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--text-secondary); padding: 5px 0; }
+
+  #tip {
+    position: fixed; pointer-events: none; opacity: 0; transition: opacity .09s;
+    background: var(--surface-1); color: var(--text-primary);
+    border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px;
+    font: 12px/1.5 system-ui, -apple-system, sans-serif; max-width: 300px;
+    box-shadow: 0 5px 22px rgba(0,0,0,.15); z-index: 50;
+  }
+  #tip .tt { font-weight: 660; margin-bottom: 4px; }
+  #tip .tr { color: var(--text-secondary); }
+  #tip .tr b { color: var(--text-primary); font-weight: 600; }
+  .node { cursor: default; }
+  .node:hover .nbox { filter: brightness(1.04); stroke-width: 2.4; }
+
+  .toggle {
+    position: fixed; top: 14px; right: 16px; z-index: 60;
+    background: var(--surface-1); color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: 99px;
+    font: 11.5px/1 system-ui, sans-serif; padding: 8px 13px; cursor: pointer;
+  }
+  footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-muted); }
+</style>
+</head>
+<body class="viz-root">
+<button class="toggle" id="tgl">◐ theme</button>
+<div class="wrap">
+
+<header class="hd">
+  <p class="kicker">Chemical Perturbation · design note</p>
+  <h1>An agent-based pipeline for <em>running</em> a perturbation benchmark</h1>
+  <p class="dek">Given a fixed dataset, a fixed metric suite, and a fixed list of models, how do you actually
+  get every model to run — correctly, comparably, and reproducibly — when each one ships as a different
+  research repo with a different interface? This note specifies that runner: which parts are LLM agents,
+  which parts must be deterministic code, how <code>paperclip</code> and the GitHub repo supply the context
+  the agent needs, and which existing tools to reuse rather than rebuild.</p>
+  <p class="byline">Scoped deliverable · design + implementation plan · 2026-08-15</p>
+</header>
+
+<div class="card scope">
+  <div class="cols">
+    <div>
+      <h4 style="color:var(--series-3)">In scope — this document</h4>
+      <ul style="margin-bottom:0">
+        <li>Running the benchmark, given a <em>pre-specified</em> dataset, metric suite, and model list</li>
+        <li>Extracting run-critical context from the paper (via paperclip) and the code repo</li>
+        <li>Per-model environment construction and adapter synthesis</li>
+        <li>Execution, evaluation, audit, and reporting of results</li>
+      </ul>
+    </div>
+    <div>
+      <h4 style="color:var(--text-muted)">Out of scope — upstream/downstream owners</h4>
+      <ul style="margin-bottom:0">
+        <li>Choosing the dataset or building the splits</li>
+        <li>Designing the metric suite</li>
+        <li>Selecting which models to benchmark</li>
+        <li>Interpreting biology or writing the paper</li>
+      </ul>
+      <p style="font-size:12.5px;color:var(--text-muted);margin:11px 0 0">Each is treated here only as an
+      <strong>interface</strong>: §7 specifies the minimum each must emit for this runner to be optimal.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="num">1</span>The one design decision that matters</h2>
+<p class="lede">Everything else in this document follows from a single split of labor.</p>
+
+<p><strong>LLM agents do comprehension and code generation. The runner is deterministic code.</strong></p>
+
+<p>Reading a paper's Methods section to learn that a metric is computed on Δ-from-control rather than on
+absolute expression, or reading a repo to learn that a model wants <code>adata.X</code> log-normalized but
+<code>adata.layers['counts']</code> raw — that is language understanding over unstructured, inconsistent,
+human-written artifacts. There is no library for it, and an agent is genuinely the right tool.</p>
+
+<p>Deciding which of 7 models × 3 splits × 5 seeds to launch next, computing a Pearson correlation, and
+writing a row to a results table are none of those things. If an agent does them, your benchmark is
+unreproducible: rerunning it re-samples the agent's decisions. So the agent's <em>output</em> is
+never a result — it is always a <strong>reviewable artifact</strong> (a config file, an adapter module, a
+container recipe) that deterministic code then consumes.</p>
+
+<div class="callout">
+  <div class="hd2"><span class="dot"></span>Critical · the failure this prevents</div>
+  The reference harness for this space, <a href="https://github.com/TianGzlab/scPerturbBench">TianGzlab/scPerturbBench</a>,
+  gives <em>each model its own <code>metrics_script</code></em> and <code>run_benchmark.py</code> writes no results
+  itself — it shells out to a model script and a metrics script per model. That is exactly how a benchmark
+  becomes silently non-comparable: two models' numbers can differ because their metric code differs, and
+  nothing in the pipeline surfaces it. <strong>Metrics must be computed once, by the harness, on saved
+  prediction artifacts.</strong> Model code produces predictions and nothing else.
+</div>
+
+<div class="tiles">
+  <div class="tile t1"><span class="v">10</span><span class="l">pipeline stages, 5 of them deterministic</span></div>
+  <div class="tile t2"><span class="v">3</span><span class="l">agent-driven stages — harvest, adapter synthesis, audit</span></div>
+  <div class="tile t3"><span class="v">4</span><span class="l">gates a result must clear before it is trusted</span></div>
+  <div class="tile"><span class="v">1</span><span class="l">place metrics are ever computed</span></div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="num">2</span>The pipeline</h2>
+<p class="lede">Ten stages. Read the lane a box sits in to know who executes it — position and color both
+encode it, and every box is directly labeled.</p>
+
+<div class="legend" aria-label="Actor classes">
+  <span><span class="swatch" style="background:var(--series-1)"></span>Deterministic code — reproducible, no model in the loop</span>
+  <span><span class="swatch" style="background:var(--series-2)"></span>LLM agent — comprehension &amp; codegen, emits reviewable artifacts</span>
+  <span><span class="swatch" style="background:var(--series-3)"></span>Verification gate — blocks the pipeline on failure</span>
+</div>
+
+<figure>
+<div class="figframe">
+<svg id="dag" viewBox="0 0 764 802" width="764" role="img" aria-labelledby="dagt">
+  <title id="dagt">Ten-stage pipeline arranged in three lanes: deterministic code, LLM agent, and verification gate</title>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <!-- lane guides -->
+  <g stroke="var(--gridline)" stroke-width="1">
+    <line x1="127" y1="40" x2="127" y2="786" stroke-dasharray="2 6"/>
+    <line x1="382" y1="40" x2="382" y2="786" stroke-dasharray="2 6"/>
+    <line x1="637" y1="40" x2="637" y2="786" stroke-dasharray="2 6"/>
+  </g>
+  <g font-size="11" font-weight="620" text-anchor="middle" fill="var(--text-muted)" letter-spacing=".05em">
+    <text x="127" y="26">DETERMINISTIC CODE</text>
+    <text x="382" y="26">LLM AGENT</text>
+    <text x="637" y="26">VERIFICATION GATE</text>
+  </g>
+
+  <!-- edges -->
+  <g fill="none" stroke="var(--baseline)" stroke-width="1.6" color="var(--baseline)">
+    <path d="M127,98 V110 H382 V120" marker-end="url(#ah)"/>
+    <path d="M382,172 V184 H637 V194" marker-end="url(#ah)"/>
+    <path d="M637,246 V258 H127 V268" marker-end="url(#ah)"/>
+    <path d="M127,320 V332 H382 V342" marker-end="url(#ah)"/>
+    <path d="M382,394 V406 H637 V416" marker-end="url(#ah)"/>
+    <path d="M637,468 V480 H127 V490" marker-end="url(#ah)"/>
+    <path d="M127,542 V564" marker-end="url(#ah)"/>
+    <path d="M127,616 V628 H637 V638" marker-end="url(#ah)"/>
+    <path d="M637,690 V702 H127 V712" marker-end="url(#ah)"/>
+  </g>
+  <!-- repair loop -->
+  <g fill="none" stroke="var(--series-2)" stroke-width="1.5" stroke-dasharray="5 4" color="var(--series-2)">
+    <path d="M737,441 H752 V369 H484" marker-end="url(#ah)"/>
+  </g>
+  <text x="618" y="362" font-size="10.5" text-anchor="middle" fill="var(--series-2)" font-weight="620">repair loop, ≤3 attempts</text>
+
+  <!-- nodes: g(class, cx, y, num, name, sub) -->
+  <g class="node" data-t="Spec Ingest" data-in="benchmark_spec.yaml — dataset ref, metric suite, model list" data-out="RunSpec + SHA256 spec hash; frozen gene order" data-f="Reject on missing split column, unhashed dataset, or undeclared metric">
+    <rect class="nbox" x="27" y="48" width="200" height="50" rx="8" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.6"/>
+    <text x="127" y="70" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">1 · Spec Ingest</text>
+    <text x="127" y="86" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">→ RunSpec, spec hash</text>
+  </g>
+  <g class="node" data-t="Context Harvest" data-in="Paper ID + repo URL per model" data-out="ModelCard per model: env, entrypoint, I/O expectations, cited" data-f="Unresolved field → flagged, never guessed">
+    <rect class="nbox" x="282" y="122" width="200" height="50" rx="8" fill="var(--fill-2)" stroke="var(--series-2)" stroke-width="1.6"/>
+    <text x="382" y="144" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">2 · Context Harvest</text>
+    <text x="382" y="160" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">paperclip + repo → ModelCard</text>
+  </g>
+  <g class="node" data-t="Reconcile" data-in="Paper-derived claims vs repo-derived facts" data-out="ConflictLedger; repo wins on invocation, paper wins on contract" data-f="Unresolvable conflict on a metric definition halts the run">
+    <rect class="nbox" x="537" y="196" width="200" height="50" rx="8" fill="var(--fill-3)" stroke="var(--series-3)" stroke-width="1.6"/>
+    <text x="637" y="218" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">3 · Reconcile</text>
+    <text x="637" y="234" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">→ ConflictLedger</text>
+  </g>
+  <g class="node" data-t="Env Build" data-in="ModelCard env block + repo lockfiles" data-out="Container image per model, pinned by digest" data-f="Build failure → agent-assisted repair, then quarantine the model">
+    <rect class="nbox" x="27" y="270" width="200" height="50" rx="8" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.6"/>
+    <text x="127" y="292" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">4 · Env Build</text>
+    <text x="127" y="308" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">→ image@sha256 digest</text>
+  </g>
+  <g class="node" data-t="Adapter Synthesis" data-in="ModelCard + the fixed PerturbationModel ABC" data-out="adapter.py per model — the only generated code that runs" data-f="Never writes metrics; import of any metric module is a lint error">
+    <rect class="nbox" x="282" y="344" width="200" height="50" rx="8" fill="var(--fill-2)" stroke="var(--series-2)" stroke-width="1.6"/>
+    <text x="382" y="366" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">5 · Adapter Synthesis</text>
+    <text x="382" y="382" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">→ adapter.py vs fixed ABC</text>
+  </g>
+  <g class="node" data-t="Contract + Smoke Gate" data-in="adapter.py + a ~200-cell toy fixture" data-out="Pass/fail; shapes, gene order, dtype, determinism under fixed seed" data-f="Fail → repair loop (≤3), then the model is quarantined with its log">
+    <rect class="nbox" x="537" y="418" width="200" height="50" rx="8" fill="var(--fill-3)" stroke="var(--series-3)" stroke-width="1.6"/>
+    <text x="637" y="440" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">6 · Contract + Smoke</text>
+    <text x="637" y="456" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">toy fixture, seconds not hours</text>
+  </g>
+  <g class="node" data-t="Run Matrix" data-in="RunSpec × ModelCards that passed the gate" data-out="predictions/{model}/{split}/{seed}.h5ad + per-cell logs" data-f="Resumable and shardable; a dead cell never blocks the matrix">
+    <rect class="nbox" x="27" y="492" width="200" height="50" rx="8" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.6"/>
+    <text x="127" y="514" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">7 · Run Matrix</text>
+    <text x="127" y="530" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">model × split × seed</text>
+  </g>
+  <g class="node" data-t="Evaluate" data-in="Saved prediction artifacts only — never live model code" data-out="metrics.parquet, tidy long form, bootstrap CIs" data-f="The single site where any metric is computed, for every model identically">
+    <rect class="nbox" x="27" y="566" width="200" height="50" rx="8" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.6"/>
+    <text x="127" y="588" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">8 · Evaluate</text>
+    <text x="127" y="604" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">→ metrics.parquet (once)</text>
+  </g>
+  <g class="node" data-t="Adversarial Audit" data-in="metrics.parquet + predictions + ModelCards" data-out="Audit report: leakage, contamination, degeneracy, baseline sanity" data-f="Agent is prompted to refute the result, not confirm it">
+    <rect class="nbox" x="537" y="640" width="200" height="50" rx="8" fill="var(--fill-3)" stroke="var(--series-3)" stroke-width="1.6"/>
+    <text x="637" y="662" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">9 · Adversarial Audit</text>
+    <text x="637" y="678" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">try to break the result</text>
+  </g>
+  <g class="node" data-t="Report" data-in="metrics.parquet + audit report + run manifest" data-out="Static HTML/parquet bundle; every number traces to a run cell" data-f="Renders quarantined models explicitly — absence is never silent">
+    <rect class="nbox" x="27" y="714" width="200" height="50" rx="8" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.6"/>
+    <text x="127" y="736" font-size="13" font-weight="640" text-anchor="middle" fill="var(--text-primary)">10 · Report</text>
+    <text x="127" y="752" font-size="10.5" text-anchor="middle" fill="var(--text-secondary)">→ leaderboard + manifest</text>
+  </g>
+</svg>
+</div>
+<figcaption>Hover any stage for its inputs, outputs, and failure behavior. Note the shape of the flow:
+agents appear early (understanding, codegen) and once late (audit); everything that touches a
+<em>number</em> is in the left lane. The dashed loop is the only cycle — a bounded repair attempt when
+generated adapter code fails its contract test.</figcaption>
+</figure>
+
+<details>
+<summary>Table view — all ten stages (accessible equivalent of the diagram)</summary>
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>#</th><th>Stage</th><th>Actor</th><th>Consumes</th><th>Emits</th><th>On failure</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>Spec Ingest</td><td>Deterministic</td><td><code>benchmark_spec.yaml</code></td><td>RunSpec + spec hash</td><td>Reject spec; nothing runs</td></tr>
+    <tr><td class="num">2</td><td>Context Harvest</td><td>LLM agent</td><td>Paper ID, repo URL</td><td>ModelCard (cited)</td><td>Field marked <code>unresolved</code></td></tr>
+    <tr><td class="num">3</td><td>Reconcile</td><td>Gate</td><td>Paper claims + repo facts</td><td>ConflictLedger</td><td>Halt on metric-definition conflict</td></tr>
+    <tr><td class="num">4</td><td>Env Build</td><td>Deterministic</td><td>ModelCard env, lockfiles</td><td>Container digest</td><td>Repair, then quarantine model</td></tr>
+    <tr><td class="num">5</td><td>Adapter Synthesis</td><td>LLM agent</td><td>ModelCard + fixed ABC</td><td><code>adapter.py</code></td><td>Goes to gate 6</td></tr>
+    <tr><td class="num">6</td><td>Contract + Smoke</td><td>Gate</td><td>adapter + toy fixture</td><td>Pass/fail + log</td><td>Repair ≤3, then quarantine</td></tr>
+    <tr><td class="num">7</td><td>Run Matrix</td><td>Deterministic</td><td>RunSpec × ModelCards</td><td>prediction <code>.h5ad</code></td><td>Mark cell failed; matrix continues</td></tr>
+    <tr><td class="num">8</td><td>Evaluate</td><td>Deterministic</td><td>Prediction artifacts</td><td><code>metrics.parquet</code></td><td>Metric marked N/A with reason</td></tr>
+    <tr><td class="num">9</td><td>Adversarial Audit</td><td>Gate</td><td>metrics + predictions</td><td>Audit findings</td><td>Flag result as untrusted</td></tr>
+    <tr><td class="num">10</td><td>Report</td><td>Deterministic</td><td>metrics + audit + manifest</td><td>HTML + parquet bundle</td><td>—</td></tr>
+  </tbody>
+</table>
+</div>
+</details>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="num">3</span>Context harvest: what the paper knows vs what the repo knows</h2>
+<p class="lede">This is the stage the request is really about, and the division below is the finding that
+makes it work.</p>
+
+<p>I tested this against a real benchmark paper. The result is clean and it generalizes:
+<strong>the paper gives you the <em>contract</em>; the repo gives you the <em>invocation</em>.</strong>
+Neither substitutes for the other, and an agent that reads only one produces confidently wrong runs.</p>
+
+<figure>
+<div class="prov">
+  <div class="pv a">
+    <div class="rule"></div>
+    <h5>The paper — authoritative on <em>what</em></h5>
+    <p class="src">via paperclip · sections/*.lines</p>
+    <ul>
+      <li>Metric <em>definitions</em> — is Pearson on absolute expression or on Δ-from-control?</li>
+      <li>Split semantics — what "unseen perturbation" means here</li>
+      <li>Task definitions and their evaluation unit</li>
+      <li>Dataset provenance and curation filters</li>
+      <li>Which baselines are mandatory</li>
+      <li>Reported results, as an expectation to check against</li>
+    </ul>
+  </div>
+  <div class="pv b">
+    <div class="rule"></div>
+    <h5>The repo — authoritative on <em>how</em></h5>
+    <p class="src">via git clone · config/, requirements, entrypoints</p>
+    <ul>
+      <li>Entrypoint signature and CLI flags</li>
+      <li>Actual hyperparameters and defaults</li>
+      <li>Dependency pins, CUDA / Python constraints</li>
+      <li>Expected input layout — which layer is raw vs normalized</li>
+      <li>Checkpoint URLs and file layout</li>
+      <li>Undocumented preprocessing that silently happens</li>
+    </ul>
+  </div>
+</div>
+<p class="arrows">↓ ↓</p>
+<div class="merge">
+  <b>Reconciler → ConflictLedger.</b> Where the two disagree, the rule is fixed and written down, not
+  decided per-case: <b>the repo wins on invocation</b> (it is what actually executes),
+  <b>the paper wins on contract</b> (it is what the community agreed the number means). Every conflict is
+  logged with both citations. A conflict about a <em>metric definition</em> is not auto-resolved — it halts
+  the run for a human, because that is the class of disagreement that quietly invalidates a leaderboard.
+</div>
+<figcaption>Why this split is load-bearing: in the paper I tested, the section titled
+<em>"Models selection and setup"</em> — the section you would most expect to tell you how to run
+things — contains only generic prose. Not one hyperparameter. The actual wiring lived in the repo's
+<code>config/models.yaml</code>. An agent given only the Methods section would have to invent the run.</figcaption>
+</figure>
+
+<h3>Using paperclip for the paper side</h3>
+<p><code>paperclip</code> is the right tool here and I verified it end-to-end on a live paper. The reason it
+beats "download the PDF and paste it into context" is <strong>sub-section addressability</strong>: the paper
+is exposed as a virtual filesystem where individual sub-sections are separately readable files, so the agent
+fetches <em>Evaluation metrics</em> without paying for the introduction and discussion.</p>
+
+<p>Listing the sections of the benchmark paper I tested returned, among others:
+<code>Methods.lines</code>, <code>Datasets and preprocessing.lines</code>,
+<code>Models selection and setup.lines</code>, <code>Evaluation metrics.lines</code>,
+<code>Absolute Accuracy Metrics.lines</code>, <code>Relative Effect Capture Metrics.lines</code>,
+<code>Differential Expression Recovery Metrics.lines</code>,
+<code>Distributional Similarity Metrics.lines</code>, <code>E-distance.lines</code>,
+<code>TRADE.lines</code>, <code>Data availability.lines</code>, and <code>Code availability.lines</code>.
+Each metric family is its own addressable read — which is precisely the granularity the harvester wants.</p>
+
+<pre><span class="c"># NOTE: on this machine the paperclip launcher's shebang resolves python3 -> 3.8,</span>
+<span class="c"># which its vendored urllib3 cannot import. Pin the interpreter:</span>
+PC=<span class="s">"/usr/local/bin/python3.10 $HOME/.local/bin/paperclip"</span>
+
+<span class="c"># 1 · locate the benchmark paper; returns a stable ID (bio_ = bioRxiv)</span>
+$PC <span class="k">search</span> -s biorxiv <span class="s">"single-cell perturbation response prediction benchmark"</span>
+
+<span class="c"># 2 · discover what is addressable before reading anything</span>
+$PC <span class="k">ls</span> /papers/&lt;ID&gt;/sections/
+
+<span class="c"># 3 · pull ONLY the run-critical sections, each as its own budgeted read</span>
+$PC <span class="k">cat</span> <span class="s">"/papers/&lt;ID&gt;/sections/Evaluation metrics.lines"</span>
+$PC <span class="k">cat</span> <span class="s">"/papers/&lt;ID&gt;/sections/Datasets and preprocessing.lines"</span>
+$PC <span class="k">cat</span> <span class="s">"/papers/&lt;ID&gt;/sections/Relative Effect Capture Metrics.lines"</span>
+
+<span class="c"># 4 · the paper -> repo bridge, with citable line numbers</span>
+$PC <span class="k">cat</span> <span class="s">"/papers/&lt;ID&gt;/sections/Code availability.lines"</span>
+<span class="c">#   L145: ... available via GitHub at: https://github.com/TianGzlab/scPerturbBench</span>
+
+<span class="c"># 5 · targeted retrieval instead of whole-section reads, when you know the term</span>
+$PC <span class="k">grep</span> --bool <span class="s">"E-distance AND control"</span> /papers/&lt;ID&gt;/
+$PC <span class="k">grep</span> --bool --block-type table --section results <span class="s">"Pearson"</span> /papers/&lt;ID&gt;/
+
+<span class="c"># 6 · fan the same extraction across every model's paper, deterministically</span>
+$PC <span class="k">search</span> --config harvest_workflow.yaml
+$PC <span class="k">map</span> --from &lt;SEARCH_ID&gt; <span class="s">"extract entrypoint, env constraints, and input layer expectations"</span>
+
+<span class="c"># 7 · persist a generated artifact back into the workspace (the only way that works)</span>
+$PC <span class="k">upload</span> modelcards/scgpt.json --into /benchmark-context/</pre>
+
+<p>Three practical notes that shape the harvester's design:</p>
+<ul>
+  <li><strong>It is budget-aware by construction.</strong> Reads print a token count up front
+  (<code>[~487 tokens total, showing first ~1000 chars]</code>) and truncate by default, with
+  <code>--full</code>, <code>cat &gt; file</code>, and in-file <code>grep</code> as the escape hatches. Build the
+  harvester to grep first and <code>--full</code> only on a hit — the guidance explicitly warns against
+  <code>cat</code> on a whole <code>content.lines</code>.</li>
+  <li><strong>Every extracted field carries a citation.</strong> Because reads are line-addressed, a ModelCard
+  field can record <code>bio_…/sections/Code availability.lines:145</code>. Make that <em>mandatory</em> — an
+  uncitable field is a hallucinated field, and this is the cheapest hallucination check available.</li>
+  <li><strong>Use <code>search --config workflow.yaml</code> for the fan-out.</strong> A declarative workflow
+  file keeps the harvest reproducible across N models instead of N ad-hoc agent conversations.</li>
+</ul>
+
+<h3>Using the Results section — for verification, not for running</h3>
+<p>The Results section does not tell an agent how to run anything. It is still worth harvesting, for one
+specific job: <strong>a reproduction check.</strong> Extract the paper's reported numbers into the same tidy
+schema the harness emits, and the Evaluate stage gets a free assertion — <em>does our run land near the
+published value for the models and datasets that overlap?</em> A large gap is the single most informative
+signal that the adapter is wrong, and it costs one extra extraction.</p>
+<p>Keep this strictly advisory. It flags a discrepancy; it never overwrites a computed number, and the
+harness must not tune toward it.</p>
+
+<h3>Repo extraction — what to read, in order</h3>
+<p>Do not point an agent at a repo and say "figure it out." Read a fixed priority list, cheapest and
+most-authoritative first, stopping when the ModelCard is complete:</p>
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>Priority</th><th>Target</th><th>Yields</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td><code>config/*.yaml</code>, <code>configs/</code></td><td>Declared hyperparameters, task wiring, dataset keys — structured, no inference needed</td></tr>
+    <tr><td class="num">2</td><td><code>requirements.txt</code>, <code>environment.yml</code>, <code>pyproject.toml</code>, <code>Dockerfile</code></td><td>The env block, verbatim. Never let an agent paraphrase pins</td></tr>
+    <tr><td class="num">3</td><td>Entrypoint (<code>run_*.py</code>, <code>train.py</code>, <code>__main__</code>), <code>--help</code></td><td>Call signature and required flags</td></tr>
+    <tr><td class="num">4</td><td>Tutorial notebooks / <code>examples/</code></td><td>The <em>real</em> expected input layout — usually more honest than the README</td></tr>
+    <tr><td class="num">5</td><td>Data-loading + preprocessing functions</td><td>Which layer must be raw counts vs log-normalized; gene-filtering side effects</td></tr>
+    <tr><td class="num">6</td><td>README, then open/closed issues</td><td>Checkpoint URLs; known breakages. Issues are where the undocumented gotcha lives</td></tr>
+  </tbody>
+</table>
+</div>
+<p>The harness I inspected illustrates why step 1 is first — and also why you should not simply adopt
+someone else's registry. Its <code>models.yaml</code> entry is only four fields
+(<code>name</code>, <code>script</code>, <code>metrics_script</code>, <code>tasks</code>): no environment, no
+hyperparameters, no entrypoint contract. It presumes a human already knows how to run each model. The
+ModelCard in §7 is deliberately fatter, because the agent has to make that knowledge explicit.</p>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="num">4</span>The gates</h2>
+<p class="lede">An agentic pipeline is only as trustworthy as what it refuses to pass through. Four gates,
+cheapest first.</p>
+
+<div class="card ladder">
+  <div class="rung">
+    <div class="ic" style="background:var(--series-3)">1</div>
+    <div>
+      <div class="nm">Contract test — does the adapter satisfy the ABC?</div>
+      <div class="ds">Static: required methods present, correct signatures, declared <code>pred_type</code>, and
+      <strong>no import of any metric module</strong> (a lint rule, because this is the one boundary that must
+      never blur). Runs in milliseconds on generated code.</div>
+      <div class="tg">Catches: the most common LLM-codegen failure — a plausible module that does not fit the interface.</div>
+    </div>
+  </div>
+  <div class="rung">
+    <div class="ic" style="background:var(--series-3)">2</div>
+    <div>
+      <div class="nm">Smoke run — a ~200-cell toy fixture</div>
+      <div class="ds">Every model runs a tiny synthetic dataset end to end. Assert output shape, gene order
+      identical to the frozen reference, dtype, no NaN, and <strong>bit-identical output under a fixed
+      seed</strong>. Seconds per model.</div>
+      <div class="tg">Catches: shape transposition, silently reordered genes, nondeterminism — before you spend GPU-hours.</div>
+    </div>
+  </div>
+  <div class="rung">
+    <div class="ic" style="background:var(--status-warning)">3</div>
+    <div>
+      <div class="nm">Baseline sanity — is the model beating trivial?</div>
+      <div class="ds">Mandatory naive baselines run in the same matrix as first-class entries:
+      <em>control-mean</em>, <em>train-perturbation-mean</em>, and an <em>additive</em> baseline. Any model that
+      fails to beat control-mean on Δ-correlation is flagged, not quietly ranked.</div>
+      <div class="tg">Catches: the standard embarrassment in this field — sophisticated models losing to the mean, hidden by metrics computed on absolute expression.</div>
+    </div>
+  </div>
+  <div class="rung">
+    <div class="ic" style="background:var(--status-critical)">4</div>
+    <div>
+      <div class="nm">Adversarial audit — an agent told to break the result</div>
+      <div class="ds">Prompted to <em>refute</em>, not confirm. Checks: split leakage (does an "unseen" compound
+      have a near-identical scaffold in train?); <strong>pretraining contamination</strong> (did a foundation
+      model's pretraining corpus include this dataset?); degenerate predictions (constant output, or
+      near-copies of the control profile); metric–<code>pred_type</code> mismatch (a distributional metric
+      scored against a mean-profile prediction).</div>
+      <div class="tg">Catches: the failures that pass every mechanical check and still make the leaderboard wrong.</div>
+    </div>
+  </div>
+</div>
+
+<p>Contamination deserves emphasis because it is specific to this moment. Single-cell foundation models are
+pretrained on large public corpora that plausibly <em>include the benchmark's own dataset</em>. There is no
+library check for this. The auditor's job is to read each model's pretraining-data description via
+paperclip and cross-reference the accessions in the dataset's provenance — a comprehension task, and a
+genuinely good use of an agent.</p>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="num">5</span>Chemical perturbation: what changes</h2>
+<p class="lede">Most of this space's tooling was built for genetic perturbation. Small-molecule benchmarking
+breaks two assumptions.</p>
+
+<p><strong>Perturbation identity is not a label — it is a molecule with a dose.</strong> A genetic
+perturbation is a gene symbol: exact string matching is the right notion of "same perturbation" and
+"unseen." A compound is not. <code>"Vorinostat"</code>, <code>"SAHA"</code>, and
+<code>"MK0683"</code> are the same molecule; a random split on the name string leaks. Requirements:</p>
+<ul>
+  <li><strong>Canonical SMILES as the join key</strong>, with the trade name kept only as a display field. Add
+  an InChIKey column so identity survives round-tripping.</li>
+  <li><strong>Murcko scaffold splits</strong> (RDKit) for the unseen-compound task, not random splits. Otherwise
+  a close analog of the held-out compound sits in train and the reported generalization is fictional. This
+  is the audit's single highest-value leakage check for chemical data.</li>
+  <li><strong>Dose is a coordinate, not metadata.</strong> <code>dose_uM</code> as a numeric column, and
+  <em>unseen dose</em> as a first-class split alongside unseen compound and unseen cell line. A model that
+  ignores dose should be visibly penalized by the split design, not accidentally rewarded.</li>
+  <li><strong>Time point too</strong>, where the dataset has one — a 6h and a 24h response to the same compound
+  are different targets.</li>
+</ul>
+<p><strong>Controls are per-plate, not global.</strong> Chemical screens carry vehicle controls (DMSO) with
+plate-level batch structure. Since the metrics that matter are computed on Δ-from-control, <em>which</em>
+control you subtract changes the number. The dataset contract must name the matching control group
+explicitly per observation, and the harness must never infer it.</p>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="num">6</span>Existing tools: what to reuse, what to build</h2>
+<p class="lede">Reuse aggressively for data structures, metrics, containers, and orchestration. Build only
+the four things that encode <em>your</em> comparability guarantees.</p>
+
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>Need</th><th>Tool</th><th>Verdict</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Paper context extraction</td><td><strong>paperclip</strong></td>
+      <td><span class="pill reuse">Reuse</span></td>
+      <td>Verified working on a live paper. Sub-section addressability, line-level citations, token counts up front, and a declarative <code>--config</code> workflow for the fan-out. This is the stage's answer.</td>
+    </tr>
+    <tr>
+      <td>Data structures &amp; single-cell ops</td><td><strong>anndata</strong>, <strong>scanpy</strong></td>
+      <td><span class="pill reuse">Reuse</span></td>
+      <td>On PyPI, universal in this field. <code>.h5ad</code> is the only sane interchange format here — every model already speaks it.</td>
+    </tr>
+    <tr>
+      <td>Perturbation-specific metrics</td><td><strong>pertpy</strong></td>
+      <td><span class="pill reuse">Reuse</span></td>
+      <td>On PyPI. Provides E-distance and related perturbation statistics — do not reimplement distributional metrics.</td>
+    </tr>
+    <tr>
+      <td>Chemistry: scaffolds, canonical SMILES</td><td><strong>RDKit</strong></td>
+      <td><span class="pill reuse">Reuse</span></td>
+      <td>On PyPI. Murcko scaffold decomposition and SMILES canonicalization are solved; the chemical splits in §5 depend on it.</td>
+    </tr>
+    <tr>
+      <td>Splits &amp; metric reference implementations</td><td><strong>perturbench</strong> (Altos Labs)</td>
+      <td><span class="pill caution">Reuse ⚠ source-only</span></td>
+      <td>Genuinely useful for split logic and metric definitions — but <strong>it is not on PyPI</strong> (I checked: 404). Vendor it from GitHub at a pinned commit; never write <code>pip install perturbench</code> in a lockfile.</td>
+    </tr>
+    <tr>
+      <td>Reference harness &amp; model wrappers</td><td><strong>scPerturbBench</strong></td>
+      <td><span class="pill caution">Mine, don't adopt</span></td>
+      <td>Excellent source of per-model invocation knowledge and task definitions, and the paper→repo bridge works. But <code>run_benchmark.py</code> subprocesses out to a <em>per-model</em> <code>metrics_script</code> and writes no results itself — adopting its runner inherits the comparability bug in §1.</td>
+    </tr>
+    <tr>
+      <td>DAG execution, resume, sharding</td><td><strong>Snakemake</strong> (or Nextflow)</td>
+      <td><span class="pill reuse">Reuse</span></td>
+      <td>Do not write a job runner. You need content-addressed resume, cluster/cloud submission, and per-rule containers — all of it exists. Snakemake if the team is Python-native; Nextflow if you already run nf-core.</td>
+    </tr>
+    <tr>
+      <td>Environment isolation</td><td><strong>Docker / Apptainer</strong></td>
+      <td><span class="pill reuse">Reuse</span></td>
+      <td>Non-negotiable, not optional. These models have mutually unsatisfiable dependency sets; one shared env is how the matrix silently shrinks to whatever installed last. Apptainer for HPC.</td>
+    </tr>
+    <tr>
+      <td>Agent orchestration</td><td><strong>Claude Agent SDK</strong> / Claude Code subagents</td>
+      <td><span class="pill reuse">Reuse</span></td>
+      <td>You need tool-use loops, filesystem access, and subagent isolation — all provided. Keep agents as <em>stateless functions over artifacts</em> so a rerun is cheap and inspectable.</td>
+    </tr>
+    <tr>
+      <td>Run tracking</td><td>MLflow / W&amp;B</td>
+      <td><span class="pill caution">Optional</span></td>
+      <td>A run manifest plus <code>metrics.parquet</code> already gives full traceability. Add a tracker only if humans need live dashboards during long runs.</td>
+    </tr>
+    <tr>
+      <td><strong>Adapter ABC + contract tests</strong></td><td>—</td>
+      <td><span class="pill build">Build</span></td>
+      <td>This is the interface every generated adapter is checked against. It is the load-bearing artifact and it must be yours, small, and frozen.</td>
+    </tr>
+    <tr>
+      <td><strong>Metric registry (single evaluation site)</strong></td><td>—</td>
+      <td><span class="pill build">Build</span></td>
+      <td>Thin: wraps pertpy/scipy implementations, but declares for each metric its <code>on</code> basis (delta / absolute / distribution) and required <code>pred_type</code>. This declaration is what makes mismatches catchable.</td>
+    </tr>
+    <tr>
+      <td><strong>ModelCard + ConflictLedger schema</strong></td><td>—</td>
+      <td><span class="pill build">Build</span></td>
+      <td>The agent↔code contract. Nothing off the shelf models "this field came from paper line 145, that one from the repo, and they disagree."</td>
+    </tr>
+    <tr>
+      <td><strong>Audit checks</strong></td><td>—</td>
+      <td><span class="pill build">Build</span></td>
+      <td>Scaffold-leakage, pretraining contamination, degeneracy, and baseline sanity are specific to this benchmark's semantics. Small, high-value, and no library will have them.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Net:</strong> roughly four modest components to write. Everything heavy — the DAG engine,
+containers, the single-cell stack, the chemistry, the paper extraction — already exists and is verified
+available.</p>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="num">7</span>Interfaces the adjacent stages should emit</h2>
+<p class="lede">Out of scope to build, but the runner's quality is capped by these. Each is small.</p>
+
+<h3>From the dataset stage — the <code>.h5ad</code> contract</h3>
+<p>One AnnData file per dataset, splits already materialized as a column, plus a frozen gene order and its
+hash. If splits are computed at run time, two models can be evaluated on different held-out sets and the
+comparison is void.</p>
+<pre><span class="c"># adata.obs — required columns</span>
+perturbation        <span class="c"># canonical SMILES for chemical; gene symbol for genetic</span>
+perturbation_name   <span class="c"># human-readable display only; never a join key</span>
+inchikey            <span class="c"># chemical only — identity that survives round-tripping</span>
+dose_uM             <span class="c"># float; 0.0 for controls</span>
+time_h              <span class="c"># float; where the dataset has a time axis</span>
+cell_type           <span class="c"># string</span>
+is_control          <span class="c"># bool</span>
+control_group       <span class="c"># which control THIS cell is compared against (plate/batch-aware)</span>
+batch               <span class="c"># plate or run</span>
+split               <span class="c"># {train, val, test} — MATERIALIZED, not computed at run time</span>
+split_name          <span class="c"># e.g. "scaffold_unseen_compound_seed0"</span>
+
+<span class="c"># adata.layers</span>
+counts              <span class="c"># raw integer counts — required; models disagree on what they want</span>
+X                   <span class="c"># log1p-normalized; declare the transform in uns</span>
+
+<span class="c"># adata.uns</span>
+gene_order_sha256   <span class="c"># hash of var_names, in order — the anti-silent-reorder check</span>
+normalization       <span class="c"># e.g. {"target_sum": 1e4, "log1p": true}</span>
+dataset_sha256      <span class="c"># content address of the file itself</span>
+provenance          <span class="c"># accessions + DOI, so the auditor can check contamination</span>
+split_recipe        <span class="c"># how splits were made, incl. scaffold method + seed</span></pre>
+
+<h3>From the metrics stage — a declarative spec, not a script</h3>
+<p>The critical fields are <code>on</code> and <code>requires_pred_type</code>. They let the harness reject a
+metric–prediction mismatch mechanically instead of producing a meaningless number.</p>
+<pre>metrics:
+  - id: delta_pearson
+    family: relative_effect          <span class="c"># absolute | relative_effect | de_recovery | distributional</span>
+    <span class="k">on</span>: delta                       <span class="c"># delta | absolute | distribution  &lt;- load-bearing</span>
+    requires_pred_type: mean_profile
+    aggregate_over: [perturbation, cell_type]
+    higher_is_better: true
+    gene_set: hvg_2000               <span class="c"># or de_top_50 — must be explicit</span>
+  - id: e_distance
+    family: distributional
+    <span class="k">on</span>: distribution
+    requires_pred_type: single_cell   <span class="c"># mean-profile models are N/A here, not zero</span>
+    higher_is_better: false
+mandatory_baselines: [control_mean, train_perturbation_mean, additive]
+bootstrap: {n: 1000, seed: 0}</pre>
+<p>Note <code>requires_pred_type</code> in action: a model that emits only a mean profile is
+<strong>not applicable</strong> to E-distance. Recording that as N/A-with-reason rather than as a bad score is
+the difference between an honest leaderboard and a misleading one.</p>
+
+<h3>From the model-list stage — the ModelCard the agent completes</h3>
+<p>The upstream stage supplies the top block; Context Harvest fills the rest, every field cited.</p>
+<pre><span class="c"># --- supplied by the model-list stage ---</span>
+key: scgpt
+paper: {id: bio_XXXXXXXX, source: biorxiv}      <span class="c"># paperclip ID</span>
+repo: {url: https://github.com/..., commit: &lt;full-sha&gt;}   <span class="c"># PINNED, not a branch</span>
+class: foundation_model                          <span class="c"># drives contamination audit</span>
+
+<span class="c"># --- filled by the harvest agent; every field cited ---</span>
+env:
+  base_image: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+  python: <span class="s">"3.10"</span>
+  install: [<span class="s">"pip install -r requirements.txt"</span>]
+  _cite: repo:requirements.txt
+entrypoint: {module: scgpt.tasks.perturbation, callable: main}
+input_expectations:
+  layer: counts
+  requires_hvg: true
+  gene_id_type: symbol
+  _cite: <span class="s">"repo:tutorials/Tutorial_Perturbation.ipynb:cell-4"</span>
+pred_type: mean_profile                          <span class="c"># mean_profile | single_cell</span>
+checkpoints: [{name: whole_human, url: ..., sha256: ...}]
+hyperparameters: {epochs: 15, lr: 1e-4, _cite: repo:config/models.yaml}
+paper_claims:
+  metric_basis: <span class="s">"delta from control"</span>
+  _cite: <span class="s">"bio_XXXXXXXX/sections/Evaluation metrics.lines:L112"</span>
+unresolved: []                                   <span class="c"># non-empty ⇒ human review, never a guess</span></pre>
+
+<h3>What this stage emits downstream</h3>
+<pre><span class="c"># predictions — one file per matrix cell</span>
+predictions/{model}/{dataset}/{split}/{seed}.h5ad
+  obs: perturbation, cell_type, dose_uM, pred_type
+  var: gene order identical to dataset gene_order_sha256   <span class="c"># asserted, not assumed</span>
+
+<span class="c"># metrics — tidy long form, one row per (model, dataset, split, seed, metric, group)</span>
+metrics.parquet
+  model, dataset, split, seed, metric_id, group_key, value, ci_low, ci_high, n, status
+  <span class="c"># status ∈ {ok, na_pred_type_mismatch, na_model_failed, flagged_below_baseline}</span>
+
+<span class="c"># run manifest — makes the whole thing reproducible</span>
+manifest.json
+  spec_sha256, dataset_sha256, gene_order_sha256
+  per model: repo commit, image digest, adapter.py sha256, ModelCard sha256
+  seeds, hardware, wall time, harness git sha, quarantined models + reason</pre>
+<p>Two properties do the work here. <strong>Tidy long form</strong> means adding a metric or a model never
+changes the schema — the report is a groupby, not a rewrite. <strong><code>status</code> as a first-class
+column</strong> means a missing number always carries its reason, so nothing disappears silently between
+the runner and the leaderboard.</p>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="num">8</span>Build order</h2>
+<p class="lede">Deliberately inverted from the diagram: build the deterministic spine first, add agents
+only where the spine is blocked by comprehension.</p>
+<ol>
+  <li><strong>The ABC and its contract tests.</strong> Everything else is defined against this. Freeze it early.</li>
+  <li><strong>The metric registry and Evaluate, on synthetic predictions.</strong> Verify the metrics on data
+  where you know the answer, before any real model exists.</li>
+  <li><strong>The toy fixture and the smoke gate.</strong> A ~200-cell dataset that runs in seconds. This is the
+  highest-leverage artifact in the project — it makes every later iteration cheap.</li>
+  <li><strong>One model, fully hand-written.</strong> No agents. Prove the spine end to end, and learn what a
+  ModelCard actually needs to contain.</li>
+  <li><strong>The harvest agent</strong> — paperclip + repo → ModelCard. Now you know the target schema, because
+  step 4 taught you.</li>
+  <li><strong>The adapter synthesizer</strong>, against gates that already exist and already pass for the
+  hand-written model.</li>
+  <li><strong>Scale the matrix</strong> under Snakemake with containers per model.</li>
+  <li><strong>The auditor and the report.</strong></li>
+</ol>
+<p>Writing the harvest agent before step 4 is the tempting mistake: you would be generating a schema you
+have not yet validated against a working run, and every downstream gate would be guessing what to check.</p>
+
+<footer>
+  <p><strong>Verification notes.</strong> The paperclip commands, the section listing, the paper→repo bridge
+  (<code>Code availability</code> → the GitHub URL, with line numbers), and the reference harness's
+  <code>models.yaml</code> / <code>run_benchmark.py</code> structure were all checked live rather than
+  assumed. <code>perturbench</code> was confirmed absent from PyPI (404). No benchmark result numbers appear
+  anywhere in this document — the figures are structural, and the counts in the tiles describe this design,
+  not any measurement.</p>
+  <p><strong>Palette.</strong> Categorical slots 1–3 encode the three actor classes
+  (<span style="color:var(--series-1);font-weight:600">deterministic</span> /
+  <span style="color:var(--series-2);font-weight:600">agent</span> /
+  <span style="color:var(--series-3);font-weight:600">gate</span>), unchanged from the documented reference
+  instance. The bundled Node validator could not execute here (local Node is v11.9.0; the script needs ESM
+  and <code>??=</code>), so its six checks were ported to Python and run: all-pairs CVD ΔE
+  <span style="font-variant-numeric:tabular-nums">9.2</span> light /
+  <span style="font-variant-numeric:tabular-nums">9.4</span> dark (≥8 target), normal-vision ΔE
+  <span style="font-variant-numeric:tabular-nums">24.0</span> /
+  <span style="font-variant-numeric:tabular-nums">20.9</span> (≥15 floor) — matching the documented values
+  exactly, which cross-validates the port. One WARN: aqua sits at 2.74:1 on the light surface, so the relief
+  rule applies — every node is directly labeled and a table view ships with the diagram.</p>
+</footer>
+
+</div>
+
+<div id="tip" role="tooltip"></div>
+<script>
+(function () {
+  var tip = document.getElementById('tip');
+  document.querySelectorAll('#dag .node').forEach(function (n) {
+    function show(e) {
+      tip.innerHTML =
+        '<div class="tt">' + n.dataset.t + '</div>' +
+        '<div class="tr"><b>in</b> · ' + n.dataset.in + '</div>' +
+        '<div class="tr"><b>out</b> · ' + n.dataset.out + '</div>' +
+        '<div class="tr"><b>note</b> · ' + n.dataset.f + '</div>';
+      tip.style.opacity = 1;
+      var pad = 14, w = 300;
+      var x = Math.min(e.clientX + pad, window.innerWidth - w - pad);
+      var y = Math.min(e.clientY + pad, window.innerHeight - tip.offsetHeight - pad);
+      tip.style.left = Math.max(pad, x) + 'px';
+      tip.style.top = Math.max(pad, y) + 'px';
+    }
+    n.addEventListener('mouseenter', show);
+    n.addEventListener('mousemove', show);
+    n.addEventListener('mouseleave', function () { tip.style.opacity = 0; });
+  });
+
+  var btn = document.getElementById('tgl');
+  btn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme');
+    if (!cur) {
+      var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      cur = dark ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+  });
+})();
+</script>
+</body>
+</html>

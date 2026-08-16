@@ -1,0 +1,21 @@
+{
+  "mode": {
+    "setup": true,
+    "organize": false
+  },
+  "model_config": {
+    "model": "anthropic/claude-sonnet-5"
+  },
+  "workspace_root": "work/cpa_test/",
+  "dataset": "work/cpa_test/dataset.jsonl",
+  "print_to_console": true,
+  "first_N_repos": 1,
+  "overwrite": false,
+  "max_workers": 1,
+  "os": "linux",
+  "max_trials": 2,
+  "max_steps_setup": 45,
+  "max_steps_verify": 15,
+  "cmd_timeout": 120,
+  "image_prefix": "repolaunch/cpa-test"
+}
