@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Non-final outputs: eval runs, tuning artifacts (keep out of git)
+evals/backsearch/results/
+evals/backsearch/query_sets/

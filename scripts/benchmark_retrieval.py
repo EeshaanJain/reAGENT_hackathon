@@ -59,13 +59,48 @@ def main(benchmark_dir: str) -> None:
         out_path.write_text(json.dumps(results, indent=2))
 
     # ---- Phase 1: keyword sets ----
-    # 5 sets uniformly spanning the tuning history: the very first baseline,
-    # two intermediates, the 8-query tuned set, and the current keywords.
-    SET_FILES = ["v1_baseline", "v2_chem_focus", "v4_families", "v6_tuned8"]
-    query_sets: dict[str, list[str]] = {}
-    for stem in SET_FILES:
-        f = repo_root / "evals" / "backsearch" / "query_sets" / f"{stem}.yaml"
-        query_sets[stem] = yaml.safe_load(f.read_text())["search"]["queries"]
+    # 5 sets uniformly spanning the tuning history (inlined so the historical
+    # versions need not live in the repo): the very first baseline, two
+    # intermediates, the 8-query tuned set, and the current keywords.
+    query_sets: dict[str, list[str]] = {
+        "v1_baseline": [
+            "single-cell perturbation response prediction deep learning",
+            "predicting transcriptional response to drug perturbation",
+            "chemical perturbation prediction gene expression single-cell",
+            "generative model cellular response small molecule",
+            "out-of-distribution prediction unseen drug single-cell RNA-seq",
+        ],
+        "v2_chem_focus": [
+            "predicting single-cell transcriptional response to drug perturbation",
+            "chemical perturbation response prediction single-cell RNA-seq",
+            "drug-induced gene expression change prediction deep learning",
+            "in silico prediction of compound effect on gene expression",
+            "generative model single-cell drug response prediction",
+            "dose-dependent chemical perturbation gene expression model",
+            "optimal transport single-cell perturbation response",
+        ],
+        "v3_families9": [
+            "single-cell perturbation response prediction deep learning",
+            "predicting transcriptional response to drug perturbation",
+            "chemical perturbation prediction gene expression single-cell",
+            "generative model cellular response small molecule",
+            "out-of-distribution prediction unseen drug single-cell RNA-seq",
+            "diffusion model predicting cellular responses to perturbations",
+            "flow matching generative model single-cell perturbation",
+            "transferring perturbation responses across cell contexts",
+            "statistical baseline drug response prediction single-cell",
+        ],
+        "v4_tuned8": [
+            "single-cell perturbation response prediction deep learning",
+            "predicting transcriptional response to drug perturbation",
+            "chemical perturbation prediction gene expression single-cell",
+            "out-of-distribution prediction unseen drug single-cell RNA-seq",
+            "diffusion model predicting cellular responses to perturbations",
+            "flow matching generative model single-cell perturbation",
+            "transferring perturbation responses across cell contexts",
+            "statistical baseline drug response prediction single-cell",
+        ],
+    }
     current = yaml.safe_load((bench / "keywords.yaml").read_text())["search"]
     query_sets["current_keywords"] = current["queries"]
 
