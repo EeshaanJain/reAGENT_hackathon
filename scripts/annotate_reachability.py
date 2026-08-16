@@ -35,7 +35,7 @@ def annotate(csv_path: Path) -> None:
         if not row["paperclip_doc_id"]:
             row["search_reachable"] = "False"
             continue
-        hits = search(row["paper_title"], n=5)
+        hits, _ = search(row["paper_title"], n=5)
         reachable = any(
             h.doc_id == row["paperclip_doc_id"]
             or norm_title(h.title) == norm_title(row["paper_title"])

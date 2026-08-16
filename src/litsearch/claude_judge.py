@@ -60,6 +60,10 @@ def judge(retrieved: dict[str, SearchHit], criterion: str,
         cmd += ["--model", model]
     proc = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
                           timeout=timeout)
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"claude judge exited {proc.returncode}: "
+            f"{proc.stderr.strip()[:500] or proc.stdout.strip()[:500]}")
     out = proc.stdout
     m = re.search(r"\{.*\}", out, re.DOTALL)
     if not m:

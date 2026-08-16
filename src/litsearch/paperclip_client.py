@@ -8,22 +8,31 @@ from __future__ import annotations
 
 import re
 import subprocess
+import sys
 from dataclasses import dataclass
 
 DOC_ID_RE = re.compile(r"\b(PMC\d+|bio_[0-9a-f]+|med_[0-9a-f]+|arx_[\w.]+|oa_W\d+)\b")
+RESULT_SET_RE = re.compile(r"\[(s_[0-9a-f]+)\]|saved to (s_[0-9a-f]+)")
+ARXIV_DOI_RE = re.compile(r"10\.48550/arXiv\.(\d{4}\.\d{4,5})", re.IGNORECASE)
 
 DEFAULT_SOURCES = "pmc,biorxiv,medrxiv,arxiv"
 
 
 def run(args: list[str], timeout: int = 120) -> str:
-    """Run a paperclip command and return combined stdout+stderr."""
+    """Run a paperclip command and return combined stdout+stderr.
+
+    A nonzero exit is loudly logged (not raised: several paperclip commands
+    exit nonzero on ordinary no-match results) — a crashed or misconfigured
+    CLI must not silently parse as "zero hits".
+    """
     proc = subprocess.run(
         ["paperclip", *args], capture_output=True, text=True, timeout=timeout
     )
+    if proc.returncode != 0:
+        print(f"WARNING: paperclip {' '.join(args[:2])}... exited "
+              f"{proc.returncode}: {proc.stderr.strip()[:300]}",
+              file=sys.stderr)
     return proc.stdout + proc.stderr
-
-
-RESULT_SET_RE = re.compile(r"\[(s_[0-9a-f]+)\]|saved to (s_[0-9a-f]+)")
 
 
 @dataclass
@@ -57,17 +66,13 @@ def _parse_result_set_id(out: str) -> str | None:
 
 def search(query: str, sources: str = DEFAULT_SOURCES, n: int = 10,
            since: str | None = None,
-           search_all: bool = True,
-           return_set_id: bool = False):
-    """Run `paperclip search` and parse ranked hits.
+           search_all: bool = True) -> tuple[list[SearchHit], str | None]:
+    """Run `paperclip search`; returns (ranked hits, saved result-set id).
 
     CAUTION: without --all, paperclip silently restricts results to recent
     papers, and an over-filtered search is indistinguishable from an empty
     corpus. We therefore pass --all by default; scheduled new-paper runs
     should pass `since` instead.
-
-    With return_set_id=True, returns (hits, saved_result_set_id) so the set can
-    be piped into merge/filter.
     """
     args = ["search", query, "-s", sources, "-n", str(n)]
     if since:
@@ -75,16 +80,7 @@ def search(query: str, sources: str = DEFAULT_SOURCES, n: int = 10,
     elif search_all:
         args += ["--all"]
     out = run(args)
-    hits = _parse_hits(out)
-    if return_set_id:
-        return hits, _parse_result_set_id(out)
-    return hits
-
-
-def merge_sets(set_ids: list[str]) -> str | None:
-    """Union saved result sets; returns the merged set id."""
-    out = run(["merge", *set_ids])
-    return _parse_result_set_id(out)
+    return _parse_hits(out), _parse_result_set_id(out)
 
 
 def llm_filter(set_id: str, criterion: str,
@@ -92,13 +88,15 @@ def llm_filter(set_id: str, criterion: str,
     """Run paperclip's LLM relevance filter on a saved result set.
 
     `filter` updates the set in place and prints only a summary, so the
-    surviving papers are read back with `results`."""
+    surviving papers are read back with `results`.
+
+    Note: filtering the union of several sets in one call is blocked upstream —
+    `paperclip merge` fails to find freshly created result sets — so callers
+    filter per set and union the survivors themselves.
+    """
     run(["filter", "--from", set_id, criterion], timeout=timeout)
     out = run(["results", set_id], timeout=timeout)
     return _parse_hits(out)
-
-
-ARXIV_DOI_RE = re.compile(r"10\.48550/arXiv\.(\d{4}\.\d{4,5})", re.IGNORECASE)
 
 
 def resolve_doc_id(doi: str | None, title: str | None) -> str | None:
