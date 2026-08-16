@@ -1,5 +1,12 @@
 # Serena Harness Implementation Summary
 
+> **Historical.** This describes the *original* placeholder-only build — `harness.py`'s 8 stages
+> were `pass` stubs, and the doc's own "Status" line says "Ready for implementation of Serena MCP
+> bindings." That implementation is now done: `../mcp_client.py` + `../harness.py` make real,
+> live MCP calls (9 stages now, not 8), validated against a real repo — see `../README.md` and
+> `../VALIDATION_SCAPE.md` for the current, accurate picture. Kept here as a record of the
+> original design intent, same as `methods/planning/`.
+
 ## Overview
 
 Created a **reusable, repo-agnostic Serena MCP harness** for repository understanding in the method integration pipeline.

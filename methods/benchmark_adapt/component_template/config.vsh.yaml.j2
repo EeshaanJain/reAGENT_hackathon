@@ -14,7 +14,7 @@ links:
 info:
   preferred_normalization: {{ preferred_normalization | default('unknown') }}
 
-{% if arguments %}
+{% if arguments or requires_sc_counts %}
 arguments:
 {% for arg in arguments %}
   - type: {{ arg.arg_type }}
@@ -22,6 +22,16 @@ arguments:
     description: {{ arg.description | tojson }}
     default: {{ arg.value | tojson }}
 {% endfor %}
+{% if requires_sc_counts %}
+  - type: file
+    name: --sc_train
+    required: false
+    description: >-
+      Raw single-cell counts (.h5ad). LOCAL, PROPOSED extension -- not a real wf_method.yaml
+      argument in the upstream OP3 task today; this method's own entrypoint needs single-cell
+      data (requires_sc_counts=true in the contract), which de_train/id_map cannot express. See
+      DEVIATIONS.md for the citation trail and the proposed-not-merged status of this argument.
+{% endif %}
 {% endif %}
 
 resources:

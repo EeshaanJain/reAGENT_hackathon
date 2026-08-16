@@ -107,9 +107,14 @@ def findings_to_contract_fields(findings: RepositoryFindings) -> dict[str, Any]:
     result["entrypoint_field"] = _cited(entrypoint.symbol, _citation(entrypoint)) if entrypoint else _unknown()
 
     loaders = findings.data_loaders
-    sc_loader = next((f for f in loaders if f.body_snippet and _SC_COUNTS_RE.search(f.body_snippet)), None)
-    if sc_loader:
-        result["requires_sc_counts_field"] = _cited(True, _citation(sc_loader))
+    # Some repos (CPA-shaped: no dedicated load_*/*_load* function -- the caller hands in an
+    # AnnData directly) have zero data_loader findings at all, but the sc-usage evidence (e.g. a
+    # setup_anndata call) still shows up in the public API / implementation bodies. Check those
+    # too, preferring the more specific data_loader evidence when it exists.
+    sc_search_pool = loaders + findings.public_apis + findings.training_path + findings.inference_path
+    sc_evidence = next((f for f in sc_search_pool if f.body_snippet and _SC_COUNTS_RE.search(f.body_snippet)), None)
+    if sc_evidence:
+        result["requires_sc_counts_field"] = _cited(True, _citation(sc_evidence))
     elif loaders:
         result["requires_sc_counts_field"] = _cited(False, _citation(loaders[0]))
     else:
