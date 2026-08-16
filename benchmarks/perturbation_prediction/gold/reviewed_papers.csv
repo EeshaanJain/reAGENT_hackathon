@@ -18,3 +18,35 @@ CPA,Learning interpretable cellular responses to complex perturbations in high-t
 Biolord,Biological representation disentanglement of single-cell data,bio_aaf8afe26d8f,,positive,2026-08-16,duplicate version of gold Biolord
 scVIDR (protocol),Protocol for predicting single- and multiple-dose-dependent gene expression using deep generative learning,PMC12274909,,related,2026-08-16,STAR Protocols companion to gold scVIDR
 MichiGAN,Sampling from Disentangled Representations of Single-Cell Data Using Generative Adversarial Networks,bio_fa59a5596d15,,negative,2026-08-16,duplicate version of MichiGAN (judged not relevant)
+W1-OT-solver,Fast and scalable Wasserstein-1 neural optimal transport solver for single-cell perturbation prediction,PMC12261427,,positive,2026-08-16,Wasserstein-1 OT; CellOT successor
+W1-OT-solver,Fast and scalable Wasserstein-1 neural optimal transport solver for   single-cell perturbation prediction,arx_2411.00614,,positive,2026-08-16,duplicate arXiv version
+PrePR-CT,PrePR-CT: Predicting Perturbation Responses in Unseen Cell Types Using Cell-Type-Specific Graphs,bio_1b3dbb227cee,,positive,2026-08-16,chemical perturbations unseen cell types
+PerturbX,Learning Perturbation-specific Cell Representations for Prediction of Transcriptional Response across Cellular Contexts,bio_91e271016e38,,positive,2026-08-16,perturbation-specific cell representations
+PerturbCellRL,PerturbCellRL: Verifier-Guided Reinforcement Learning for Single-Cell Perturbation Prediction,arx_2606.27752,,positive,2026-08-16,RL post-training with verifiers
+scCycleMol,Modeling Cell-Cycle-Aware Single-Cell Drug Perturbation Responses,arx_2606.30695,,positive,2026-08-16,cell-cycle-aware drug perturbation; SciPlex3
+XTransferCDR,Learning Cross-Domain Representations for Transferable Drug   Perturbations on Single-Cell Transcriptional Responses,arx_2412.19228,,positive,2026-08-16,cross-domain transferable drug perturbations
+CellCap,Modeling interpretable correspondence between cell state and perturbation response with CellCap,PMC10979976,,positive,2026-08-16,cell state <-> perturbation response correspondence
+CellCap,Modeling interpretable correspondence between cell state and perturbation response with CellCap,bio_f2a6d9db6c2b,,positive,2026-08-16,duplicate bioRxiv version
+X-Pert,Unified modeling of cellular responses to diverse perturbation types,bio_2409c6c772f2,,positive,2026-08-16,duplicate version of gold X-Pert (retitled)
+SAVE,SAVE: A Generalizable Framework for Multi-Condition Single-Cell Generation with Gene Block Attention,arx_2604.16776,,negative,2026-08-16,"generation-focused, judged out of scope"
+Gen2ChemTransfer,Genetic-to-Chemical Perturbation Transfer Learning Through Unified Multimodal Molecular Representations,bio_1ae5d0616e16,,negative,2026-08-16,
+CycleConsistNovelDrugs,Interpretable Modeling of Single-cell perturbation Responses to Novel   Drugs Using Cycle Consistence Learning,arx_2311.10315,,negative,2026-08-16,
+CINEMA-OT,Causal identification of single-cell experimental perturbation effects with CINEMA-OT,PMC10630139,,negative,2026-08-16,"causal analysis, not prediction"
+RNAFingerprinting,Mapping transcriptional responses to cellular perturbation dictionaries with RNA fingerprinting,bio_229b578074c6,,negative,2026-08-16,"response matching, not prediction"
+DeepCellState,DeepCellState: An autoencoder-based framework for predicting cell type specific transcriptional states induced by drug treatment,PMC8519465,,negative,2026-08-16,bulk L1000
+DeepCellState,DeepCellState: an autoencoder-based framework for predicting cell type-specific transcriptional states induced by drug treatment,bio_4384f9d06c42,,negative,2026-08-16,duplicate bioRxiv version
+CellSpecificDrugGEP,Cell-specific prediction and application of drug-induced gene expression profiles,PMC5753597,,negative,2026-08-16,"bulk profiles, 2017"
+CondSpecTL,Transfer learning of condition-specific perturbation in gene interactions improves drug response prediction,PMC11256952,,negative,2026-08-16,bulk L1000/GDSC sensitivity
+EncodeSystematicPert,Learning to encode cellular responses to systematic perturbations with deep generative models,PMC7648057,,negative,2026-08-16,bulk CMap representation study
+DrVAE,Dr.VAE: improving drug response prediction via modeling of drug perturbation effects,PMC6761940,,negative,2026-08-16,drug sensitivity task
+DrVAE,Dr.VAE: Drug Response Variational Autoencoder,arx_1706.08203,,negative,2026-08-16,duplicate arXiv version
+CAR-CondOT,Modeling CAR Response at the Single-Cell Level Using Conditional Optimal Transport,bio_581830936dad,,negative,2026-08-16,"CAR variants, not chemical"
+CondEmbedCancerDrug,Embedding single-cell experimental conditions to reveal manifold structure of cancer drug perturbation effects,bio_ef66acc06c08,,negative,2026-08-16,exploratory screen analysis
+NDreamer,Single-cell-level condition-related signal estimation with batch effect removal through neural discrete representation learning,bio_240002a76f3f,,negative,2026-08-16,integration/estimation
+GENOT,GENOT: Entropic (Gromov) Wasserstein Flow Matching with Applications to   Single-Cell Genomics,arx_2310.09254,,negative,2026-08-16,generic OT toolbox
+LabeledGW-OT,Cross-modality Matching and Prediction of Perturbation Responses with   Labeled Gromov-Wasserstein Optimal Transport,arx_2405.00838,,negative,2026-08-16,cross-modality matching
+CaLMFlow,CaLMFlow: Volterra Flow Matching using Causal Language Models,arx_2410.05292,,negative,2026-08-16,"generic ML, perturbation as demo"
+OOD-Disentangled,Out-of-distribution prediction with disentangled representations for single-cell RNA sequencing data,bio_287c8a786c1d,,negative,2026-08-16,
+CellDISECT,Integrating multi-covariate disentanglement with counterfactual analysis on synthetic data enables cell type discovery and counterfactual predictions,bio_3fa2df976e60,,negative,2026-08-16,multi-covariate disentanglement
+WhatDoModelsKnow,What Do Single-Cell Models Already Know About Perturbations?,PMC12732504,,related,2026-08-16,evaluation/analysis -> benchmark papers
+Chem2Gen-Bench,Chem2Gen-Bench: Benchmarking Chemical-to-Genetic Translation in Perturbation Response Space,arx_2606.21109,,related,2026-08-16,benchmark -> benchmark papers
