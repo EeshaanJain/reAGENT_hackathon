@@ -1,9 +1,6 @@
 [submodule "task_perturbation_prediction"]
 	path = task_perturbation_prediction
 	url = https://github.com/openproblems-bio/task_perturbation_prediction
-[submodule "RepoLaunch"]
-	path = RepoLaunch
-	url = git@github.com:microsoft/RepoLaunch.git
 [submodule "methods/contract_gen/RepoLaunch"]
 	path = methods/contract_gen/RepoLaunch
 	url = https://github.com/microsoft/RepoLaunch.git

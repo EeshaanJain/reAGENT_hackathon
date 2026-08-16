@@ -357,6 +357,21 @@ this harness if it's missing.</p>
   </div>
 
   <div class="tool t1">
+    <div class="role">Deterministic · does the output actually exist</div>
+    <h3>run_component.py</h3>
+    <p>A rendered <code>config.vsh.yaml</code>/<code>script.py</code> that were never executed
+    against real input aren't a finished deliverable, they're an untested claim.
+    <code>harness/run_component.py</code> runs the synthesized script through
+    <code>viash_shim</code> against real data and confirms the declared output file actually landed
+    and is a readable AnnData — shape, layer names, obs/uns keys. Deliberately computes no score;
+    scoring a method's predictions is a separate, later concern from generating them.</p>
+    <div class="define"><b>Jargon:</b> none new here — reuses the same par/meta injection
+    <code>viash_shim.py</code> already does for the Gauntlet.</div>
+    <div class="breaks"><b>Missing it:</b> the only evidence the adapter works is that it compiled
+    — no proof it actually runs, let alone produces a sane output file.</div>
+  </div>
+
+  <div class="tool t1">
     <div class="role">Deterministic · citation discipline</div>
     <h3>JSON Schema (<code>harness/contract.py</code>)</h3>
     <p>Validates <code>model_contract.yaml</code> before anything downstream trusts it: every

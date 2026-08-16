@@ -40,9 +40,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 METHODS_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = METHODS_ROOT.parent
 RESULTS_ROOT = METHODS_ROOT / "results"
 CONTRACT_GEN_ROOT = METHODS_ROOT / "contract_gen"
 BENCHMARK_ADAPT_ROOT = METHODS_ROOT / "benchmark_adapt"
+# Where the literature-search agent's per-paper enrichment actually lands (scripts/paperclip_postsearch.py's
+# own DEFAULT_OUTPUT) -- cat_full_path in a --paperclip-record is relative to this. Passing it
+# unconditionally is safe even before it exists locally: paperclip_intake.find_paper_evidence()
+# already treats a missing root/file as "no evidence" (skip, don't guess), not an error.
+DEFAULT_PAPERCLIP_CORPUS_ROOT = REPO_ROOT / "benchmarks" / "perturbation_prediction" / "results" / "postsearch"
 
 
 def run_stage(cmd: list[str], *, cwd: Path, log_path: Path, stage_name: str) -> tuple[bool, float]:
@@ -77,8 +83,15 @@ def write_timing(logs_dir: Path, timings: dict) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--method-id", required=True)
-    ap.add_argument("--paperclip-record", required=True, type=Path)
+    ap.add_argument("--paperclip-record", required=True, type=Path,
+                     help="A record from scripts/paperclip_postsearch.py's real output "
+                          "(benchmarks/<benchmark>/results/postsearch/<method>/...), or one of "
+                          "contract_gen/fixtures/paperclip_*_record.json's frozen examples")
     ap.add_argument("--repolaunch-config", required=True, type=Path)
+    ap.add_argument("--paperclip-corpus-root", type=Path, default=DEFAULT_PAPERCLIP_CORPUS_ROOT,
+                     help="Root cat_full_path etc. in the record are relative to -- defaults to the "
+                          "real literature agent's output location; harmless if it doesn't exist "
+                          "yet (paper-text evidence is skipped, not guessed, same as before)")
     ap.add_argument("--comprehension-engine", choices=["heuristic", "serena"], default="serena")
     ap.add_argument("--repolaunch-timeout", type=int, default=1800)
     ap.add_argument("--model", default="anthropic/claude-sonnet-5", help="mini-swe-agent model")
@@ -96,18 +109,25 @@ def main() -> int:
 
     paperclip_record = args.paperclip_record.resolve()
     repolaunch_config = args.repolaunch_config.resolve()
+    paperclip_corpus_root = args.paperclip_corpus_root.resolve()
     timings: dict = {"started_at": datetime.now(timezone.utc).isoformat()}
 
     if not args.skip_contract_gen:
+        cmd = [
+            sys.executable, "-m", "harness.orchestrator",
+            "--paperclip-record", str(paperclip_record),
+            "--repolaunch-config", str(repolaunch_config),
+            "--comprehension-engine", args.comprehension_engine,
+            "--repolaunch-timeout", str(args.repolaunch_timeout),
+            "--output", str(result_dir),  # orchestrator.py splits this into component/ and logs/ itself
+        ]
+        if paperclip_corpus_root.exists():
+            cmd += ["--paperclip-corpus-root", str(paperclip_corpus_root)]
+        else:
+            print(f"(--paperclip-corpus-root {paperclip_corpus_root} doesn't exist yet -- "
+                  f"paper-text evidence will be skipped, not guessed; repo-side evidence only)")
         ok, wall_clock_s = run_stage(
-            [
-                sys.executable, "-m", "harness.orchestrator",
-                "--paperclip-record", str(paperclip_record),
-                "--repolaunch-config", str(repolaunch_config),
-                "--comprehension-engine", args.comprehension_engine,
-                "--repolaunch-timeout", str(args.repolaunch_timeout),
-                "--output", str(result_dir),  # orchestrator.py splits this into component/ and logs/ itself
-            ],
+            cmd,
             cwd=CONTRACT_GEN_ROOT,
             log_path=logs_dir / "stage0-3_contract_gen.log",
             stage_name="Stage 0-3: contract_gen",

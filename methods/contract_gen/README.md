@@ -60,9 +60,10 @@ contract_gen/
     results/                         gitignored -- smoke test output lands here
   docs/
     REPOLAUNCH_SMOKE_TEST.md
-  output/                            gitignored -- per-method contract_gen output lands here:
-                                      output/<method_id>/{model_contract.yaml, repo_manifest.json,
-                                      execution_log.json}
+  output/                            gitignored -- standalone-run output lands here (see
+                                      methods/results/ for the canonical, cross-lane location):
+                                      output/<method_id>/component/model_contract.yaml,
+                                      output/<method_id>/logs/{repo_manifest.json,execution_log.json}
   work/                              gitignored -- scratch clones + RepoLaunch workspaces
 ```
 
@@ -129,7 +130,7 @@ python -m harness.orchestrator \
     --paperclip-record fixtures/paperclip_cpa_record.json \
     --repolaunch-config fixtures/repolaunch_config_cpa.json \
     --output output/cpa
-cat output/cpa/model_contract.yaml
+cat output/cpa/component/model_contract.yaml
 
 # Same, but with live Serena MCP for Stage 2 instead of the grep heuristic (see ../serena/README.md)
 python -m harness.orchestrator \
@@ -137,8 +138,12 @@ python -m harness.orchestrator \
     --repolaunch-config fixtures/repolaunch_config_scape.json \
     --comprehension-engine serena \
     --output output/scape
-cat output/scape/model_contract.yaml
+cat output/scape/component/model_contract.yaml
 ```
+
+(These standalone examples write to a local, gitignored `output/` inside `contract_gen/` — the
+canonical way to run the full pipeline is `methods/results/run_pipeline.py`, landing everything at
+`methods/results/<method_id>/{component,predictions,logs}/`; see `../README.md` §3.)
 
 `--instance` also accepts a raw RepoLaunch instance dict directly, as a fallback for a method with
 no Paperclip record yet — but every example and fixture here goes through `--paperclip-record`,
@@ -148,17 +153,23 @@ Every real RepoLaunch invocation costs API budget and can run for many minutes �
 exploratory agent figuring out how to build an unfamiliar repo, not a fixed-cost operation. Run it
 in the background if you don't want to block on it.
 
-## Known gap this exercises: CPA needs single-cell counts
+## The interesting case this exercises: CPA needs single-cell counts
 
 CPA (`theislab/cpa`) is deliberately the test case here because it's the concrete, real example of
 the OP3 API gap discussed at length in the plan docs: it needs raw single-cell counts as input,
 not the `de_train`/`id_map` DE-signature interface OP3's method API actually provides (see PR
 [openproblems-bio/task_perturbation_prediction#78](https://github.com/openproblems-bio/task_perturbation_prediction/pull/78),
-which hit exactly this wall). The heuristic comprehension stage here correctly flags this from real
-grep evidence in the actual repo (`requires_sc_counts: true`, cited to `repo:cpa/_api.py:L10`,
-found by matching `setup_anndata` — a real single-cell-model convention) — which is exactly the
-signal `benchmark_adapt`'s scope/capability handling needs to route this method correctly instead
-of silently trying to force-fit it.
+which hit exactly this wall). This lane correctly detects that from real evidence in the cloned
+repo (`requires_sc_counts: true`) — with `--comprehension-engine serena`, cited to
+`repo:cpa/_api.py:L438-L552` (`CPA.train`'s own body — CPA has no dedicated `load_*` function, so
+this needed checking the public API, not just data-loader findings; the heuristic engine instead
+finds it via a `setup_anndata` grep hit at `repo:cpa/_api.py:L10`).
+
+That signal now drives a real integration path, not just a routing decision: `benchmark_adapt`'s
+templates carry a local, proposed `--sc_train` extension (not merged into the upstream OP3
+submodule) gated on this exact field, so `requires_sc_counts: true` methods get a genuinely
+single-cell-native adapter synthesized instead of a filed API-gap stub. See `../README.md` §4 for
+the full worked CPA example, including the real fixture and the real predictions it produces.
 
 ## What's real vs. what's a stand-in
 
@@ -183,6 +194,6 @@ of silently trying to force-fit it.
 
 | Output | Schema | Consumed by |
 |---|---|---|
-| `output/<method_id>/model_contract.yaml` | `../model_contract.schema.json` (validated automatically at emission — see `orchestrator.py`'s `emit_artifacts`) | `benchmark_adapt/harness/contract.py`, `synthesize_adapter.py` |
-| Docker image (`docker_image` field in `repo_manifest.json`) | RepoLaunch's own output schema | `benchmark_adapt/synthesize_adapter.py` → `mini --environment-class docker` |
-| `output/<method_id>/execution_log.json` | ad hoc (stage/cmd/status/wall_clock_s records) | referenced in `benchmark_adapt`'s rendered synthesis prompt |
+| `<output>/component/model_contract.yaml` | `../model_contract.schema.json` (validated automatically at emission — see `orchestrator.py`'s `emit_artifacts`) | `benchmark_adapt/harness/contract.py`, `synthesize_adapter.py` |
+| Docker image (`docker_image` field in `logs/repo_manifest.json`) | RepoLaunch's own output schema | `benchmark_adapt/synthesize_adapter.py` → `mini --environment-class docker` |
+| `<output>/logs/execution_log.json` | ad hoc (stage/cmd/status/wall_clock_s records, plus `stage_timings_s` per stage) | referenced in `benchmark_adapt`'s rendered synthesis prompt |

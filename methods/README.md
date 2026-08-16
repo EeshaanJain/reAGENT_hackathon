@@ -7,8 +7,9 @@ Problems v3 (OP3) benchmark component. Two lanes, one handoff in the middle.
 what each tool does, and a real worked example (CPA).
 
 ```
-paper repo  ──►  contract_gen/  ──►  model_contract.yaml + Docker image  ──►  benchmark_adapt/  ──►  PR
-             (Stage 0-3, Cecilia)         (the handoff)                    (Stage 4-6, Sei)
+literature agent  ──►  paperclip record  ──►  contract_gen/  ──►  model_contract.yaml + image  ──►  benchmark_adapt/  ──►  PR
+(../scripts/, not      (real, or a frozen    (Stage 0-3)           (the handoff)                    (Stage 4-6)
+ owned by this dir)     fixtures/ example)
 ```
 
 ## Layout
@@ -31,6 +32,30 @@ pipeline isn't mixed in with background reading: [`plan_unified.md`](planning/pl
 [`method-integration-todo.html`](planning/method-integration-todo.html) (a build-plan audit
 against those two plans), and [`benchmark-agent-pipeline.html`](planning/benchmark-agent-pipeline.html)
 (an earlier pipeline-wide visualization).
+
+## Where the input record actually comes from
+
+`--paperclip-record` isn't invented by this pipeline — it's the real output of a separate,
+already-working literature-search agent living outside `methods/` entirely
+([`../scripts/`](../scripts/), [`../src/litsearch/`](../src/litsearch/)):
+[`../scripts/run_search.py`](../scripts/run_search.py) (broad keyword search + LLM relevance
+filter, writes `../benchmarks/<benchmark>/results/latest_search.json`) feeds
+[`../scripts/paperclip_postsearch.py`](../scripts/paperclip_postsearch.py) (per-paper enrichment —
+full-text fetch, GitHub-candidate resolution — writes to
+`../benchmarks/<benchmark>/results/postsearch/<method_folder>/`). Its per-paper record shape
+([`../scripts/paperclip_postsearch.schema.json`](../scripts/paperclip_postsearch.schema.json)) is
+field-for-field what `contract_gen/harness/paperclip_intake.py` expects — `title`/`authors`/`id`/
+`method_name`/`github_candidates`/`full_text_status`/... — no translation layer needed. Point
+`--paperclip-record` directly at a record under `postsearch/<method_folder>/`, and
+`--paperclip-corpus-root` (see `run_pipeline.py --help`; defaults to
+`benchmarks/perturbation_prediction/results/postsearch`) at its parent so `cat_full_path`-based
+paper-text citations actually resolve, instead of always coming out `unknown`.
+
+`contract_gen/fixtures/paperclip_*_record.json` are **frozen examples**, not the primary input —
+useful for offline runs or when no corpus root is configured (scAPE's own fixture note already says
+as much), but every real run should point at the literature agent's actual output. This repo's own
+`CLAUDE.md` (root) has the full literature-agent design and workflow commands; this pipeline is
+downstream of it, not a reimplementation.
 
 ## How Stage 2 (repo comprehension) works
 
@@ -186,9 +211,12 @@ cd methods/benchmark_adapt
 python fixtures/make_tiny_fixture.py    # once, or whenever fixtures/data/ is missing
 
 python -m harness.synthesize_adapter \
-    --contract ../contract_gen/output/cpa/model_contract.yaml \
-    --execution-log ../contract_gen/output/cpa/execution_log.json
+    --contract ../contract_gen/output/cpa/component/model_contract.yaml \
+    --execution-log ../contract_gen/output/cpa/logs/execution_log.json
 ```
+
+(`orchestrator.py` always splits whatever `--output` you gave it into `<output>/component/` +
+`<output>/logs/` — even a local, standalone `output/cpa/` like §1's example above.)
 
 (`--docker-image` is optional — it falls back to the contract's own `environment.image` field,
 which is already set from the RepoLaunch handoff.)
