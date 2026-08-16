@@ -151,6 +151,10 @@ def synthesize(
     # Seed the output dir with the templates so the agent has a concrete starting point rather
     # than a blank page -- it's expected to overwrite script.py's NotImplementedError body.
     env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)), trim_blocks=True, lstrip_blocks=True)
+    # Jinja's built-in `tojson` is HTML-safe (escapes "'" etc. as ' for <script> embedding) --
+    # wrong tool for plain YAML text. config.vsh.yaml.j2 uses `| tojson` to get valid, properly
+    # quoted/escaped YAML scalars for argument defaults/descriptions; plain json.dumps is correct here.
+    env.filters["tojson"] = json.dumps
     templates = [
         ("script.py.j2", "script.py"),
         ("config.vsh.yaml.j2", "config.vsh.yaml"),
@@ -171,6 +175,10 @@ def synthesize(
             entrypoint=contract.get("model", "entrypoint"),
             preferred_normalization="unknown",
             gpu_required=contract.get("environment", "gpu_required"),
+            # Populated when Stage 2 ran with --comprehension-engine serena (see
+            # serena_contract_mapping.py); [] for a heuristic-only contract, same as before.
+            arguments=contract.raw.get("arguments") or [],
+            dependencies=contract.raw.get("dependencies") or [],
         )
         (output_dir / out_name).write_text(rendered)
 

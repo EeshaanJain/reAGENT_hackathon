@@ -42,6 +42,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from harness import paperclip_intake, repolaunch_runner  # noqa: E402
 
 CONTRACT_GEN_ROOT = Path(__file__).parent.parent
+REPO_ROOT = CONTRACT_GEN_ROOT.parent.parent
+# Needed for `from methods.serena.harness import ...` (stage_repo_comprehension_serena) and
+# `from harness.serena_contract_mapping import ...` (stage_synthesize_contract) -- both resolve
+# against the top-level reAGENT_hackathon repo root, not this file's own directory.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 SCHEMA_PATH = CONTRACT_GEN_ROOT.parent / "model_contract.schema.json"
 
 # Generic entrypoint signals -- not tied to any one method's module layout.
@@ -56,6 +62,13 @@ SC_SIGNAL_PATTERNS = [
 ]
 CHEMICAL_SIGNAL_PATTERNS = [(r"\bSMILES\b", "SMILES reference"), (r"\brdkit\b", "rdkit import")]
 GENETIC_SIGNAL_PATTERNS = [(r"\bCRISPR\b", "CRISPR reference"), (r"\bguide_rna\b", "guide RNA reference"), (r"\bsgRNA\b", "sgRNA reference")]
+# Same exclusion set as methods/serena/harness.py's SerenaRepositoryAnalyzer.EXCLUDE_DIRS, and for
+# the same reason: notebooks/docs/examples/tests aren't the shipped model, so a naming-convention
+# hit inside them isn't evidence of what the *method* does.
+COMPREHENSION_EXCLUDE_DIRS = {
+    "tests", "test", "docs", "doc", "examples", "notebooks", "scripts",
+    ".git", ".github", ".serena", "build", "dist", "__pycache__", ".venv", "venv", "node_modules",
+}
 
 
 def cited(value: Any, citation: str | None) -> dict:
@@ -76,12 +89,14 @@ class MethodIntegrationOrchestrator:
         repolaunch_timeout_s: int = 1800,
         paperclip_record: dict | None = None,
         paperclip_corpus_root: Path | None = None,
+        comprehension_engine: str = "heuristic",
     ):
         self.instance = instance
         self.output_dir = output_dir
         self.repolaunch_config = repolaunch_config
         self.repolaunch_timeout_s = repolaunch_timeout_s
         self.paperclip_record = paperclip_record
+        self.comprehension_engine = comprehension_engine
         # cat_full_path etc. in a Paperclip record are relative to Paperclip's OWN corpus root
         # (wherever the literature agent stores downloaded/processed papers) -- a completely
         # different location from self.repo_dir (the cloned *model* repo). Must be configured
@@ -189,16 +204,72 @@ class MethodIntegrationOrchestrator:
         self.artifacts["repolaunch_result"] = result
         return result
 
-    # ---- Stage 2: generalized repo comprehension (heuristic, NOT Serena) ----
+    # ---- Stage 2: generalized repo comprehension ----
     def stage_repo_comprehension(self) -> dict:
+        """Dispatches on self.comprehension_engine. "heuristic" (default) is grep/regex static
+        analysis -- kept as the zero-dependency fallback and to not change behavior for any
+        existing run (e.g. CPA) that doesn't pass --comprehension-engine. "serena" runs a live
+        Serena MCP session (methods/serena/harness.py) for the ML-comprehension fields
+        (entrypoint/prediction_level/requires_sc_counts/gene_space/hyperparameters/arguments/
+        dependencies) and still reuses the heuristic's chemical/genetic grep for
+        perturbation_encoding, which Serena's 8(+1)-stage sequence doesn't cover.
+        """
+        if self.comprehension_engine == "serena":
+            return self.stage_repo_comprehension_serena()
+        return self.stage_repo_comprehension_heuristic()
+
+    def _scan_chem_genetic_sc_signals(self, *, max_files: int = 200) -> dict:
+        """Grep-based signal detection for perturbation_encoding (chemical/genetic) and, for the
+        heuristic path only, single-cell usage -- cited to real file:line, never asserted without a
+        match. Shared by both comprehension engines; Serena's own stages don't cover this (it's not
+        a symbol-level query, just a repo-wide naming-convention scan).
+
+        Skips a match whose own line is a drop/delete/discard (`df.drop(columns=["SMILES", ...])`,
+        `del col`) -- a signal name being discarded from the data is evidence the method does *not*
+        use it, the opposite of what a bare substring hit would otherwise claim. Generic exclusion,
+        not scoped to any one signal name.
+        """
+        drop_context_re = re.compile(r"\.drop\(|\bdel\s|\.discard\(|\.pop\(")
+        findings: dict[str, Any] = {"sc_signals": [], "chemical_signals": [], "genetic_signals": [], "python_files_sampled": 0}
+        if not self.repo_dir:
+            return findings
+        ok, py_files_raw = self.run_command(["find", str(self.repo_dir), "-name", "*.py", "-type", "f"], "comprehension_find_py")
+        all_py_files = [Path(f.strip()) for f in py_files_raw.splitlines() if f.strip()] if ok else []
+        # Exploratory notebook helpers, docs, and examples aren't the shipped model -- a rdkit
+        # import in docs/notebooks/*.py doesn't mean the *method* encodes perturbations by
+        # structure. Same exclusion set as methods/serena/harness.py's EXCLUDE_DIRS, applied here
+        # for the same reason: only the actual package/library code is evidence of what the model
+        # does.
+        py_files = [f for f in all_py_files if not (COMPREHENSION_EXCLUDE_DIRS & set(f.relative_to(self.repo_dir).parts))]
+        findings["python_files_sampled"] = len(py_files)
+
+        for f in py_files[:max_files]:  # cap for a large repo; this is a heuristic pass, not exhaustive
+            try:
+                text = f.read_text(errors="ignore")
+            except OSError:
+                continue
+            rel = f.relative_to(self.repo_dir)
+            for key, patterns in [("sc_signals", SC_SIGNAL_PATTERNS), ("chemical_signals", CHEMICAL_SIGNAL_PATTERNS), ("genetic_signals", GENETIC_SIGNAL_PATTERNS)]:
+                for pattern, label in patterns:
+                    for m in re.finditer(pattern, text):
+                        line_start = text.rfind("\n", 0, m.start()) + 1
+                        line_end = text.find("\n", m.end())
+                        line = text[line_start : line_end if line_end != -1 else None]
+                        if drop_context_re.search(line):
+                            continue  # this occurrence is the signal being discarded, not used -- keep scanning
+                        line_no = text[: m.start()].count("\n") + 1
+                        findings[key].append({"label": label, "citation": f"repo:{rel}:L{line_no}"})
+                        break
+        return findings
+
+    def stage_repo_comprehension_heuristic(self) -> dict:
         print("\n=== STAGE 2: Repo comprehension (heuristic static analysis -- not real Serena) ===")
-        findings: dict[str, Any] = {"entrypoints": [], "sc_signals": [], "chemical_signals": [], "genetic_signals": [], "python_files_sampled": 0}
+        findings: dict[str, Any] = {"entrypoints": [], **self._scan_chem_genetic_sc_signals()}
         if not self.repo_dir:
             return findings
 
         ok, py_files_raw = self.run_command(["find", str(self.repo_dir), "-name", "*.py", "-type", "f"], "comprehension_find_py")
         py_files = [Path(f.strip()) for f in py_files_raw.splitlines() if f.strip()] if ok else []
-        findings["python_files_sampled"] = len(py_files)
 
         for f in py_files:
             if f.name in ENTRYPOINT_FILE_PATTERNS:
@@ -210,34 +281,44 @@ class MethodIntegrationOrchestrator:
             if entry_file.exists() and re.search(pattern, entry_file.read_text(errors="ignore")):
                 findings["entrypoints"].append(f"{entry_file.name} (console_scripts/[project.scripts] declared)")
 
-        # grep-based signal detection, cited to real file:line -- never asserted without a match
-        for f in py_files[:200]:  # cap for a large repo; this is a heuristic pass, not exhaustive
-            try:
-                text = f.read_text(errors="ignore")
-            except OSError:
-                continue
-            rel = f.relative_to(self.repo_dir)
-            for pattern, label in SC_SIGNAL_PATTERNS:
-                m = re.search(pattern, text)
-                if m:
-                    line_no = text[: m.start()].count("\n") + 1
-                    findings["sc_signals"].append({"label": label, "citation": f"repo:{rel}:L{line_no}"})
-            for pattern, label in CHEMICAL_SIGNAL_PATTERNS:
-                m = re.search(pattern, text)
-                if m:
-                    line_no = text[: m.start()].count("\n") + 1
-                    findings["chemical_signals"].append({"label": label, "citation": f"repo:{rel}:L{line_no}"})
-            for pattern, label in GENETIC_SIGNAL_PATTERNS:
-                m = re.search(pattern, text)
-                if m:
-                    line_no = text[: m.start()].count("\n") + 1
-                    findings["genetic_signals"].append({"label": label, "citation": f"repo:{rel}:L{line_no}"})
-
         self.log_action(
             "repo_comprehension", "",
             f"{len(findings['entrypoints'])} entrypoint(s), {len(findings['sc_signals'])} sc-signal(s), "
             f"{len(findings['chemical_signals'])} chemical-signal(s), {len(findings['genetic_signals'])} genetic-signal(s) "
             f"across {findings['python_files_sampled']} .py files",
+            status="success",
+        )
+        self.artifacts["comprehension"] = findings
+        return findings
+
+    def stage_repo_comprehension_serena(self) -> dict:
+        print("\n=== STAGE 2: Repo comprehension (LIVE Serena MCP -- symbol-aware, not grep) ===")
+        chem_genetic = self._scan_chem_genetic_sc_signals()
+        findings: dict[str, Any] = {"entrypoints": [], "sc_signals": [], **chem_genetic}
+        if not self.repo_dir:
+            return findings
+
+        from methods.serena.harness import SerenaRepositoryAnalyzer
+
+        analyzer = SerenaRepositoryAnalyzer(repo_path=str(self.repo_dir))
+        serena_findings = analyzer.analyze()
+        self.artifacts["serena_findings"] = serena_findings
+
+        if serena_findings.serena_status != "success":
+            self.log_action(
+                "repo_comprehension_serena", "",
+                error=f"serena_status={serena_findings.serena_status}: {serena_findings.serena_error}",
+                status="failure",
+            )
+            self.artifacts["comprehension"] = findings
+            return findings
+
+        self.log_action(
+            "repo_comprehension_serena", "",
+            f"{len(serena_findings.all_findings)} findings (public_apis={len(serena_findings.public_apis)}, "
+            f"data_loaders={len(serena_findings.data_loaders)}, preprocessing={len(serena_findings.preprocessing)}, "
+            f"checkpoints={len(serena_findings.checkpoints)}, examples={len(serena_findings.examples)}); "
+            f"chemical/genetic/sc signals via {chem_genetic['python_files_sampled']} .py files (grep, not Serena)",
             status="success",
         )
         self.artifacts["comprehension"] = findings
@@ -278,10 +359,37 @@ class MethodIntegrationOrchestrator:
                         "--paperclip-corpus-root, falling back to repo-only evidence rather than guessing from the abstract",
                     )
 
-        entrypoint = comp["entrypoints"][0] if comp.get("entrypoints") else None
-        entrypoint_field = cited(entrypoint, f"repo:{entrypoint}:L1") if entrypoint else unknown()
+        # Serena evidence (entrypoint/requires_sc_counts/prediction_level/gene_space/
+        # hyperparameters/arguments/dependencies) supersedes the grep heuristic's version of those
+        # same fields when a live Serena run succeeded -- it's symbol-aware ground truth, not a
+        # naming-convention guess (see serena_contract_mapping.py's module docstring). Chemical/
+        # genetic perturbation_encoding is unaffected: neither engine's own stages cover it, both
+        # rely on the same _scan_chem_genetic_sc_signals() grep pass folded into `comp` already.
+        serena_findings = self.artifacts.get("serena_findings")
+        serena_fields: dict[str, Any] = {}
+        if serena_findings is not None and serena_findings.serena_status == "success":
+            from harness.serena_contract_mapping import findings_to_contract_fields
 
-        requires_sc_counts_field = cited(True, sc_signals[0]["citation"]) if sc_signals else unknown()
+            serena_fields = findings_to_contract_fields(serena_findings)
+
+        if serena_fields:
+            entrypoint_field = serena_fields["entrypoint_field"]
+            requires_sc_counts_field = serena_fields["requires_sc_counts_field"]
+            prediction_level_field = serena_fields["prediction_level_field"]
+            gene_space = serena_fields["gene_space"]
+            hyperparameters = serena_fields["hyperparameters"]
+            arguments = serena_fields["arguments"]
+            dependencies = serena_fields["dependencies"]
+        else:
+            entrypoint = comp["entrypoints"][0] if comp.get("entrypoints") else None
+            entrypoint_field = cited(entrypoint, f"repo:{entrypoint}:L1") if entrypoint else unknown()
+            requires_sc_counts_field = cited(True, sc_signals[0]["citation"]) if sc_signals else unknown()
+            prediction_level_field = cited("single_cell", sc_signals[0]["citation"]) if sc_signals else unknown()
+            gene_space = {"n_genes": unknown(), "id_type": unknown(), "order_sensitive": unknown()}
+            hyperparameters = {}
+            arguments = []
+            dependencies = []
+
         if chem_signals:
             perturbation_encoding_field = cited("smiles", chem_signals[0]["citation"])
         elif genetic_signals:
@@ -310,15 +418,17 @@ class MethodIntegrationOrchestrator:
                 "dockerfile_source": "repolaunch_layer_reconstruction",
                 "gpu_required": gpu_required_field,
             },
-            "prediction_level": cited("single_cell", sc_signals[0]["citation"]) if sc_signals else unknown(),
+            "prediction_level": prediction_level_field,
             "input_layer": unknown(),  # requires reading the model's actual training loop -- out of scope for a static heuristic pass
             "requires_sc_counts": requires_sc_counts_field,
             "perturbation_encoding": perturbation_encoding_field,
-            "gene_space": {"n_genes": unknown(), "id_type": unknown(), "order_sensitive": unknown()},
+            "gene_space": gene_space,
             "handles": {"dose": unknown(), "timepoint": unknown(), "unseen_compound": unknown(), "unseen_cell_type": unknown()},
             "compute": {"gpu": compute_gpu_field, "vram_gb": unknown(), "est_runtime_min": unknown()},
             "checkpoint": {"url": unknown(), "sha256": unknown(), "license": unknown()},
-            "hyperparameters": {},
+            "arguments": arguments,
+            "dependencies": dependencies,
+            "hyperparameters": hyperparameters,
         }
 
         if self.paperclip_record:
@@ -336,11 +446,18 @@ class MethodIntegrationOrchestrator:
                 "full_text_status": r.get("full_text_status"),
             }
 
+        if serena_findings is not None:
+            # Full findings travel with the contract as an audit trail (IMPLEMENTATION_SUMMARY.md's
+            # documented design) -- every cited_field above traces back to one of these. Also not
+            # part of the strict schema; rides alongside the same way "paper" does.
+            contract["_serena_findings"] = serena_findings.to_dict()
+
         n_known = sum(
             1 for path in [entrypoint_field, requires_sc_counts_field, perturbation_encoding_field, contract["prediction_level"]]
             if path["value"] != "unknown"
         )
-        self.log_action("synthesize_contract", "", f"{n_known}/4 headline fields resolved from static evidence; rest 'unknown' pending real Serena/mini-swe-agent analysis", status="success")
+        engine_note = "live Serena MCP + heuristic chem/genetic grep" if serena_fields else "heuristic static analysis only"
+        self.log_action("synthesize_contract", "", f"{n_known}/4 headline fields resolved from evidence ({engine_note}); rest 'unknown'", status="success")
         self.artifacts["model_contract"] = contract
         return contract
 
@@ -450,6 +567,13 @@ def main():
     ap.add_argument("--output", required=True, type=Path, help="Output directory for this method")
     ap.add_argument("--repolaunch-timeout", type=int, default=1800)
     ap.add_argument("--resume-from-manifest", type=Path, default=None, help="Skip Stage 0/1/2 -- reuse a prior run's repo_manifest.json and only re-run contract synthesis")
+    ap.add_argument(
+        "--comprehension-engine", choices=["heuristic", "serena"], default="heuristic",
+        help="Stage 2 engine. 'heuristic' (default) is the zero-dependency grep/regex stand-in. "
+        "'serena' runs a live Serena MCP session (methods/serena/) -- requires the `serena` CLI "
+        "(pip install serena-agent) and a language server for the target repo's language; see "
+        "methods/README.md 'Running with live Serena'.",
+    )
     args = ap.parse_args()
 
     if not args.instance and not args.paperclip_record:
@@ -472,6 +596,7 @@ def main():
         repolaunch_timeout_s=args.repolaunch_timeout,
         paperclip_record=paperclip_record,
         paperclip_corpus_root=args.paperclip_corpus_root,
+        comprehension_engine=args.comprehension_engine,
     )
 
     if args.resume_from_manifest:

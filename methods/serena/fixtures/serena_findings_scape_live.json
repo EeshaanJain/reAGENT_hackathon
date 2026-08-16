@@ -1,0 +1,456 @@
+{
+  "analysis_timestamp": "2026-08-16T03:52:29.390745+00:00",
+  "repo_path": "methods/contract_gen/output/scape/work/repo",
+  "serena_status": "success",
+  "serena_error": null,
+  "findings": [
+    {
+      "type": "reference",
+      "category": "repository_structure",
+      "file_path": ".",
+      "confidence": "confirmed",
+      "description": "Top-level entries: dirs=['.serena', 'tests', 'scape', 'docs', '.github', '.git']",
+      "evidence": "list_dir(relative_path='.', recursive=False)"
+    },
+    {
+      "type": "reference",
+      "category": "module_overview",
+      "file_path": "scape/_losses.py",
+      "confidence": "confirmed",
+      "description": "Symbols overview: {'Function': ['np_rrmse', 'np_mrrmse', 'mrrmse']}",
+      "evidence": "get_symbols_overview(relative_path='scape/_losses.py')"
+    },
+    {
+      "type": "reference",
+      "category": "module_overview",
+      "file_path": "scape/_io.py",
+      "confidence": "confirmed",
+      "description": "Symbols overview: {'Function': ['download_from_zenodo', 'compress', 'compress_folder', 'load', 'load_slogpvals', 'load_lfc']}",
+      "evidence": "get_symbols_overview(relative_path='scape/_io.py')"
+    },
+    {
+      "type": "reference",
+      "category": "module_overview",
+      "file_path": "scape/_api.py",
+      "confidence": "confirmed",
+      "description": "Symbols overview: {'Function': ['train']}",
+      "evidence": "get_symbols_overview(relative_path='scape/_api.py')"
+    },
+    {
+      "type": "reference",
+      "category": "package_overview",
+      "file_path": "scape/__init__.py",
+      "confidence": "confirmed",
+      "description": "Symbols overview: {'Variable': ['__version__']}",
+      "evidence": "get_symbols_overview(relative_path='scape/__init__.py')"
+    },
+    {
+      "type": "reference",
+      "category": "module_overview",
+      "file_path": "scape/_util.py",
+      "confidence": "confirmed",
+      "description": "Symbols overview: {'Function': ['select_top_variable', 'split_data', 'grouped_features', 'extract_features', 'to_pvalue', 'plot_result', 'plot_results', 'plot_results2', 'plot']}",
+      "evidence": "get_symbols_overview(relative_path='scape/_util.py')"
+    },
+    {
+      "type": "reference",
+      "category": "module_overview",
+      "file_path": "scape/__main__.py",
+      "confidence": "confirmed",
+      "description": "Symbols overview: {'Function': ['main']}",
+      "evidence": "get_symbols_overview(relative_path='scape/__main__.py')"
+    },
+    {
+      "type": "reference",
+      "category": "module_overview",
+      "file_path": "scape/_model.py",
+      "confidence": "confirmed",
+      "description": "Symbols overview: {'Function': ['_v', 'checkpoint', 'dense', 'create_input_encoder', 'encoder', 'decoder', 'aenn', 'load_model', 'create_model', 'predict', 'create_default_model'], 'Class': ['SCAPE']}",
+      "evidence": "get_symbols_overview(relative_path='scape/_model.py')"
+    },
+    {
+      "type": "reference",
+      "category": "module_overview",
+      "file_path": "scape/_callbacks.py",
+      "confidence": "confirmed",
+      "description": "Symbols overview: {'Class': ['StepwiseScheduler', 'MonitorCallback'], 'Function': ['format_line']}",
+      "evidence": "get_symbols_overview(relative_path='scape/_callbacks.py')"
+    },
+    {
+      "type": "public_api",
+      "category": "training",
+      "file_path": "scape/_api.py",
+      "confidence": "confirmed",
+      "description": "Public training API entry point (matched stem 'train')",
+      "evidence": "find_symbol(name_path_pattern='train', include_body=True)",
+      "line_range": [
+        2,
+        41
+      ],
+      "symbol": "train",
+      "signature": "def train( de_file, lfc_file, n_genes=64, output_dir=None, cv_cell=\"NK cells\", cv_drug=None, epochs=600, batch_size=128, config_name=\"config\", model_name=\"model\" ):",
+      "body_snippet": "def train(\n    de_file,\n    lfc_file,\n    n_genes=64,\n    output_dir=None,\n    cv_cell=\"NK cells\",\n    cv_drug=None,\n    epochs=600,\n    batch_size=128,\n    config_name=\"config\",\n    model_name=\"model\"\n):\n    # Read the files\n    df_de = scape.io.load_slogpvals(de_file)\n    print(f\"DE shape: {df_de.shape}\")\n    df_lfc = scape.io.load_lfc(lfc_file)\n    print(f\"LFC shape: {df_lfc.shape}\")\n    val_cells = [cv_cell] if cv_cell else None\n    val_drugs = [cv_drug] if cv_drug else None\n    print(f\"Training model with {n_genes} genes\")\n    print(f\"Validation cell(s): {val_cells}\")\n    print(f\"Validation drug(s): {val_drugs}\")\n    # Create a default model\n    model = scape.model.create_default_model(n_genes, df_de, df_lfc)\n    top_genes = scape.util.select_top_variable([df_de], k=n_genes)\n    model.train(\n        val_cells=val_cells,\n        val_drugs=val_drugs,\n        output_data=\"slogpval\",\n        callbacks=\"default\",\n        input_columns=top_genes,\n        optimizer=None,\n        epochs=epochs,\n        batch_size=batch_size,\n        output_folder=output_dir,\n        config_file_name=f\"{config_name}.pkl\",\n        model_file_name=f\"{model_name}.keras\",\n        baselines=[\"zero\", \"slogpv"
+    },
+    {
+      "type": "public_api",
+      "category": "training",
+      "file_path": "scape/_model.py",
+      "confidence": "confirmed",
+      "description": "Public training API entry point (matched stem 'train')",
+      "evidence": "find_symbol(name_path_pattern='train', include_body=True)",
+      "line_range": [
+        45,
+        188
+      ],
+      "symbol": "SCAPE/train",
+      "signature": "def train( self, val_cells=None, val_drugs=None, input_columns=None, output_data=\"slogpval\", callbacks=\"default\", optimizer=None, epochs=600, batch_size=128, output_folder=None, model_file_name=\"model.keras\", result_file_name=None, config_file_name=None, baselines=[\"zero\"], ):",
+      "body_snippet": "def train(\n        self,\n        val_cells=None,\n        val_drugs=None,\n        input_columns=None,\n        output_data=\"slogpval\",\n        callbacks=\"default\",\n        optimizer=None,\n        epochs=600,\n        batch_size=128,\n        output_folder=None,\n        model_file_name=\"model.keras\",\n        result_file_name=None,\n        config_file_name=None,\n        baselines=[\"zero\"],\n    ):\n        \"\"\"\n        Trains the model based on the provided parameters and data.\n        \"\"\"\n        if isinstance(output_data, str):\n            output_data = self.setup[\"data_sources\"][output_data]\n        input_mapping = self.setup[\"input_mapping\"]\n        ix_train, ix_val = split_data(output_data, values=[val_cells, val_drugs])\n        data_source_index = ix_train\n        data_source_columns = output_data.columns.tolist()\n        if input_columns is not None:\n            data_source_columns = input_columns\n\n        # Compute features on the training set\n        feats_train, feats_val = extract_features(\n            self.setup[\"data_sources\"],\n            self.setup[\"feature_extraction\"],\n            data_source_index=data_source_index,\n            join_on_index=[ix_train, ix_val],\n        )\n\n"
+    },
+    {
+      "type": "public_api",
+      "category": "inference",
+      "file_path": "scape/_model.py",
+      "confidence": "confirmed",
+      "description": "Public inference API entry point (matched stem 'predict')",
+      "evidence": "find_symbol(name_path_pattern='predict', include_body=True)",
+      "line_range": [
+        241,
+        280
+      ],
+      "symbol": "SCAPE/predict",
+      "signature": "def predict( self, idx_targets, as_df=True, output_idx=0, idx_target_names=None, ):",
+      "body_snippet": "def predict(\n        self,\n        idx_targets,\n        as_df=True,\n        output_idx=0,\n        idx_target_names=None,\n    ):\n        \"\"\"\n        Predicts outputs using the model for the provided target indices.\n        \"\"\"\n        if self._last_train_results is None:\n            raise ValueError(\"No model trained yet.\")\n        idx = idx_targets\n        if isinstance(idx_targets, pd.DataFrame) or isinstance(idx_targets, pd.Series):\n            idx = idx_targets.index\n        elif isinstance(idx_targets, list):\n            n = (\n                self._last_train_results[\"data_source_index\"].names\n                if idx_target_names is None\n                else idx_target_names\n            )\n            idx = pd.MultiIndex.from_tuples(idx_targets, names=n)\n\n        feats = extract_features(\n            self.setup[\"data_sources\"],\n            self.setup[\"feature_extraction\"],\n            data_source_index=self._last_train_results[\"data_source_index\"],\n            data_source_columns=self._last_train_results[\"data_source_columns\"],\n            join_on_index=idx,\n        )\n        input_names = list(self.setup[\"input_mapping\"].keys())\n        inputs = [feats[self.setup[\"input_mapping\""
+    },
+    {
+      "type": "public_api",
+      "category": "inference",
+      "file_path": "scape/_model.py",
+      "confidence": "confirmed",
+      "description": "Public inference API entry point (matched stem 'predict')",
+      "evidence": "find_symbol(name_path_pattern='predict', include_body=True)",
+      "line_range": [
+        499,
+        528
+      ],
+      "symbol": "predict",
+      "signature": "def predict(idx_targets, models, as_df=True, output_idx=0):",
+      "body_snippet": "def predict(idx_targets, models, as_df=True, output_idx=0):\n    # Map using data mapping\n    predictions = []\n    data = models[\"data\"]\n    for i, m in enumerate(models[\"models\"]):\n        res = models[\"results\"][i]\n        feats = extract_features(\n            data[\"data_sources\"],\n            data[\"feature_extraction\"],\n            data_source_index=res[\"data_source_index\"],\n            data_source_columns=res[\"data_source_columns\"],\n            join_on_index=idx_targets.index,\n        )\n        # Use the input mapping from data rather than m.input_names\n        input_names = list(data[\"input_mapping\"].keys())\n        inputs = [feats[data[\"input_mapping\"][name]] for name in input_names]\n        preds = m.predict(inputs)\n        if isinstance(preds, list):\n            preds = preds[output_idx]\n        elif output_idx > 0:\n            raise ValueError(f\"Model {i} has only one output.\")\n        predictions.append(preds)\n    if as_df:\n        import pandas as pd\n\n        return [\n            pd.DataFrame(p, index=idx_targets.index, columns=data[\"output_genes\"])\n            for p in predictions\n        ]\n    return predictions"
+    },
+    {
+      "type": "implementation",
+      "category": "training",
+      "file_path": "scape/_model.py",
+      "confidence": "confirmed",
+      "description": "Factory/setup function referenced from the training API ('create_default_model')",
+      "evidence": "find_symbol(name_path_pattern='create_default_model', include_body=True) -- referenced in train's body",
+      "line_range": [
+        531,
+        605
+      ],
+      "symbol": "create_default_model",
+      "body_snippet": "def create_default_model(n_genes, df_de, df_lfc):\n    # Data sources point to the dataframes with the data from which the features are extracted\n    data_sources = {\"slogpval\": df_de, \"lfc_pseudo\": df_lfc}\n\n    # Define the way in which the features are extracted from the data sources\n    feature_extraction = {\n        \"slogpval_drug\": {\n            \"source\": \"slogpval\",\n            \"groupby\": \"sm_name\",\n            \"function\": \"median\",\n        },\n        \"lfc_drug\": {\n            \"source\": \"lfc_pseudo\",\n            \"groupby\": \"sm_name\",\n            \"function\": \"median\",\n        },\n        \"slogpval_cell\": {\n            \"source\": \"slogpval\",\n            \"groupby\": \"cell_type\",\n            \"function\": \"median\",\n        },\n        \"lfc_cell\": {\n            \"source\": \"lfc_pseudo\",\n            \"groupby\": \"cell_type\",\n            \"function\": \"median\",\n        },\n    }\n\n    # Names of the input layers -> feature extraction method\n    input_mapping = {\n        \"in_slogpval_drug\": \"slogpval_drug\",\n        \"in_lfc_drug\": \"lfc_drug\",\n        \"in_slogpval_cell_encoder\": \"slogpval_cell\",\n        \"in_lfc_cell_encoder\": \"lfc_cell\",\n        \"in_slogpval_cell_decoder\": \"slogpval_cell\",\n        \"i"
+    },
+    {
+      "type": "implementation",
+      "category": "training",
+      "file_path": "scape/_model.py",
+      "confidence": "confirmed",
+      "description": "Class instantiated in factory 'create_default_model's body (called from train)",
+      "evidence": "find_symbol(name_path_pattern='SCAPE', depth=1) -- referenced in factory 'create_default_model's body (called from train)",
+      "line_range": [
+        22,
+        280
+      ],
+      "symbol": "SCAPE",
+      "related_symbols": [
+        "SCAPE/__init__",
+        "SCAPE/train",
+        "SCAPE/generate_inputs",
+        "SCAPE/load",
+        "SCAPE/save",
+        "SCAPE/predict"
+      ]
+    },
+    {
+      "type": "data_loader",
+      "category": "download_from_zenodo",
+      "file_path": "scape/_io.py",
+      "confidence": "confirmed",
+      "description": "Data loading function matching '*load*'",
+      "evidence": "find_symbol(name_path_pattern='load', substring_matching=True)",
+      "line_range": [
+        8,
+        20
+      ],
+      "symbol": "download_from_zenodo",
+      "signature": "def download_from_zenodo(target_dir, cache_dir = '_data'):",
+      "body_snippet": "def download_from_zenodo(target_dir, cache_dir = '_data'):\n    if os.path.exists(target_dir + '/_data'):\n        print(f\"Target directory {target_dir} already exists. Skipping download.\")\n        return\n    url = 'https://zenodo.org/records/10617221/files/scape-data.zip?download=1'\n    response = requests.get(url)\n    if response.status_code == 200:\n        with open(os.path.join(target_dir, \"scape-data.zip\"), \"wb\") as f:\n            f.write(response.content)\n        with zipfile.ZipFile(os.path.join(target_dir, \"scape-data.zip\"), 'r') as zip_ref:\n            zip_ref.extractall(target_dir)\n    else:\n        raise ValueError(f\"Failed to download file from Zenodo: {response.status_code}\")"
+    },
+    {
+      "type": "data_loader",
+      "category": "load",
+      "file_path": "scape/_io.py",
+      "confidence": "confirmed",
+      "description": "Data loading function matching '*load*'",
+      "evidence": "find_symbol(name_path_pattern='load', substring_matching=True)",
+      "line_range": [
+        47,
+        56
+      ],
+      "symbol": "load",
+      "signature": "def load(file, import_method):",
+      "body_snippet": "def load(file, import_method):\n    # Create a temporary directory\n    with tempfile.TemporaryDirectory() as tmpdir:\n        # Decompress the .xz file into the temporary directory\n        with lzma.open(file, \"rb\") as f:\n            content = f.read()\n            temp_file_path = os.path.join(tmpdir, \"decompressed_content\")\n            with open(temp_file_path, \"wb\") as f_out:\n                f_out.write(content)\n        import_method(tmpdir)"
+    },
+    {
+      "type": "data_loader",
+      "category": "load_slogpvals",
+      "file_path": "scape/_io.py",
+      "confidence": "confirmed",
+      "description": "Data loading function matching '*load*'",
+      "evidence": "find_symbol(name_path_pattern='load', substring_matching=True)",
+      "line_range": [
+        59,
+        63
+      ],
+      "symbol": "load_slogpvals",
+      "signature": "def load_slogpvals(file):",
+      "body_snippet": "def load_slogpvals(file):\n    df = pd.read_parquet(file)\n    df.drop(columns=[\"sm_lincs_id\", \"SMILES\", \"control\"], inplace=True)\n    df.set_index([\"cell_type\", \"sm_name\"], inplace=True)\n    return df"
+    },
+    {
+      "type": "data_loader",
+      "category": "load_lfc",
+      "file_path": "scape/_io.py",
+      "confidence": "confirmed",
+      "description": "Data loading function matching '*load*'",
+      "evidence": "find_symbol(name_path_pattern='load', substring_matching=True)",
+      "line_range": [
+        66,
+        82
+      ],
+      "symbol": "load_lfc",
+      "signature": "def load_lfc(pseudo_counts_file, control=\"Dimethyl Sulfoxide\", group=True):",
+      "body_snippet": "def load_lfc(pseudo_counts_file, control=\"Dimethyl Sulfoxide\", group=True):\n    df_pseudo_counts = pd.read_parquet(pseudo_counts_file)\n    idx_control = df_pseudo_counts.index.get_level_values(\"sm_name\") == control\n    df_pseudo_control = df_pseudo_counts.loc[idx_control].droplevel(\"sm_name\")\n    df_pseudo_treatment = df_pseudo_counts.loc[~idx_control]\n\n    df_treat = pd.DataFrame(index=df_pseudo_treatment.index).join(\n        df_pseudo_control.droplevel([\"plate\", \"well\"]),\n        on=[\"cell_type\", \"donor\", \"library\"],\n        how=\"left\",\n    )\n    df_pseudo_fold_change = -np.log2(df_treat + 1) + np.log2(df_pseudo_treatment + 1)\n    if group:\n        df_pseudo_fold_change = df_pseudo_fold_change.groupby(\n            [\"cell_type\", \"sm_name\"]\n        ).mean()\n    return df_pseudo_fold_change"
+    },
+    {
+      "type": "data_loader",
+      "category": "load_model",
+      "file_path": "scape/_model.py",
+      "confidence": "confirmed",
+      "description": "Data loading function matching '*load*'",
+      "evidence": "find_symbol(name_path_pattern='load', substring_matching=True)",
+      "line_range": [
+        468,
+        469
+      ],
+      "symbol": "load_model",
+      "signature": "def load_model(filepath, custom_objects={\"mrrmse\": mrrmse}):",
+      "body_snippet": "def load_model(filepath, custom_objects={\"mrrmse\": mrrmse}):\n    return keras.models.load_model(filepath, custom_objects=custom_objects)"
+    },
+    {
+      "type": "preprocessing",
+      "category": "select",
+      "file_path": "scape/_util.py",
+      "confidence": "confirmed",
+      "description": "Preprocessing function matching 'select_*'",
+      "evidence": "find_symbol(name_path_pattern='select_', substring_matching=True, include_body=True)",
+      "line_range": [
+        4,
+        30
+      ],
+      "symbol": "select_top_variable",
+      "signature": "def select_top_variable( dfs, k=64, union=True, exclude_controls=False, controls=[\"Belinostat\", \"Dabrafenib\"], axis=0, ):",
+      "body_snippet": "def select_top_variable(\n    dfs,\n    k=64,\n    union=True,\n    exclude_controls=False,\n    controls=[\"Belinostat\", \"Dabrafenib\"],\n    axis=0,\n):\n    if exclude_controls:\n        topn_list = [\n            df.loc[~df.index.get_level_values(\"cell_type\").isin(controls)]\n            .std(axis=axis)\n            .sort_values(ascending=False)\n            .head(k)\n            .index.tolist()\n            for df in dfs\n        ]\n    else:\n        topn_list = [\n            df.std(axis=axis).sort_values(ascending=False).head(k).index.tolist()\n            for df in dfs\n        ]\n    if union:\n        topn_list = list(set().union(*topn_list))\n    else:\n        topn_list = list(set(topn_list[0]).intersection(*topn_list[1:]))\n    return topn_list"
+    },
+    {
+      "type": "preprocessing",
+      "category": "extract",
+      "file_path": "scape/_util.py",
+      "confidence": "confirmed",
+      "description": "Preprocessing function matching 'extract_*'",
+      "evidence": "find_symbol(name_path_pattern='extract_', substring_matching=True, include_body=True)",
+      "line_range": [
+        61,
+        94
+      ],
+      "symbol": "extract_features",
+      "signature": "def extract_features( data_sources: dict, features: dict, data_source_index=None, data_source_columns=None, join_on_index=None, ):",
+      "body_snippet": "def extract_features(\n    data_sources: dict,\n    features: dict,\n    data_source_index=None,\n    data_source_columns=None,\n    join_on_index=None,\n):\n    if not isinstance(join_on_index, list):\n        join_on_index = [join_on_index]\n\n    # feature_result = {}\n    results = [dict() for _ in range(len(join_on_index))]\n    for name, feature_attrs in features.items():\n        ds = data_sources[feature_attrs[\"source\"]]\n        groupby = feature_attrs[\"groupby\"]\n        fn = feature_attrs[\"function\"]\n        if data_source_index is not None:\n            ds = ds.loc[data_source_index]\n        if data_source_columns is not None:\n            ds = ds[data_source_columns]\n        df_feature = ds.groupby(groupby).agg(fn)\n        df_feature.name = name\n        for feature_result, idx in zip(results, "
+    },
+    {
+      "type": "preprocessing",
+      "category": "split",
+      "file_path": "scape/_util.py",
+      "confidence": "confirmed",
+      "description": "Preprocessing function matching 'split_*'",
+      "evidence": "find_symbol(name_path_pattern='split_', substring_matching=True, include_body=True)",
+      "line_range": [
+        33,
+        51
+      ],
+      "symbol": "split_data",
+      "signature": "def split_data( df, levels=[\"cell_type\", \"sm_name\"], values=[ [\"B cells\", \"Myeloid cells\"], [\"Idelalisib\", \"Linagliptin\", \"CHIR-99021\", \"R428\"], ], ):",
+      "body_snippet": "def split_data(\n    df,\n    levels=[\"cell_type\", \"sm_name\"],\n    values=[\n        [\"B cells\", \"Myeloid cells\"],\n        [\"Idelalisib\", \"Linagliptin\", \"CHIR-99021\", \"R428\"],\n    ],\n):\n    selected = None\n    for l, v in zip(levels, values):\n        if l is not None and v is not None:\n            ix = df.index.get_level_values(l).isin(v)\n            if selected is None:\n                selected = ix\n            else:\n                selected = selected & ix\n    if selected is None:\n        return df.index, pd.Index([])\n    return df[~selected].index, df[selected].index"
+    },
+    {
+      "type": "checkpoint",
+      "category": "save",
+      "file_path": "scape/_model.py",
+      "confidence": "confirmed",
+      "description": "Model save method on implementation class 'SCAPE'",
+      "evidence": "find_symbol(name_path_pattern='save', substring_matching=True) -- method of 'SCAPE' (found in stage 3/4)",
+      "line_range": [
+        231,
+        239
+      ],
+      "symbol": "SCAPE/save"
+    },
+    {
+      "type": "checkpoint",
+      "category": "load",
+      "file_path": "scape/_model.py",
+      "confidence": "confirmed",
+      "description": "Model load method on implementation class 'SCAPE'",
+      "evidence": "find_symbol(name_path_pattern='load', substring_matching=True) -- method of 'SCAPE' (found in stage 3/4)",
+      "line_range": [
+        217,
+        229
+      ],
+      "symbol": "SCAPE/load"
+    },
+    {
+      "type": "example",
+      "category": "test",
+      "file_path": "tests/test_quickstart.py",
+      "confidence": "partial",
+      "description": "Test class demonstrating a workflow",
+      "evidence": "search_for_pattern(substring_pattern='class Test', paths_include_glob='tests/*.py')",
+      "line_range": [
+        32,
+        32
+      ],
+      "symbol": "TestDataLoading"
+    },
+    {
+      "type": "example",
+      "category": "test",
+      "file_path": "tests/test_quickstart.py",
+      "confidence": "partial",
+      "description": "Test class demonstrating a workflow",
+      "evidence": "search_for_pattern(substring_pattern='class Test', paths_include_glob='tests/*.py')",
+      "line_range": [
+        94,
+        94
+      ],
+      "symbol": "TestGeneSelection"
+    },
+    {
+      "type": "example",
+      "category": "test",
+      "file_path": "tests/test_quickstart.py",
+      "confidence": "partial",
+      "description": "Test class demonstrating a workflow",
+      "evidence": "search_for_pattern(substring_pattern='class Test', paths_include_glob='tests/*.py')",
+      "line_range": [
+        126,
+        126
+      ],
+      "symbol": "TestModelConfiguration"
+    },
+    {
+      "type": "example",
+      "category": "test",
+      "file_path": "tests/test_quickstart.py",
+      "confidence": "partial",
+      "description": "Test class demonstrating a workflow",
+      "evidence": "search_for_pattern(substring_pattern='class Test', paths_include_glob='tests/*.py')",
+      "line_range": [
+        264,
+        264
+      ],
+      "symbol": "TestModelTraining"
+    },
+    {
+      "type": "example",
+      "category": "test",
+      "file_path": "tests/test_quickstart.py",
+      "confidence": "partial",
+      "description": "Test class demonstrating a workflow",
+      "evidence": "search_for_pattern(substring_pattern='class Test', paths_include_glob='tests/*.py')",
+      "line_range": [
+        419,
+        419
+      ],
+      "symbol": "TestModelPrediction"
+    },
+    {
+      "type": "example",
+      "category": "test",
+      "file_path": "tests/test_quickstart.py",
+      "confidence": "partial",
+      "description": "Test class demonstrating a workflow",
+      "evidence": "search_for_pattern(substring_pattern='class Test', paths_include_glob='tests/*.py')",
+      "line_range": [
+        564,
+        564
+      ],
+      "symbol": "TestModelSaveLoad"
+    },
+    {
+      "type": "example",
+      "category": "test",
+      "file_path": "tests/test_quickstart.py",
+      "confidence": "partial",
+      "description": "Test class demonstrating a workflow",
+      "evidence": "search_for_pattern(substring_pattern='class Test', paths_include_glob='tests/*.py')",
+      "line_range": [
+        708,
+        708
+      ],
+      "symbol": "TestResultAnalysis"
+    },
+    {
+      "type": "example",
+      "category": "test",
+      "file_path": "tests/test_quickstart.py",
+      "confidence": "partial",
+      "description": "Test class demonstrating a workflow",
+      "evidence": "search_for_pattern(substring_pattern='class Test', paths_include_glob='tests/*.py')",
+      "line_range": [
+        834,
+        834
+      ],
+      "symbol": "TestBaselineComparison"
+    },
+    {
+      "type": "example",
+      "category": "entrypoint",
+      "file_path": "scape/__main__.py",
+      "confidence": "partial",
+      "description": "CLI entry point (python -m <package>)",
+      "evidence": "list_dir(relative_path='scape') found __main__.py",
+      "symbol": "main"
+    },
+    {
+      "type": "reference",
+      "category": "dependencies",
+      "file_path": "pyproject.toml",
+      "confidence": "confirmed",
+      "description": "Declared dependencies: ['jax', 'jaxlib', 'pandas>=1.5.3', 'scikit-learn>=1.2.2', 'fastparquet>=2023.10.1', 'keras>=3.6', 'matplotlib', 'requests']",
+      "evidence": "read_file(relative_path='pyproject.toml')",
+      "line_range": [
+        27,
+        27
+      ],
+      "dependencies": [
+        "jax",
+        "jaxlib",
+        "pandas>=1.5.3",
+        "scikit-learn>=1.2.2",
+        "fastparquet>=2023.10.1",
+        "keras>=3.6",
+        "matplotlib",
+        "requests"
+      ]
+    }
+  ]
+}
