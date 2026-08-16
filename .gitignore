@@ -231,6 +231,9 @@ smoke_tests/results/
 methods/scape/work/
 .serena/
 
+# Large local source datasets (not committed -- fetched/placed manually, see memory/project docs)
+/data/
+
 # Non-final outputs: eval runs, tuning artifacts (keep out of git)
 evals/backsearch/results/
 evals/backsearch/query_sets/

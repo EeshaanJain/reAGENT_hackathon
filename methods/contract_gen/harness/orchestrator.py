@@ -103,9 +103,21 @@ class MethodIntegrationOrchestrator:
         # explicitly; there's no way to derive it from the record itself.
         self.paperclip_corpus_root = paperclip_corpus_root
         self.work_dir = output_dir / "work"
+        # Split by kind, not lumped into one flat output_dir: the actual deliverable
+        # (model_contract.yaml) vs. process record (repo_manifest.json, execution_log.json,
+        # RepoLaunch's own agent workspace/trajectory) are different audiences -- a reviewer wants
+        # component/, a debugger wants logs/.
+        self.component_dir = output_dir / "component"
+        self.logs_dir = output_dir / "logs"
         self.repo_dir: Path | None = None
         self.execution_log: list[dict] = []
         self.artifacts: dict[str, Any] = {}
+        # Per-stage wall-clock, independent of individual log_action() calls -- stage_environment
+        # already timed itself (RepoLaunch is the dominant cost), but the other stages didn't.
+        # Kept here rather than only in execution_log.json's per-command entries so "how long did
+        # each of the 4 stages take" is answerable with one lookup, not by summing/diffing
+        # timestamps across an arbitrary number of commands per stage.
+        self.stage_timings: dict[str, float] = {}
 
     def resume_from_manifest(self, manifest_path: Path) -> None:
         """Reconstruct ingest/RepoLaunch/comprehension artifacts from a prior successful run's
@@ -145,6 +157,17 @@ class MethodIntegrationOrchestrator:
             entry["wall_clock_s"] = wall_clock_s
         self.execution_log.append(entry)
         print(f"[{stage}] {status.upper()}: {result or error or cmd}", flush=True)
+
+    def _timed(self, stage_name: str, fn, *fn_args):
+        """Run a stage function, recording its wall-clock time into self.stage_timings regardless
+        of what the stage itself returns. stage_environment (RepoLaunch) already timed itself
+        before this existed; wrapping it here too is redundant but harmless -- one source of truth
+        for "how long did each stage take" beats two slightly-different ones.
+        """
+        t0 = datetime.now(timezone.utc)
+        result = fn(*fn_args)
+        self.stage_timings[stage_name] = (datetime.now(timezone.utc) - t0).total_seconds()
+        return result
 
     def run_command(self, cmd: list[str], stage: str, cwd: Path | None = None) -> tuple[bool, str]:
         try:
@@ -193,7 +216,7 @@ class MethodIntegrationOrchestrator:
         print("\n=== STAGE 1: Environment reconstruction (RepoLaunch) ===")
         t0 = datetime.now(timezone.utc)
         result = repolaunch_runner.run(
-            self.instance, self.repolaunch_config, workdir=self.output_dir / "repolaunch", timeout_s=self.repolaunch_timeout_s
+            self.instance, self.repolaunch_config, workdir=self.logs_dir / "repolaunch", timeout_s=self.repolaunch_timeout_s
         )
         wall = (datetime.now(timezone.utc) - t0).total_seconds()
         self.log_action(
@@ -463,7 +486,8 @@ class MethodIntegrationOrchestrator:
 
     def emit_artifacts(self) -> None:
         print("\n=== Emit artifacts ===")
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.component_dir.mkdir(parents=True, exist_ok=True)
+        self.logs_dir.mkdir(parents=True, exist_ok=True)
         repolaunch_result: repolaunch_runner.RepoLaunchResult | None = self.artifacts.get("repolaunch_result")
 
         manifest = {
@@ -473,14 +497,15 @@ class MethodIntegrationOrchestrator:
             "repolaunch_status": repolaunch_result.status if repolaunch_result else "not_run",
             "docker_image": repolaunch_result.docker_image if repolaunch_result else None,
             "comprehension": self.artifacts.get("comprehension", {}),
+            "stage_timings_s": {k: round(v, 1) for k, v in self.stage_timings.items()},
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        (self.output_dir / "repo_manifest.json").write_text(json.dumps(manifest, indent=2))
+        (self.logs_dir / "repo_manifest.json").write_text(json.dumps(manifest, indent=2))
 
         import yaml
 
         contract = self.artifacts.get("model_contract", {})
-        contract_path = self.output_dir / "model_contract.yaml"
+        contract_path = self.component_dir / "model_contract.yaml"
         contract_path.write_text(
             "# Model Contract -- every non-'unknown' field cites PAPER_ID:Lstart-Lend or repo:file:line\n"
             "# Validated automatically against ../model_contract.schema.json at emission time.\n\n"
@@ -517,24 +542,29 @@ class MethodIntegrationOrchestrator:
         exec_log = {
             "method_id": self.instance["instance_id"],
             "commands": self.execution_log,
-            "total_wall_clock_s": sum(e.get("wall_clock_s", 0) or 0 for e in self.execution_log),
+            "stage_timings_s": {k: round(v, 1) for k, v in self.stage_timings.items()},
+            # self.stage_timings wraps each stage's *entire* wall-clock (ingest/RepoLaunch/
+            # comprehension/contract-synthesis), so it's a more complete total than summing
+            # individual commands' wall_clock_s -- most commands don't set that field at all
+            # (only stage_environment historically did), so the old sum silently undercounted.
+            "total_wall_clock_s": round(sum(self.stage_timings.values()), 1),
         }
-        (self.output_dir / "execution_log.json").write_text(json.dumps(exec_log, indent=2))
+        (self.logs_dir / "execution_log.json").write_text(json.dumps(exec_log, indent=2))
 
-        print(f"Wrote {self.output_dir}/{{repo_manifest.json, model_contract.yaml, execution_log.json}}")
+        print(f"Wrote {self.component_dir}/model_contract.yaml, {self.logs_dir}/{{repo_manifest.json, execution_log.json}}")
 
     def run(self) -> bool:
         print("=" * 60)
         print(f"Method Integration Orchestrator: {self.instance['instance_id']}")
         print("=" * 60)
 
-        if not self.stage_ingest():
+        if not self._timed("ingest", self.stage_ingest):
             self.emit_artifacts()
             return False
 
-        self.stage_environment()  # failure here is logged, not fatal -- we still emit what we learned
-        self.stage_repo_comprehension()
-        self.stage_synthesize_contract()
+        self._timed("environment_repolaunch", self.stage_environment)  # failure here is logged, not fatal -- we still emit what we learned
+        self._timed("repo_comprehension", self.stage_repo_comprehension)
+        self._timed("synthesize_contract", self.stage_synthesize_contract)
         self.emit_artifacts()
 
         result: repolaunch_runner.RepoLaunchResult | None = self.artifacts.get("repolaunch_result")
@@ -552,7 +582,7 @@ class MethodIntegrationOrchestrator:
         print(f"Method Integration Orchestrator (contract-only resume): {self.instance['instance_id']}")
         print("=" * 60)
         self.resume_from_manifest(resume_manifest_path)
-        self.stage_synthesize_contract()
+        self._timed("synthesize_contract", self.stage_synthesize_contract)
         self.emit_artifacts()
         print(f"\nDone. Output: {self.output_dir}")
         return True

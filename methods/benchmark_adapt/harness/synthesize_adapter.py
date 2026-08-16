@@ -8,13 +8,13 @@ Refuses to run if any of the three handoff artifacts is missing, and refuses (Sc
 the contract's perturbation_encoding is gene_id -- see harness/contract.py.
 
 Defaults to --dry-run: renders the prompt and prints the exact `mini` invocation without spending
-any API budget. Verified against a real install: `mini --help` (mini-swe-agent 2.4.6) and
-minisweagent/environments/docker.py's DockerEnvironmentConfig (fields: image, cwd, env, run_args,
-timeout). The `-c environment.image=...` dotted-path form mirrors the `-c model.model_kwargs...`
-example in `mini --help`'s own docs, but has not been exercised against a live model + API key --
-double check https://mini-swe-agent.com/latest/usage/mini/ before the first --execute run, and
-see C2 in method-integration-todo.html (RepoLaunch is a second, separate LLM integration with its
-own cost -- mini-swe-agent here is a third; budget and log both, per execution_log.json's schema).
+any API budget. `--execute` has been run for real (mini-swe-agent 2.4.6, a live Anthropic key,
+against a real RepoLaunch-built image) -- see build_mini_invocation()'s docstring for the three
+non-obvious things that first real run surfaced and fixed (a config wizard that hangs with no TTY,
+a config-merging footgun in mini's own `-c` flag, and a missing bind mount that silently discarded
+the agent's entire output). See C2 in method-integration-todo.html (RepoLaunch is a second,
+separate LLM integration with its own cost -- mini-swe-agent here is a third; budget and log both,
+per execution_log.json's schema).
 """
 
 from __future__ import annotations
@@ -25,8 +25,10 @@ import shlex
 import shutil
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
+import yaml
 from jinja2 import Environment, FileSystemLoader
 
 from harness.contract import ContractValidationError, ScopeRejection, load_contract, require_valid, scope_gate
@@ -87,18 +89,65 @@ def build_mini_invocation(
     cost_limit: float,
     output_traj: Path,
     workdir: Path,
+    override_dir: Path | None = None,
 ) -> list[str]:
-    """Assemble the `mini` CLI invocation. See module docstring re: what's verified vs. assumed."""
+    """Assemble the `mini` CLI invocation. See module docstring re: what's verified vs. assumed.
+
+    Three things verified only by actually running this against a live model + API key (not just
+    `mini --help`'s text), all required for a working --execute run whose output actually reaches
+    the host filesystem:
+
+    - --exit-immediately: without it, mini drops into an interactive "type new task or Enter to
+      quit" prompt once the agent submits its work, which hangs (then aborts, no TTY to read from)
+      rather than actually exiting.
+    - The bare `-c key=value` dotted overrides (`environment.image=...`, `environment.cwd=...`)
+      must be preceded by mini's own default config file as a separate `-c` -- passing any `-c` at
+      all replaces its default `[DEFAULT_CONFIG_FILE]` list entirely (typer option default, not
+      appended to), and `mini --help` says so explicitly ("If you set this option, the default
+      config file will not be used... Multiple configs will be recursively merged"). Omitting it
+      produces a config missing required agent fields (system_template/instance_template) that
+      normally come from mini.yaml, and mini fails with a pydantic ValidationError before ever
+      calling the model.
+    - `DockerEnvironment._start_container()` (minisweagent/environments/docker.py) runs
+      `docker run -d -w <cwd> <run_args> <image> sleep <container_timeout>` -- `run_args` defaults
+      to `["--rm"]` only, no `-v`. Setting `environment.cwd` to a host path does NOT bind-mount
+      that path; it's just the working directory inside the container's own, entirely separate
+      filesystem. Confirmed by a real run: the agent wrote and tested a full adapter (visible in
+      its trajectory), but with `--rm` the container -- and everything the agent wrote inside it --
+      was destroyed on exit, and `workdir` on the host was untouched. `run_args` must explicitly
+      bind-mount `workdir` to the same path inside the container for anything to survive.
+    """
+    from minisweagent.config import builtin_config_dir
+
+    # A YAML override file, not more `-c key=value` dotted pairs -- `run_args` is a list, and the
+    # dotted CLI syntax has no clean way to express "append to a list" vs. "replace it"; a real
+    # config file is unambiguous and also keeps this whole override in one auditable place.
+    override_config = {
+        "environment": {
+            "image": docker_image,
+            "cwd": str(workdir),
+            "run_args": ["--rm", "-v", f"{workdir}:{workdir}"],
+        }
+    }
+    # Process/config scratch, not part of the deliverable -- lives alongside the other run
+    # records (logs_dir) rather than inside the bind-mounted component dir, when the caller
+    # separates the two. Doesn't need to be inside the mount: mini itself reads `-c <path>` on
+    # the host, before the container ever starts.
+    override_path = (override_dir or workdir) / ".mini_docker_override.yaml"
+    override_path.parent.mkdir(parents=True, exist_ok=True)
+    override_path.write_text(yaml.safe_dump(override_config))
+
     return [
         "mini",
         "--yolo",
+        "--exit-immediately",
         "--model", model,
         "--task", prompt_text,
         "--cost-limit", str(cost_limit),
         "--output", str(output_traj),
         "--environment-class", "docker",
-        "-c", f"environment.image={docker_image}",
-        "-c", f"environment.cwd={workdir}",
+        "-c", str(builtin_config_dir / "mini.yaml"),
+        "-c", str(override_path),
     ]
 
 
@@ -129,24 +178,32 @@ def synthesize(
         return 2
 
     method_id = contract.raw.get("method_id", "unknown_method")
-    output_dir = output_dir / method_id
-    output_dir.mkdir(parents=True, exist_ok=True)
+    method_dir = output_dir / method_id
+    # component/ is the deliverable (what a reviewer or a later pipeline stage consumes);
+    # predictions/ is real model output, once run_component.py produces it; logs/ is everything
+    # about *how* synthesis happened (prompt, trajectory, timing) -- three different audiences,
+    # not one flat directory.
+    component_dir = method_dir / "component"
+    predictions_dir = method_dir / "predictions"
+    logs_dir = method_dir / "logs"
+    for d in (component_dir, predictions_dir, logs_dir):
+        d.mkdir(parents=True, exist_ok=True)
 
     prompt_text = render_prompt(
         contract=contract,
         method_id=method_id,
         docker_image=docker_image,
         execution_log_path=execution_log_path,
-        output_dir=output_dir,
+        output_dir=component_dir,
         fixture_dir=fixture_dir,
     )
-    prompt_path = output_dir / "synthesis_prompt.md"
+    prompt_path = logs_dir / "synthesis_prompt.md"
     prompt_path.write_text(prompt_text)
 
     # MODELSPEC.json travels with the component -- it's part of the deliverable directory
     # structure (config.vsh.yaml, script.py, test.py, MODELSPEC.json, DEVIATIONS.md), not just an
     # internal handoff artifact that stays behind in Cecilia's lane.
-    (output_dir / "MODELSPEC.json").write_text(json.dumps(contract.raw, indent=2))
+    (component_dir / "MODELSPEC.json").write_text(json.dumps(contract.raw, indent=2))
 
     # Seed the output dir with the templates so the agent has a concrete starting point rather
     # than a blank page -- it's expected to overwrite script.py's NotImplementedError body.
@@ -180,21 +237,22 @@ def synthesize(
             arguments=contract.raw.get("arguments") or [],
             dependencies=contract.raw.get("dependencies") or [],
         )
-        (output_dir / out_name).write_text(rendered)
+        (component_dir / out_name).write_text(rendered)
 
-    traj_path = output_dir / "trajectory.json"
+    traj_path = logs_dir / "trajectory.json"
     cmd = build_mini_invocation(
         prompt_text=prompt_text,
         docker_image=docker_image,
         model=model,
         cost_limit=cost_limit,
         output_traj=traj_path,
-        workdir=output_dir,
+        workdir=component_dir,
+        override_dir=logs_dir,
     )
 
     print(f"method_id: {method_id}")
     print(f"contract:  {contract_path}  (valid, citation-clean, scope: pass)")
-    print(f"seeded:    {output_dir}/{{script.py, config.vsh.yaml, test.py, DEVIATIONS.md, MODELSPEC.json, synthesis_prompt.md}}")
+    print(f"seeded:    {component_dir}/{{script.py, config.vsh.yaml, test.py, DEVIATIONS.md, MODELSPEC.json}}, {logs_dir}/synthesis_prompt.md")
     print(f"mini invocation ({'EXECUTING' if execute else 'dry-run, not executed'}):")
     print("  " + " ".join(shlex.quote(c) for c in cmd))
 
@@ -208,7 +266,20 @@ def synthesize(
         print("docker executable not found on PATH -- mini's docker environment class needs it.", file=sys.stderr)
         return 1
 
-    result = subprocess.run(cmd, cwd=output_dir)
+    t0 = datetime.now(timezone.utc)
+    result = subprocess.run(cmd, cwd=component_dir)
+    wall_clock_s = (datetime.now(timezone.utc) - t0).total_seconds()
+    # No execution_log.json-equivalent exists on this lane's side today -- mini's own
+    # trajectory.json records cost/steps but not a plain wall-clock duration. This is the one
+    # place Stage 4's timing gets recorded at all.
+    (logs_dir / "stage4_timing.json").write_text(json.dumps({
+        "method_id": method_id,
+        "model": model,
+        "started_at": t0.isoformat(),
+        "wall_clock_s": round(wall_clock_s, 1),
+        "returncode": result.returncode,
+    }, indent=2))
+    print(f"Stage 4 wall-clock: {wall_clock_s:.1f}s -- see {logs_dir / 'stage4_timing.json'}")
     return result.returncode
 
 

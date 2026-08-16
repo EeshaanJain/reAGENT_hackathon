@@ -28,11 +28,14 @@ execution_log.json   ─┘         (this repo)                     (this repo) 
 ```
 benchmark_adapt/
   tools_spec.html                      what each tool below does + jargon glossary — read first
-  schemas/model_contract.schema.json   structural + citation-discipline schema (A5)
   harness/
-    contract.py                        load + validate a model_contract.yaml (A5)
+    contract.py                        load + validate a model_contract.yaml against
+                                        ../model_contract.schema.json (A5) — the schema lives one
+                                        level up, shared with contract_gen, not copied here
     synthesize_adapter.py              Stage 4 driver: renders a prompt, invokes mini-swe-agent
                                         against the handed-off Docker image (F1, F2)
+    run_component.py                   Runs a synthesized component against real input data and
+                                        verifies its output file -- no scoring, that's separate
     viash_shim.py                      runs a raw VIASH-style script.py locally, without a full
                                         `viash build`, by injecting `par`/`meta` (see caveat below)
     prompts/adapter_synthesis.md.j2    the task prompt template handed to mini-swe-agent
@@ -50,7 +53,12 @@ benchmark_adapt/
     test_no_network.py                 G4
     test_stochastic_tolerance.py       G7 (deliberately unresolved — see below)
   component_template/                  config.vsh.yaml / script.py / test.py / DEVIATIONS.md
-                                        skeletons that synthesize_adapter.py fills in
+                                        skeletons that synthesize_adapter.py fills in --
+                                        config.vsh.yaml.j2 renders a real `arguments:` block and
+                                        `engines.docker.setup` pip packages when the contract
+                                        carries Serena-derived `arguments`/`dependencies` (i.e. it
+                                        was built with contract_gen's --comprehension-engine
+                                        serena); both render empty otherwise, same as before
   examples/
     model_contract.example.yaml        a filled-in example contract (Chem-PerturBridge-style,
                                         API-native — ladder rung 1)
@@ -103,7 +111,7 @@ scripts/run_gauntlet.sh examples/broken_adapter_collapsed_mean/script.py # G3 fa
 
 # Stage 4 driver -- dry-run by default (renders the prompt and prints the exact `mini` command
 # without calling any model or spending API budget), and seeds
-# output/<method_id>/{script.py,config.vsh.yaml,test.py,DEVIATIONS.md,MODELSPEC.json}:
+# output/<method_id>/component/{script.py,config.vsh.yaml,test.py,DEVIATIONS.md,MODELSPEC.json}:
 python -m harness.synthesize_adapter --contract examples/model_contract.example.yaml \
     --execution-log examples/execution_log.example.json
 
@@ -135,6 +143,12 @@ python -m harness.contract examples/model_contract.example.yaml
   relative change) so the harness is runnable end-to-end today, but per the to-do doc this is a
   "pick a number before you need it" placeholder, not a validated one — override via
   `--min-change-frac` or revisit before it gates a real PR.
+- **`harness/run_component.py` is real and has produced actual model output** — not just a
+  synthesized-but-never-run `script.py`. Both worked examples (scAPE and CPA, see `../README.md`
+  §4/§5) have a real `predictions/prediction.h5ad` produced this way. For `requires_sc_counts:
+  true` methods (CPA), synthesis now also uses a real, local `--sc_train` extension
+  (`component_template/config.vsh.yaml.j2`) instead of always filing an API-gap stub — proposed to
+  this pipeline's own schema, not merged into the upstream OP3 submodule.
 
 ## Handoff contract this lane assumes
 

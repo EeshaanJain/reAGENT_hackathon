@@ -144,7 +144,7 @@
     <ul>
       <li>Ingest: clone + pin a commit</li>
       <li>RepoLaunch: real, LLM-driven environment reconstruction → a built Docker image</li>
-      <li>Repo comprehension: cited static-analysis signals (heuristic stand-in for Serena)</li>
+      <li>Repo comprehension: cited signals from either a grep heuristic, or a live Serena MCP session (<code>--comprehension-engine serena</code>, the preferred default)</li>
       <li>Contract synthesis: a schema-valid, citation-disciplined <code>model_contract.yaml</code></li>
     </ul>
   </div>
@@ -241,48 +241,57 @@
   <thead><tr><th>Lane</th><th>Tool</th><th>Role</th></tr></thead>
   <tbody>
     <tr><td><span class="pill cecilia">contract_gen</span></td><td>RepoLaunch</td><td>Real, vendored, pinned by commit (not on PyPI). Its own LLM agent explores an unfamiliar repo and builds a working Docker image + reconstructs a Dockerfile from the image's actual layers. Needs Python &gt;= 3.12 -- lives in its own venv, separate from the shared <code>reagent</code> env.</td></tr>
-    <tr><td><span class="pill cecilia">contract_gen</span></td><td>Heuristic comprehension</td><td>Grep-based signal detection over the cloned repo, every match cited to a real <code>repo:file:line</code>. A stand-in for real Serena MCP analysis, not Serena itself -- see <a href="benchmark_adapt/tools_spec.html">tools_spec.html</a>'s glossary for why Serena's actual tools need an MCP client, not a bare CLI.</td></tr>
+    <tr><td><span class="pill cecilia">contract_gen</span></td><td>Heuristic comprehension</td><td>Grep-based signal detection over the cloned repo, every match cited to a real <code>repo:file:line</code>. Zero-dependency default fallback; can't answer questions that need real code understanding (<code>gene_space.n_genes</code>, a real entrypoint's default hyperparameters).</td></tr>
+    <tr><td><span class="pill cecilia">contract_gen</span></td><td>Serena comprehension</td><td>A live Serena MCP session (<code>serena/mcp_client.py</code>) against the cloned repo -- real <code>find_symbol</code>/<code>get_symbols_overview</code> queries, not pattern matching. Resolves <code>model.entrypoint</code>, <code>prediction_level</code>, <code>requires_sc_counts</code>, <code>gene_space</code>, <code>hyperparameters</code>, <code>arguments</code>, and <code>dependencies</code> from cited evidence instead of leaving them <code>unknown</code>. See <a href="serena/README.md">serena/README.md</a>.</td></tr>
     <tr><td><span class="pill sei">benchmark_adapt</span></td><td>mini-swe-agent, the Gauntlet</td><td>See <a href="benchmark_adapt/tools_spec.html">benchmark_adapt/tools_spec.html</a> for the full tool-by-tool breakdown -- unchanged by this document.</td></tr>
   </tbody>
 </table>
 </div>
 
 <h2><span class="num">4</span>Worked example: CPA</h2>
-<p class="lede">CPA (<code>theislab/cpa</code>) is the test case run through this pipeline live,
-specifically because it needs raw single-cell counts as input -- the concrete, real instance of
-the OP3 API gap discussed throughout the plan docs (see
-<a href="https://github.com/openproblems-bio/task_perturbation_prediction/pull/78">PR #78</a>,
-which hit exactly this wall trying to integrate the same model).</p>
+<p class="lede">CPA (<code>theislab/cpa</code>) needs raw single-cell counts as input, not the
+DE-signature table OP3's real <code>de_train</code>/<code>id_map</code> API provides -- the same
+wall <a href="https://github.com/openproblems-bio/task_perturbation_prediction/pull/78">PR #78</a>
+hit trying to integrate the same model. An early run through this pipeline correctly filed that as
+a blocking gap rather than faking a workaround. This pipeline now has a local, proposed extension
+for exactly that case (an optional <code>--sc_train</code> argument, not merged into the upstream
+OP3 submodule) -- and a later real run used it successfully.</p>
 
 <div class="case">
-  <h3>What the heuristic comprehension stage found, from real grep evidence</h3>
+  <h3>What Serena comprehension found, from a live MCP session against the real repo</h3>
   <pre>requires_sc_counts:
   value: <span class="val">true</span>
-  citation: <span class="cite">repo:cpa/_api.py:L10</span>        # matched "setup_anndata" -- a single-cell-model convention
+  citation: <span class="cite">repo:cpa/_api.py:L438-L552</span>   # CPA.train's own body -- no dedicated data_loader
+                                                       #   function exists; the evidence lives in the
+                                                       #   public API, not a "load_*" finding
 
 prediction_level:
   value: <span class="val">single_cell</span>
-  citation: <span class="cite">repo:cpa/_api.py:L10</span>
+  citation: <span class="cite">repo:cpa/_api.py:L438-L552</span>
 
 perturbation_encoding:
   value: <span class="val">smiles</span>
-  citation: <span class="cite">repo:cpa/_model.py:L7</span>       # matched "SMILES" reference</pre>
-  <p style="margin-bottom:0">No LLM call was needed to find this — a static grep pass over the
-  real, cloned <code>theislab/cpa</code> repository at a pinned commit surfaced it directly. Once
-  <code>benchmark_adapt</code> reads a contract with <code>requires_sc_counts: true</code>, the
-  seeded adapter template includes an explicit note about the gap instead of a silent workaround
-  that would produce wrong scores. That's the correct, intended outcome for this case — not a
-  failure to fix.</p>
+  citation: <span class="cite">repo:cpa/_model.py:L7</span></pre>
+  <p style="margin-bottom:0">Once <code>benchmark_adapt</code> reads a contract with
+  <code>requires_sc_counts: true</code>, the seeded template now includes a real
+  <code>--sc_train</code> argument and synthesis guidance for a genuinely single-cell-native
+  adapter, instead of a note to file the gap. The synthesized <code>script.py</code> trains CPA for
+  real and writes predictions to a <code>predicted_expression</code> layer -- deliberately not the
+  DE-signature <code>prediction</code> layer other methods use, since that would misrepresent what
+  this method actually produces.</p>
 </div>
 
 <div class="aside">
   <b>Full run, actually executed:</b> driven by a real Paperclip record
   (<code>contract_gen/fixtures/paperclip_cpa_record.json</code>) through
-  <code>harness.orchestrator --paperclip-record ...</code>, RepoLaunch really built the image
-  (status <code>PASS</code>), and the handoff to <code>benchmark_adapt</code> produced a stub
-  adapter with the gap explained inline plus a drafted (not submitted) PR —
-  see <code>methods/benchmark_adapt/output/cpa/PR_DESCRIPTION.md</code>. Full command sequence:
-  <a href="README.md">README.md</a>.
+  <code>methods/results/run_pipeline.py</code>. RepoLaunch really built the image (status
+  <code>PASS</code>), mini-swe-agent really wrote and self-tested the adapter, and running it
+  against a real single-cell fixture (a subset of a genuine Srivatsan sci-Plex3 dataset,
+  <code>fixtures/make_sc_fixture.py</code>) inside the built image produced a real
+  <code>prediction.h5ad</code> -- actual CPA training, actual counterfactual decoding, no NaNs. See
+  <code>methods/results/cpa/</code> (<code>component/</code> for the adapter + DEVIATIONS.md,
+  <code>predictions/</code> for the output) and <a href="README.md">README.md</a> §4 for the full
+  command sequence.
 </div>
 
 <footer>
