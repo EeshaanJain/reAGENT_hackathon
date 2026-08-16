@@ -30,6 +30,18 @@ gold:
     - scperturbench_unseen_chemical_evaluated
     - scperturbench_chemical_combinations_evaluated
   negative_values: ["not_established", "False", ""]
+  # Columns copied from the source DB into the gold CSVs (schema of source_csv).
+  keep_columns:
+    - model_name
+    - paper_title
+    - bibtex_key
+    - publication_year
+    - venue
+    - doi
+    - doi_url
+    - paper_url
+    - github_repositories
+    - summary
   # Manual corrections to the automatic relevance rule (by model_name),
   # e.g. papers the team judged relevant despite DB task-status columns.
   # Team-reviewed relevance verdicts (2026-08-16), override DB task columns.
