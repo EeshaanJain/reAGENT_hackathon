@@ -30,17 +30,20 @@ Two stages (both configured in the benchmark's `keywords.yaml`):
 
 ## Corpus-coverage caveats (measured 2026-08)
 
-These papers can never be retrieved regardless of keywords; the eval reports
-them as coverage gaps and excludes them from retrieval metrics:
-
-- paperclip's full-text corpus is **PMC + bioRxiv + medRxiv only. arXiv is
-  listed in the docs but its index is empty** — 9/24 gold positives are
-  arXiv-only, plus 1 paywalled (Cell) and 1 with an unresolvable DOI.
-- the semantic search index only covers papers from roughly **late 2024
-  onward**: 4 older gold positives (Biolord, CPA, CellOT, scVIDR) are readable
-  by doc id but invisible to every search query.
-
-Net eligible gold set: 9 positives, 22 hard negatives.
+- **Without `--all` (or an explicit `--year`/`--since`), `paperclip search`
+  silently restricts to recent papers (~late 2024 onward) and returns nothing
+  for arXiv.** An over-filtered search is indistinguishable from an empty
+  corpus — always pass `--all` for backsearch, or `--since` for scheduled
+  new-paper runs.
+- With `--all`, coverage by source (probed by year): PMC ≥1980→present,
+  arXiv ≥2006→present, bioRxiv 2014→present, medRxiv 2019→present.
+  arXiv ingestion lags ~1–2 months (June 2026 present, July 2026 absent).
+- arXiv papers have deterministic doc ids (`arx_<arxiv_id>`, constructible
+  from `10.48550/arXiv.*` DOIs) but are absent from `lookup` and unreliable in
+  `sql` — resolve them by constructing the id and verifying with `ls`.
+- Some papers are still unreachable per-document (not ingested, or paywalled
+  with no PMC/preprint version) — the eval reports them as coverage gaps and
+  excludes them from retrieval metrics.
 
 ## Results (perturbation_prediction)
 
