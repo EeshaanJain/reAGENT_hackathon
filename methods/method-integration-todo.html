@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Method Integration Agent — Build To-Do</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;  /* deterministic code */
+    --series-2:       #eb6834;  /* LLM agent */
+    --series-3:       #1baf7a;  /* verification gate */
+    --fill-1:         rgba(42,120,214,0.10);
+    --fill-2:         rgba(235,104,52,0.10);
+    --fill-3:         rgba(27,175,122,0.10);
+    --status-good:    #0ca30c;
+    --status-warning: #fab219;
+    --status-serious: #ec835a;
+    --status-critical:#d03b3b;
+    --ink-link:       #1c5cab;  /* blue ramp step 550 — text needs ink, not the series step */
+    --ink-good:       #006300;  /* documented success-text green */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --series-1:       #3987e5;
+      --series-2:       #d95926;
+      --series-3:       #199e70;
+      --fill-1:         rgba(57,135,229,0.16);
+      --fill-2:         rgba(217,89,38,0.16);
+      --fill-3:         rgba(25,158,112,0.16);
+      --ink-link:       #3987e5;
+      --ink-good:       #0ca30c;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --series-1:       #3987e5;
+    --series-2:       #d95926;
+    --series-3:       #199e70;
+    --fill-1:         rgba(57,135,229,0.16);
+    --fill-2:         rgba(217,89,38,0.16);
+    --fill-3:         rgba(25,158,112,0.16);
+    --ink-link:       #3987e5;
+    --ink-good:       #0ca30c;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body.viz-root {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font: 15px/1.62 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 44px 24px 96px; }
+
+  header.hd { border-bottom: 1px solid var(--border); padding-bottom: 22px; margin-bottom: 30px; }
+  .kicker { font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
+  h1 { font-size: 30px; line-height: 1.22; letter-spacing: -.015em; margin: 0 0 12px; font-weight: 640; }
+  .dek { font-size: 16.5px; color: var(--text-secondary); margin: 0; max-width: 68ch; }
+  .byline { font-size: 12.5px; color: var(--text-muted); margin: 14px 0 0; }
+
+  h2 { font-size: 20px; letter-spacing: -.01em; margin: 52px 0 6px; font-weight: 630; }
+  h2 .num { color: var(--text-muted); font-weight: 500; margin-right: 9px; font-variant-numeric: tabular-nums; }
+  h3 { font-size: 15.5px; margin: 30px 0 8px; font-weight: 630; }
+  h4 { font-size: 13px; margin: 20px 0 6px; font-weight: 640; letter-spacing: .01em; }
+  p { margin: 0 0 13px; }
+  .lede { color: var(--text-secondary); font-size: 15.5px; margin-bottom: 20px; max-width: 74ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 21px; }
+  li { margin-bottom: 6px; }
+  strong { font-weight: 620; }
+  code, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875em; }
+  code { background: var(--fill-1); padding: .1em .34em; border-radius: 3px; }
+  a { color: var(--ink-link); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 22px; margin: 20px 0;
+  }
+  .scope { border-left: 3px solid var(--series-3); }
+  .scope h4 { margin-top: 0; }
+  .scope .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 700px) { .scope .cols { grid-template-columns: 1fr; } }
+
+  pre {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+    padding: 15px 17px; overflow-x: auto; margin: 14px 0;
+    font: 12.5px/1.62 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text-primary);
+  }
+  pre .c { color: var(--text-muted); }
+  pre .k { color: var(--ink-link); }
+  pre .s { color: var(--ink-good); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 16px 0; }
+  th, td { text-align: left; padding: 9px 11px; border-bottom: 1px solid var(--gridline); vertical-align: top; }
+  thead th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 620; border-bottom: 1px solid var(--baseline); }
+  td.num { font-variant-numeric: tabular-nums; }
+  tbody tr:last-child td { border-bottom: none; }
+  .tbl-wrap { overflow-x: auto; }
+
+  /* stat tiles */
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 26px 0 8px; }
+  @media (max-width: 760px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 15px 16px; }
+  .tile .v { font-size: 30px; line-height: 1.05; font-weight: 660; letter-spacing: -.02em; display: block; }
+  .tile .l { font-size: 12px; color: var(--text-secondary); margin-top: 7px; display: block; }
+  /* the value stays in primary ink; a 3px cap carries the class identity */
+  .tile.t1 { border-top: 3px solid var(--series-1); }
+  .tile.t2 { border-top: 3px solid var(--series-2); }
+  .tile.t3 { border-top: 3px solid var(--series-3); }
+  .tile.t4 { border-top: 3px solid var(--status-critical); }
+
+  /* legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 4px 0 14px; font-size: 12.5px; color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  /* inline swatch: lets running text name a series without wearing its color */
+  .sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 3px; vertical-align: 1px; }
+
+  figure { margin: 18px 0 8px; }
+  figcaption { font-size: 12.5px; color: var(--text-muted); margin-top: 10px; max-width: 78ch; }
+  .figframe { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 8px 4px; overflow-x: auto; }
+  svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+  .callout { border-left: 3px solid var(--status-critical); background: var(--surface-1); border-radius: 0 10px 10px 0; padding: 15px 18px; margin: 20px 0; font-size: 14px; }
+  .callout .hd2 { font-weight: 650; margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
+  .callout .hd2 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--status-critical); flex: none; }
+  .callout.ok { border-left-color: var(--series-3); }
+  .callout.ok .hd2 .dot { background: var(--series-3); }
+
+  .pill { display: inline-block; font-size: 11px; padding: 1.5px 8px; border-radius: 99px; border: 1px solid var(--border); color: var(--text-secondary); white-space: nowrap; }
+  .pill.reuse  { background: var(--fill-3); border-color: var(--series-3); color: var(--text-primary); }
+  .pill.build  { background: var(--fill-2); border-color: var(--series-2); color: var(--text-primary); }
+  .pill.verify { background: var(--fill-1); border-color: var(--series-1); color: var(--text-primary); }
+  .pill.decide { background: var(--surface-1); border-color: var(--baseline); color: var(--text-primary); }
+  .pill.caution { background: var(--surface-1); border-color: var(--status-warning); color: var(--text-primary); }
+
+  details { margin: 12px 0; font-size: 13.5px; }
+  summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--text-secondary); padding: 5px 0; }
+
+  /* to-do blocks */
+  .block { margin: 26px 0 0; }
+  .block > .bh {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    padding: 0 0 8px; border-bottom: 1px solid var(--baseline);
+  }
+  .block > .bh .bid { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .block > .bh .bt { font-size: 15px; font-weight: 640; }
+  .block > .bh .bm { font-size: 12px; color: var(--text-muted); }
+  .item {
+    display: grid; grid-template-columns: 20px 1fr auto; gap: 4px 11px;
+    padding: 12px 2px; border-bottom: 1px solid var(--gridline); align-items: start;
+  }
+  .item:last-child { border-bottom: none; }
+  .item input[type=checkbox] { width: 15px; height: 15px; margin: 3px 0 0; accent-color: var(--series-3); }
+  .item .ttl { font-size: 14px; font-weight: 600; }
+  .item .ttl .iid { color: var(--text-muted); font-weight: 500; margin-right: 7px; font-variant-numeric: tabular-nums; }
+  .item input[type=checkbox]:checked ~ .body .ttl { text-decoration: line-through; color: var(--text-muted); }
+  .item .meta { font-size: 12.5px; color: var(--text-secondary); margin-top: 4px; }
+  .item .meta b { color: var(--text-primary); font-weight: 620; }
+  .item .dep { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
+  .item .tag { grid-column: 3; grid-row: 1; }
+  .item .body { grid-column: 2; grid-row: 1; }
+  .item input { grid-column: 1; grid-row: 1; }
+
+  /* gap rows */
+  .gap { display: grid; grid-template-columns: 118px 1fr; gap: 14px; padding: 15px 0; border-bottom: 1px solid var(--gridline); }
+  .gap:last-child { border-bottom: none; }
+  .gap .sev { font-size: 12px; font-weight: 620; display: inline-flex; align-items: center; gap: 6px; color: var(--text-primary); }
+  .gap .sev .g { font-size: 13px; line-height: 1; }
+  .gap .sev .g.crit { color: var(--status-critical); }
+  .gap .sev .g.ser  { color: var(--status-serious); }
+  .gap .sev .g.warn { color: var(--status-warning); }
+  .gap .gt { font-size: 14px; font-weight: 620; margin-bottom: 4px; }
+  .gap .gd { font-size: 13px; color: var(--text-secondary); }
+  .gap .gf { font-size: 12.5px; color: var(--text-muted); margin-top: 5px; }
+  .gap .gf b { color: var(--text-primary); font-weight: 620; }
+
+  .toggle {
+    position: fixed; top: 14px; right: 16px; z-index: 60;
+    background: var(--surface-1); color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: 99px;
+    font: 11.5px/1 system-ui, sans-serif; padding: 8px 13px; cursor: pointer;
+  }
+  footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-muted); }
+</style>
+</head>
+<body class="viz-root">
+<button class="toggle" id="tg" aria-label="Toggle light and dark theme">◑ theme</button>
+<div class="wrap">
+
+<header class="hd">
+  <p class="kicker">Method Integration Agent · build plan</p>
+  <h1>What to build, in what order, and what still needs a decision</h1>
+  <p class="dek">A to-do list derived from <code>methods/METHOD_INTEGRATION_AGENT.md</code>, reconciled against
+  <code>plan_unified.md</code> and <code>plan_sei.md</code>. 39 items across 8 blocks, each with an acceptance
+  check and its blockers. Then the 11 places the plan is not yet buildable as written.</p>
+  <p class="byline">Sources: <code>reAGENT_hackathon@method</code> (<code>9a20021</code>) — MD 165 lines, unified plan 227 lines, Sei plan 128 lines.
+  Tool availability verified live against the GitHub and PyPI APIs.</p>
+</header>
+
+<div class="card scope">
+  <h4>Scope, restated from the source doc</h4>
+  <p style="margin-bottom:10px">“Automatically adapt a published perturbation model to an <strong>already-defined benchmark</strong>.
+  This component <strong>does not design datasets, splits, or metrics</strong>.” <span style="color:var(--text-muted)">— MD L5–7</span></p>
+  <div class="cols">
+    <div>
+      <h4 style="margin-top:4px">On this list</h4>
+      <ul style="font-size:13.5px;color:var(--text-secondary);margin:0">
+        <li>Model-contract extraction (cited, typed)</li>
+        <li>Dataset adaptation → the benchmark’s typed API</li>
+        <li>Validation: the Gauntlet + provenance artifacts</li>
+        <li>Environment reconstruction, sandboxed execution</li>
+      </ul>
+    </div>
+    <div>
+      <h4 style="margin-top:4px">Not on this list</h4>
+      <ul style="font-size:13.5px;color:var(--text-secondary);margin:0">
+        <li>Metric design — Matt</li>
+        <li>Dataset QC / SMILES harmonization — Philipp, Lijun</li>
+        <li>Leakage &amp; scientific audit — Eeshan</li>
+        <li>Rebuilding generic coding-agent or container infra</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="tiles">
+  <div class="tile t1"><span class="v">39</span><span class="l">to-do items, 8 blocks</span></div>
+  <div class="tile t2"><span class="v">27</span><span class="l">you build yourself</span></div>
+  <div class="tile t3"><span class="v">7</span><span class="l">Gauntlet checks (1 is pure reuse)</span></div>
+  <div class="tile t4"><span class="v">11</span><span class="l">gaps flagged — 5 critical or serious</span></div>
+</div>
+
+<h2><span class="num">1</span>The one ordering fix to make before anything else</h2>
+<p class="lede">The MD’s workflow diagram runs <em>context → repo understanding → contract → then</em> a parallel fork into
+environment build and dataset adapter. The unified plan reverses the first two, and it is right to: Serena is a
+language-server client, so <code>find_symbol</code> resolves nothing until the dependencies are actually installed.
+Comprehending before building yields confidently wrong entrypoint guesses.</p>
+
+<figure>
+  <div class="legend" aria-hidden="false">
+    <span><span class="swatch" style="background:var(--series-1)"></span>deterministic code</span>
+    <span><span class="swatch" style="background:var(--series-2)"></span>LLM agent</span>
+    <span><span class="swatch" style="background:var(--series-3)"></span>verification gate</span>
+    <span><span class="swatch" style="background:var(--baseline)"></span>human</span>
+  </div>
+  <div class="figframe">
+  <svg viewBox="0 0 748 322" width="748" role="img" aria-label="Corrected pipeline: stage 0 ingest, 1 environment build, 2 repo comprehension, 3 contract extraction, handoff, 4 adapter synthesis, 5 gauntlet, 6 human review and PR.">
+    <text x="10" y="16" font-size="10.5" letter-spacing=".08em" fill="var(--text-muted)">COMPREHENSION LANE — CECILIA</text>
+
+    <!-- row 1 -->
+    <g>
+      <rect x="10" y="28" width="166" height="56" rx="7" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.6"/>
+      <text x="22" y="48" font-size="11" fill="var(--text-muted)">STAGE 0</text>
+      <text x="22" y="65" font-size="13" font-weight="620" fill="var(--text-primary)">Ingest / vendor</text>
+      <text x="22" y="78" font-size="10.5" fill="var(--text-secondary)">pinned SHA · paperclip pack</text>
+    </g>
+    <g>
+      <rect x="204" y="28" width="166" height="56" rx="7" fill="var(--fill-2)" stroke="var(--series-2)" stroke-width="1.6"/>
+      <text x="216" y="48" font-size="11" fill="var(--text-muted)">STAGE 1</text>
+      <text x="216" y="65" font-size="13" font-weight="620" fill="var(--text-primary)">Environment build</text>
+      <text x="216" y="78" font-size="10.5" fill="var(--text-secondary)">RepoLaunch → image</text>
+    </g>
+    <g>
+      <rect x="398" y="28" width="166" height="56" rx="7" fill="var(--fill-2)" stroke="var(--series-2)" stroke-width="1.6"/>
+      <text x="410" y="48" font-size="11" fill="var(--text-muted)">STAGE 2</text>
+      <text x="410" y="65" font-size="13" font-weight="620" fill="var(--text-primary)">Repo comprehension</text>
+      <text x="410" y="78" font-size="10.5" fill="var(--text-secondary)">Serena, in the built image</text>
+    </g>
+    <g>
+      <rect x="572" y="102" width="166" height="56" rx="7" fill="var(--fill-2)" stroke="var(--series-2)" stroke-width="1.6"/>
+      <text x="584" y="122" font-size="11" fill="var(--text-muted)">STAGE 3</text>
+      <text x="584" y="139" font-size="13" font-weight="620" fill="var(--text-primary)">Contract extraction</text>
+      <text x="584" y="152" font-size="10.5" fill="var(--text-secondary)">mini-SWE-agent · cited</text>
+    </g>
+
+    <!-- arrows row1 -->
+    <path d="M176 56 H198" stroke="var(--baseline)" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+    <path d="M370 56 H392" stroke="var(--baseline)" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+    <path d="M564 56 H655 V96" stroke="var(--baseline)" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+
+    <!-- handoff -->
+    <rect x="196" y="176" width="356" height="40" rx="7" fill="none" stroke="var(--baseline)" stroke-width="1.6"/>
+    <text x="212" y="194" font-size="11.5" font-weight="620" fill="var(--text-primary)">HANDOFF</text>
+    <text x="212" y="208" font-size="10.5" fill="var(--text-secondary)">MODELSPEC.json  ≡  model_contract.yaml — same object</text>
+    <path d="M655 158 V196 H558" stroke="var(--baseline)" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+
+    <text x="10" y="248" font-size="10.5" letter-spacing=".08em" fill="var(--text-muted)">SYNTHESIS LANE — SEI</text>
+
+    <!-- row 2 -->
+    <g>
+      <rect x="10" y="258" width="166" height="56" rx="7" fill="var(--fill-2)" stroke="var(--series-2)" stroke-width="1.6"/>
+      <text x="22" y="278" font-size="11" fill="var(--text-muted)">STAGE 4</text>
+      <text x="22" y="295" font-size="13" font-weight="620" fill="var(--text-primary)">Adapter synthesis</text>
+      <text x="22" y="308" font-size="10.5" fill="var(--text-secondary)">vs. tiny fixture</text>
+    </g>
+    <g>
+      <rect x="204" y="258" width="166" height="56" rx="7" fill="var(--fill-3)" stroke="var(--series-3)" stroke-width="1.6"/>
+      <text x="216" y="278" font-size="11" fill="var(--text-muted)">STAGE 5</text>
+      <text x="216" y="295" font-size="13" font-weight="620" fill="var(--text-primary)">Gauntlet</text>
+      <text x="216" y="308" font-size="10.5" fill="var(--text-secondary)">viash ns test — 7 checks</text>
+    </g>
+    <g>
+      <rect x="398" y="258" width="166" height="56" rx="7" fill="none" stroke="var(--baseline)" stroke-width="1.6"/>
+      <text x="410" y="278" font-size="11" fill="var(--text-muted)">STAGE 6</text>
+      <text x="410" y="295" font-size="13" font-weight="620" fill="var(--text-primary)">Review → PR</text>
+      <text x="410" y="308" font-size="10.5" fill="var(--text-secondary)">no auto-merge</text>
+    </g>
+    <g>
+      <rect x="592" y="258" width="146" height="56" rx="7" fill="var(--fill-1)" stroke="var(--series-1)" stroke-width="1.6"/>
+      <text x="604" y="278" font-size="11" fill="var(--text-muted)">OUTPUT</text>
+      <text x="604" y="295" font-size="13" font-weight="620" fill="var(--text-primary)">prediction.h5ad</text>
+      <text x="604" y="308" font-size="10.5" fill="var(--text-secondary)">+ 5 provenance files</text>
+    </g>
+    <path d="M196 196 H160 V252" stroke="var(--baseline)" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+    <path d="M176 286 H198" stroke="var(--baseline)" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+    <path d="M370 286 H392" stroke="var(--baseline)" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+    <path d="M564 286 H586" stroke="var(--baseline)" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0 1 L9 5 L0 9 z" fill="var(--baseline)"/>
+      </marker>
+    </defs>
+  </svg>
+  </div>
+  <figcaption>Stages 1 and 2 are <strong>strictly serial</strong>, in this order — which is why the MD’s 4a/4b parallel fork
+  (environment build alongside dataset adapter, both <em>after</em> repo understanding) cannot be built as drawn.
+  Every box is one owner’s work; the handoff is a file, not a meeting.</figcaption>
+</figure>
+
+<h2><span class="num">2</span>Where the work sits</h2>
+<p class="lede">Weight is concentrated in two places: reconstructing the environment (block C) and proving the adapter
+didn’t silently change the science (block G). Both are places where “it ran” and “it’s correct” come apart.</p>
+
+<figure>
+  <div class="figframe">
+  <svg viewBox="0 0 716 322" width="716" role="img" aria-label="To-do items per block: A pre-work 5, B ingest 3, C environment 6, D comprehension 4, E contract 5, F adapter 3, G gauntlet 7, H report and PR 6.">
+    <!-- gridlines: solid hairlines -->
+    <g stroke="var(--gridline)" stroke-width="1">
+      <line x1="216" y1="20" x2="216" y2="290"/>
+      <line x1="342" y1="20" x2="342" y2="290"/>
+      <line x1="468" y1="20" x2="468" y2="290"/>
+      <line x1="594" y1="20" x2="594" y2="290"/>
+    </g>
+    <line x1="216" y1="20" x2="216" y2="298" stroke="var(--baseline)" stroke-width="1.2"/>
+    <g font-size="10.5" fill="var(--text-muted)" text-anchor="middle" font-variant-numeric="tabular-nums">
+      <text x="216" y="312">0</text><text x="342" y="312">2</text><text x="468" y="312">4</text><text x="594" y="312">6</text>
+    </g>
+
+    <!-- bars: one series, slot 1; 4px rounded data-end anchored to baseline -->
+    <g>
+      <rect x="216" y="26"  width="315" height="20" rx="4" fill="var(--series-1)"/>
+      <rect x="216" y="26"  width="6"   height="20" fill="var(--series-1)"/>
+      <text x="539" y="41" font-size="12" font-weight="620" fill="var(--text-primary)">5</text>
+      <text x="206" y="37" font-size="12" fill="var(--text-primary)" text-anchor="end">A · Pre-work (T0)</text>
+      <text x="206" y="49" font-size="10.5" fill="var(--text-muted)" text-anchor="end">golden adapter, fixture</text>
+    </g>
+    <g>
+      <rect x="216" y="60"  width="189" height="20" rx="4" fill="var(--series-1)"/>
+      <rect x="216" y="60"  width="6"   height="20" fill="var(--series-1)"/>
+      <text x="413" y="75" font-size="12" font-weight="620" fill="var(--text-primary)">3</text>
+      <text x="206" y="71" font-size="12" fill="var(--text-primary)" text-anchor="end">B · Stage 0 ingest</text>
+      <text x="206" y="83" font-size="10.5" fill="var(--text-muted)" text-anchor="end">snapshot + paper pack</text>
+    </g>
+    <g>
+      <rect x="216" y="94"  width="378" height="20" rx="4" fill="var(--series-1)"/>
+      <rect x="216" y="94"  width="6"   height="20" fill="var(--series-1)"/>
+      <text x="602" y="109" font-size="12" font-weight="620" fill="var(--text-primary)">6</text>
+      <text x="206" y="105" font-size="12" fill="var(--text-primary)" text-anchor="end">C · Stage 1 environment</text>
+      <text x="206" y="117" font-size="10.5" fill="var(--text-muted)" text-anchor="end">RepoLaunch — highest risk</text>
+    </g>
+    <g>
+      <rect x="216" y="128" width="252" height="20" rx="4" fill="var(--series-1)"/>
+      <rect x="216" y="128" width="6"   height="20" fill="var(--series-1)"/>
+      <text x="476" y="143" font-size="12" font-weight="620" fill="var(--text-primary)">4</text>
+      <text x="206" y="139" font-size="12" fill="var(--text-primary)" text-anchor="end">D · Stage 2 comprehension</text>
+      <text x="206" y="151" font-size="10.5" fill="var(--text-muted)" text-anchor="end">Serena wiring</text>
+    </g>
+    <g>
+      <rect x="216" y="162" width="315" height="20" rx="4" fill="var(--series-1)"/>
+      <rect x="216" y="162" width="6"   height="20" fill="var(--series-1)"/>
+      <text x="539" y="177" font-size="12" font-weight="620" fill="var(--text-primary)">5</text>
+      <text x="206" y="173" font-size="12" fill="var(--text-primary)" text-anchor="end">E · Stage 3 contract</text>
+      <text x="206" y="185" font-size="10.5" fill="var(--text-muted)" text-anchor="end">the main contribution</text>
+    </g>
+    <g>
+      <rect x="216" y="196" width="189" height="20" rx="4" fill="var(--series-1)"/>
+      <rect x="216" y="196" width="6"   height="20" fill="var(--series-1)"/>
+      <text x="413" y="211" font-size="12" font-weight="620" fill="var(--text-primary)">3</text>
+      <text x="206" y="207" font-size="12" fill="var(--text-primary)" text-anchor="end">F · Stage 4 adapter</text>
+      <text x="206" y="219" font-size="10.5" fill="var(--text-muted)" text-anchor="end">synthesis loop</text>
+    </g>
+    <g>
+      <rect x="216" y="230" width="441" height="20" rx="4" fill="var(--series-1)"/>
+      <rect x="216" y="230" width="6"   height="20" fill="var(--series-1)"/>
+      <text x="665" y="245" font-size="12" font-weight="620" fill="var(--text-primary)">7</text>
+      <text x="206" y="241" font-size="12" fill="var(--text-primary)" text-anchor="end">G · Stage 5 Gauntlet</text>
+      <text x="206" y="253" font-size="10.5" fill="var(--text-muted)" text-anchor="end">the correctness gate</text>
+    </g>
+    <g>
+      <rect x="216" y="264" width="378" height="20" rx="4" fill="var(--series-1)"/>
+      <rect x="216" y="264" width="6"   height="20" fill="var(--series-1)"/>
+      <text x="602" y="279" font-size="12" font-weight="620" fill="var(--text-primary)">6</text>
+      <text x="206" y="275" font-size="12" fill="var(--text-primary)" text-anchor="end">H · Stage 6 review, report</text>
+      <text x="206" y="287" font-size="10.5" fill="var(--text-muted)" text-anchor="end">K=3, ladder, PR</text>
+    </g>
+  </svg>
+  </div>
+  <figcaption>One series, so no legend — the title names it. Counts are also in the table view below and in every
+  block header.</figcaption>
+</figure>
+
+<details>
+  <summary>Table view — items and tag mix per block</summary>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Block</th><th class="num">Items</th><th class="num">Build</th><th class="num">Reuse</th><th class="num">Verify</th><th class="num">Decide</th></tr></thead>
+    <tbody>
+      <tr><td>A · Pre-work (T0)</td><td class="num">5</td><td class="num">4</td><td class="num">0</td><td class="num">1</td><td class="num">0</td></tr>
+      <tr><td>B · Stage 0 ingest</td><td class="num">3</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">1</td></tr>
+      <tr><td>C · Stage 1 environment</td><td class="num">6</td><td class="num">4</td><td class="num">0</td><td class="num">1</td><td class="num">1</td></tr>
+      <tr><td>D · Stage 2 comprehension</td><td class="num">4</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+      <tr><td>E · Stage 3 contract</td><td class="num">5</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">1</td></tr>
+      <tr><td>F · Stage 4 adapter</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>G · Stage 5 Gauntlet</td><td class="num">7</td><td class="num">5</td><td class="num">1</td><td class="num">0</td><td class="num">1</td></tr>
+      <tr><td>H · Stage 6 review, report</td><td class="num">6</td><td class="num">3</td><td class="num">1</td><td class="num">0</td><td class="num">2</td></tr>
+      <tr><td><strong>Total</strong></td><td class="num"><strong>39</strong></td><td class="num"><strong>27</strong></td><td class="num"><strong>3</strong></td><td class="num"><strong>3</strong></td><td class="num"><strong>6</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+</details>
+
+<h2><span class="num">3</span>The to-do list</h2>
+<p class="lede">Each item carries an <strong>acceptance check</strong> — the thing that has to be true for it to count as
+done — and its blockers. Tags: <span class="pill build">Build</span> write it,
+<span class="pill reuse">Reuse</span> take it as-is, <span class="pill verify">Verify</span> prove an assumption,
+<span class="pill decide">Decide</span> a human has to choose before code can be written.</p>
+
+<div class="block">
+  <div class="bh"><span class="bid">A</span><span class="bt">Pre-work — before any agent runs</span><span class="bm">5 items · hours 0–3 · both owners together</span></div>
+
+  <div class="item">
+    <input type="checkbox" id="a1" aria-labelledby="a1t">
+    <div class="body">
+      <div class="ttl" id="a1t"><span class="iid">A1</span>Hand-write one adapter for an existing OP3 method</div>
+      <div class="meta"><b>Done when:</b> <code>viash ns test --query &lt;method_id&gt;</code> passes on a component you wrote by hand.
+      This is the golden reference the agent’s output gets compared against, and how you learn the Viash contract.</div>
+      <div class="dep">Blocks: F1, F2, G1–G7, H3. Nothing downstream is meaningful without it.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="a2" aria-labelledby="a2t">
+    <div class="body">
+      <div class="ttl" id="a2t"><span class="iid">A2</span>Build the tiny fixture and freeze its gene order</div>
+      <div class="meta"><b>Done when:</b> a ~200 cell × 500 gene slice with 3 compounds and 2 cell types loads in under a second,
+      and its gene order is recorded as a SHA256 that tests assert against.</div>
+      <div class="dep">Blocks: F1 (the synthesis loop iterates against this), G1, G2.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="a3" aria-labelledby="a3t">
+    <div class="body">
+      <div class="ttl" id="a3t"><span class="iid">A3</span>Reproduce OP3’s six control methods from a clean checkout</div>
+      <div class="meta"><b>Done when:</b> all six run end-to-end locally and their scores are written down. They are the baselines —
+      the plan is explicit that a new method failing to clear them is expected, not a bug.</div>
+      <div class="dep">Blocks: G5, H3 (you need the between-method score spread to compare K=3 against).</div>
+    </div>
+    <span class="tag"><span class="pill verify">Verify</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="a4" aria-labelledby="a4t">
+    <div class="body">
+      <div class="ttl" id="a4t"><span class="iid">A4</span>Turn the Upstream Contract into a runnable ingest check</div>
+      <div class="meta"><b>Done when:</b> a script hard-fails on a missing field. The MD lists seven required inputs as prose;
+      make them assertions — paper text, repo URL, <strong>pinned commit SHA (never <code>main</code>)</strong>, split definition,
+      dataset schema, hidden-test policy, metric spec, allowed external priors, license, declared modality.</div>
+      <div class="dep">Blocks: B1, B2. Catches upstream problems before you spend agent tokens on them.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="a5" aria-labelledby="a5t">
+    <div class="body">
+      <div class="ttl" id="a5t"><span class="iid">A5</span>Write <code>MODELSPEC.json</code> as an actual JSON Schema</div>
+      <div class="meta"><b>Done when:</b> a validator accepts <code>"unknown"</code> for any field, rejects a field with no
+      citation, and rejects a field whose citation doesn’t resolve. Union the MD’s <code>model_contract.yaml</code> with the
+      unified plan’s richer schema — they are the same object and should stop having two names.</div>
+      <div class="dep">Blocks: E1, E3, E4. Everything downstream reads this file.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+</div>
+
+<div class="block">
+  <div class="bh"><span class="bid">B</span><span class="bt">Stage 0 — Ingest</span><span class="bm">3 items · vendor a snapshot, never pull at build time</span></div>
+
+  <div class="item">
+    <input type="checkbox" id="b1" aria-labelledby="b1t">
+    <div class="body">
+      <div class="ttl" id="b1t"><span class="iid">B1</span>Snapshot vendoring script</div>
+      <div class="meta"><b>Done when:</b> <code>vendor/&lt;method_id&gt;/</code> exists at the pinned SHA with the commit and tree
+      hash recorded, and the build works with the network off.</div>
+      <div class="dep">Depends on A4. Blocks C1–C4.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="b2" aria-labelledby="b2t">
+    <div class="body">
+      <div class="ttl" id="b2t"><span class="iid">B2</span>Paperclip context pack with resolvable line citations</div>
+      <div class="meta"><b>Done when:</b> methods and results sections are extracted line-numbered under a stable
+      <code>PAPER_ID</code>, and a citation like <code>PAPER_ID:L120-134</code> in the contract can be mechanically resolved back
+      to its text. Citations that can’t be checked are decoration.</div>
+      <div class="dep">Depends on A4. Blocks E1.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="b3" aria-labelledby="b3t">
+    <div class="body">
+      <div class="ttl" id="b3t"><span class="iid">B3</span>Decide the full-text-unavailable degradation path</div>
+      <div class="meta"><b>Done when:</b> it is written down what happens with abstract-only access — the answer should be
+      “affected contract fields become <code>unknown</code>”, never “the agent infers them”. This is one of the plan’s four
+      open questions and it changes the agent’s prompt.</div>
+      <div class="dep">Blocks E1. Owner: needs Philipp’s input on how often it bites.</div>
+    </div>
+    <span class="tag"><span class="pill decide">Decide</span></span>
+  </div>
+</div>
+
+<div class="block">
+  <div class="bh"><span class="bid">C</span><span class="bt">Stage 1 — Environment build (RepoLaunch)</span><span class="bm">6 items · the critical path and the highest-risk block</span></div>
+
+  <div class="item">
+    <input type="checkbox" id="c1" aria-labelledby="c1t">
+    <div class="body">
+      <div class="ttl" id="c1t"><span class="iid">C1</span>Vendor and pin RepoLaunch by commit — it is not on PyPI</div>
+      <div class="meta"><b>Done when:</b> RepoLaunch installs reproducibly from a vendored checkout at a fixed SHA.
+      Verified: <code>pip install repolaunch</code> returns <strong>404</strong>, while the other four stack tools all resolve.
+      Its run instructions live in <code>docs/Development.md</code>, not the README.</div>
+      <div class="dep">Blocks C2, C3, C4, D1 — i.e. the whole comprehension lane.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="c2" aria-labelledby="c2t">
+    <div class="body">
+      <div class="ttl" id="c2t"><span class="iid">C2</span>Configure RepoLaunch’s own LiteLLM provider, key, and cost logging</div>
+      <div class="meta"><b>Done when:</b> one successful launch on a throwaway repo, with tokens and wall-clock written into
+      <code>execution_log.json</code>. RepoLaunch is itself an LLM agent — it is a second model integration with its own
+      config surface and its own cost, not a library call.</div>
+      <div class="dep">Depends on C1. Feeds the cost/wall-clock deliverable owed to Eeshan and Sundial.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="c3" aria-labelledby="c3t">
+    <div class="body">
+      <div class="ttl" id="c3t"><span class="iid">C3</span>Deterministic Dockerfile → <code>engines.docker.setup</code> transform</div>
+      <div class="meta"><b>Done when:</b> the same reconstructed Dockerfile produces a byte-identical Viash setup block on two
+      runs. RepoLaunch emits the image plus layer info for Dockerfile reconstruction; a plain function converts it.
+      <strong>The agent never hand-writes the Dockerfile.</strong></div>
+      <div class="dep">Depends on C1. Blocks F2.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="c4" aria-labelledby="c4t">
+    <div class="body">
+      <div class="ttl" id="c4t"><span class="iid">C4</span>Clean-rebuild check</div>
+      <div class="meta"><b>Done when:</b> the image rebuilds from the emitted setup with no cache, and every dependency plus
+      the repo commit is pinned. This is the MD’s first robustness check made executable.</div>
+      <div class="dep">Depends on C3.</div>
+    </div>
+    <span class="tag"><span class="pill verify">Verify</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="c5" aria-labelledby="c5t">
+    <div class="body">
+      <div class="ttl" id="c5t"><span class="iid">C5</span>Decide GPU or CPU-only for the difficulty ladder</div>
+      <div class="meta"><b>Done when:</b> written down, with Modal either scoped in or explicitly dropped. The plan’s own
+      assessment is that RepoLaunch plus CUDA is the single biggest schedule risk, and that CPU-only is preferred — this
+      decision also picks which papers can be on the ladder at all.</div>
+      <div class="dep">Blocks H4 (ladder selection) and the Modal line item.</div>
+    </div>
+    <span class="tag"><span class="pill decide">Decide</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="c6" aria-labelledby="c6t">
+    <div class="body">
+      <div class="ttl" id="c6t"><span class="iid">C6</span>Sandbox policy: restricted credentials and filesystem</div>
+      <div class="meta"><b>Done when:</b> the SWE-ReX execution profile mounts only the fixture, carries no credentials the
+      repo could exfiltrate, and blocks network egress at inference. Straight from the source doc:
+      <em>“run unfamiliar repositories in a sandbox/container with restricted credentials/filesystem access.”</em></div>
+      <div class="dep">Blocks G4. Applies to every stage that executes vendored code.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+</div>
+
+<div class="block">
+  <div class="bh"><span class="bid">D</span><span class="bt">Stage 2 — Repo comprehension (Serena)</span><span class="bm">4 items · runs against the built image, never before it</span></div>
+
+  <div class="item">
+    <input type="checkbox" id="d1" aria-labelledby="d1t">
+    <div class="body">
+      <div class="ttl" id="d1t"><span class="iid">D1</span>Wire Serena MCP to operate inside the built image</div>
+      <div class="meta"><b>Done when:</b> <code>find_symbol</code> resolves a symbol imported from a third-party dependency in
+      the target repo. That is the proof the language server has a real environment; before the build it silently degrades
+      to text search.</div>
+      <div class="dep">Depends on C1–C4. Blocks E1.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="d2" aria-labelledby="d2t">
+    <div class="body">
+      <div class="ttl" id="d2t"><span class="iid">D2</span>Encode the read-order policy in the agent prompt</div>
+      <div class="meta"><b>Done when:</b> the prompt puts tutorial notebooks and <code>examples/</code> ahead of the paper’s
+      Methods section, and the trajectory shows it did. The paper gives you the contract; the repo gives you the invocation.</div>
+      <div class="dep">Depends on D1.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="d3" aria-labelledby="d3t">
+    <div class="body">
+      <div class="ttl" id="d3t"><span class="iid">D3</span>Optional Aider repo-map first pass on large repos</div>
+      <div class="meta"><b>Done when:</b> either a cheap map exists for the messy-repo rung, or the step is explicitly skipped
+      with a reason. Do not build this — it is a flag on an existing tool.</div>
+      <div class="dep">Optional. Only matters for ladder rung 3.</div>
+    </div>
+    <span class="tag"><span class="pill reuse">Reuse</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="d4" aria-labelledby="d4t">
+    <div class="body">
+      <div class="ttl" id="d4t"><span class="iid">D4</span>Correct the workflow diagram in the MD</div>
+      <div class="meta"><b>Done when:</b> the ASCII diagram reads 0 → 1 → 2 → 3 and the 4a/4b parallel fork is gone. Two
+      documents currently disagree on the single most consequential ordering in the pipeline; whichever a reader opens
+      first determines what they build.</div>
+      <div class="dep">Do this first — it costs minutes and prevents a wasted day.</div>
+    </div>
+    <span class="tag"><span class="pill verify">Verify</span></span>
+  </div>
+</div>
+
+<div class="block">
+  <div class="bh"><span class="bid">E</span><span class="bt">Stage 3 — Contract extraction</span><span class="bm">5 items · this is the project’s actual contribution</span></div>
+
+  <div class="item">
+    <input type="checkbox" id="e1" aria-labelledby="e1t">
+    <div class="body">
+      <div class="ttl" id="e1t"><span class="iid">E1</span>Contract-extraction agent: typed, cited, <code>unknown</code> is legal</div>
+      <div class="meta"><b>Done when:</b> the agent fills the schema from A5 with every field citing
+      <code>PAPER_ID:Lstart-Lend</code> or <code>repo:file:line</code>, and leaves fields <code>unknown</code> rather than
+      guessing. A confident wrong value here silently corrupts every score downstream.</div>
+      <div class="dep">Depends on A5, B2, D1. Blocks the handoff.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="e2" aria-labelledby="e2t">
+    <div class="body">
+      <div class="ttl" id="e2t"><span class="iid">E2</span>Scope defense: refuse genetic methods, don’t adapt them</div>
+      <div class="meta"><b>Done when:</b> a genetic-perturbation paper fed to the chemical task produces a labeled rejection
+      record returned upstream, not an adapter. <code>perturbation_encoding: gene_id</code> → refuse. Rejections are useful
+      eval data for the literature agent; a heroic adaptation is a failure that looks like a save.</div>
+      <div class="dep">Depends on E1.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="e3" aria-labelledby="e3t">
+    <div class="body">
+      <div class="ttl" id="e3t"><span class="iid">E3</span>Resolve the gene-order default — the two docs contradict each other</div>
+      <div class="meta"><b>Done when:</b> one default exists. The MD ships <code>gene_order_fixed: false</code> (permissive)
+      while the Gauntlet makes any use of the metric’s <code>--resolve_genes</code> rescue a <strong>hard fail</strong>.
+      Recommend: default to <code>unknown</code>, treat order as significant until a citation says otherwise.</div>
+      <div class="dep">Blocks G2. A5 encodes whatever you decide.</div>
+    </div>
+    <span class="tag"><span class="pill decide">Decide</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="e4" aria-labelledby="e4t">
+    <div class="body">
+      <div class="ttl" id="e4t"><span class="iid">E4</span>Give <code>hyperparameters</code> a real schema and a runtime assertion</div>
+      <div class="meta"><b>Done when:</b> the field has typed keys and the values are asserted at runtime, with mismatches
+      logged as deviations. Today it is <code>{...}</code> in both plans, described as “asserted at runtime” with nothing to
+      assert against — which is how an agent quietly cuts epochs to make a run finish.</div>
+      <div class="dep">Depends on A5. Feeds E5.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="e5" aria-labelledby="e5t">
+    <div class="body">
+      <div class="ttl" id="e5t"><span class="iid">E5</span><code>DEVIATIONS.md</code> emitter</div>
+      <div class="meta"><b>Done when:</b> every divergence from the paper’s stated protocol has a row, and an empty file is
+      only legal alongside an explicit “no divergences” assertion. This artifact replaces “numerical agreement with the
+      paper” as the scored criterion — the question is whether the gap is <em>explained</em>, not whether it exists.</div>
+      <div class="dep">Depends on E1, E4. Feeds H2.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+</div>
+
+<div class="block">
+  <div class="bh"><span class="bid">F</span><span class="bt">Stage 4 — Adapter synthesis</span><span class="bm">3 items · after the handoff</span></div>
+
+  <div class="item">
+    <input type="checkbox" id="f1" aria-labelledby="f1t">
+    <div class="body">
+      <div class="ttl" id="f1t"><span class="iid">F1</span>mini-SWE-agent synthesis loop against the fixture</div>
+      <div class="meta"><b>Done when:</b> the agent iterates to a passing adapter on the tiny fixture and the bash-only
+      trajectory is saved. The linear trajectory is the inspectability artifact — the reason to prefer the 100-line agent
+      over a heavier platform here.</div>
+      <div class="dep">Depends on A1, A2, and the handed-off contract.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="f2" aria-labelledby="f2t">
+    <div class="body">
+      <div class="ttl" id="f2t"><span class="iid">F2</span>Emit the Viash component directory, not a bespoke wrapper</div>
+      <div class="meta"><b>Done when:</b> <code>config.vsh.yaml</code> (with <code>__merge__ ../../api/comp_method.yaml</code>),
+      <code>script.py</code>, and <code>test.py</code> are generated in place. The MD is explicit: target the existing typed
+      method/prediction API rather than inventing a parallel interface.</div>
+      <div class="dep">Depends on A1, C3, F1.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="f3" aria-labelledby="f3t">
+    <div class="body">
+      <div class="ttl" id="f3t"><span class="iid">F3</span>Make the output layer explicit in the adapter</div>
+      <div class="meta"><b>Done when:</b> the adapter names its output layer and asserts it. The silent killer: the model
+      emits <code>logFC</code> while the metric expects <code>clipped_sign_log10_pval</code> bounded at ±4 — garbage scores,
+      zero errors, nothing in the log.</div>
+      <div class="dep">Depends on F1. Paired with G1.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+</div>
+
+<div class="block">
+  <div class="bh"><span class="bid">G</span><span class="bt">Stage 5 — The Gauntlet</span><span class="bm">7 items · written as viash tests, run outside the agent’s own reasoning</span></div>
+
+  <div class="item">
+    <input type="checkbox" id="g1" aria-labelledby="g1t">
+    <div class="body">
+      <div class="ttl" id="g1t"><span class="iid">G1</span>Layer and unit conformance</div>
+      <div class="meta"><b>Done when:</b> range, sparsity, and sign symmetry are asserted, and a deliberately
+      <code>logFC</code>-emitting stub fails the test. Write the failing case first — a check you’ve never seen fail isn’t a check.</div>
+      <div class="dep">Depends on A1, F3.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="g2" aria-labelledby="g2t">
+    <div class="body">
+      <div class="ttl" id="g2t"><span class="iid">G2</span>Exact <code>id_map</code> row order and gene space</div>
+      <div class="meta"><b>Done when:</b> row order and gene space match exactly, and any invocation of the metric’s
+      <code>--resolve_genes</code> rescue is a hard fail rather than a silent repair.</div>
+      <div class="dep">Depends on A2, E3.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="g3" aria-labelledby="g3t">
+    <div class="body">
+      <div class="ttl" id="g3t"><span class="iid">G3</span>Perturbation sensitivity — shuffle <code>sm_name</code></div>
+      <div class="meta"><b>Done when:</b> shuffling compound labels changes the prediction by more than a
+      <em>written-down</em> threshold. Catches a model that has collapsed to the training mean. The threshold is currently
+      the word “materially” in both plans; pick a number before you need it.</div>
+      <div class="dep">Depends on A2.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="g4" aria-labelledby="g4t">
+    <div class="body">
+      <div class="ttl" id="g4t"><span class="iid">G4</span>No network at inference</div>
+      <div class="meta"><b>Done when:</b> inference runs with egress blocked and passes. Stops a model from re-downloading
+      its own copy of the evaluation data — a leak that no amount of API discipline upstream would catch.</div>
+      <div class="dep">Depends on C6.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="g5" aria-labelledby="g5t">
+    <div class="body">
+      <div class="ttl" id="g5t"><span class="iid">G5</span>Baselines: OP3’s six control methods, unmodified</div>
+      <div class="meta"><b>Done when:</b> they appear in the results table next to the generated method. Do not write new
+      baselines. Simple baselines beating a published model is the expected outcome in this literature, not a bug in your harness.</div>
+      <div class="dep">Depends on A3.</div>
+    </div>
+    <span class="tag"><span class="pill reuse">Reuse</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="g6" aria-labelledby="g6t">
+    <div class="body">
+      <div class="ttl" id="g6t"><span class="iid">G6</span>Output sanity: shape, units, no NaN/Inf</div>
+      <div class="meta"><b>Done when:</b> expected rows and genes, declared representation, and finite values are all
+      asserted, and the result is recorded in <code>validation_report.json</code>.</div>
+      <div class="dep">Depends on F2.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="g7" aria-labelledby="g7t">
+    <div class="body">
+      <div class="ttl" id="g7t"><span class="iid">G7</span>Define the stochastic tolerance for “reproducible”</div>
+      <div class="meta"><b>Done when:</b> a number exists. The MD requires repeated runs be “identical or within an
+      explicitly defined stochastic tolerance” — the tolerance is never defined anywhere, so the check can’t be written and
+      can’t fail. Note the plan cut GPU determinism from scope, which makes bitwise identity unavailable and the tolerance
+      mandatory.</div>
+      <div class="dep">Blocks H3 — you cannot interpret K=3 spread without it.</div>
+    </div>
+    <span class="tag"><span class="pill decide">Decide</span></span>
+  </div>
+</div>
+
+<div class="block">
+  <div class="bh"><span class="bid">H</span><span class="bt">Stage 6 — Review, headline result, PR</span><span class="bm">6 items · what the work is judged on</span></div>
+
+  <div class="item">
+    <input type="checkbox" id="h1" aria-labelledby="h1t">
+    <div class="body">
+      <div class="ttl" id="h1t"><span class="iid">H1</span>Human review before merge, no exceptions</div>
+      <div class="meta"><b>Done when:</b> the process is stated and followed — no auto-merge of agent-generated components.
+      The agent is a compiler that emits a reviewable artifact once; the benchmark then runs deterministically with no model
+      in the loop.</div>
+      <div class="dep">Depends on G1–G7.</div>
+    </div>
+    <span class="tag"><span class="pill reuse">Reuse</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="h2" aria-labelledby="h2t">
+    <div class="body">
+      <div class="ttl" id="h2t"><span class="iid">H2</span>Decide who materializes the results table</div>
+      <div class="meta"><b>Done when:</b> one file, one owner, one schema. The plan says deviations “surface as a column in
+      the results table” — but no document names that file or who writes it. Recommend a tidy long-form table with a
+      first-class <code>status</code> column so a failed run is a row, not an absence.</div>
+      <div class="dep">Depends on E5, G1–G7. Cross-team: Matt owns metrics, but not necessarily this artifact.</div>
+    </div>
+    <span class="tag"><span class="pill decide">Decide</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="h3" aria-labelledby="h3t">
+    <div class="body">
+      <div class="ttl" id="h3t"><span class="iid">H3</span>K=3 replicate agent runs — with a pre-registered decision rule</div>
+      <div class="meta"><b>Done when:</b> three independently generated adapters for the same model are scored, <em>and</em>
+      the rule for reading the answer was written before the numbers came in. The headline claim is “if adapter-induced
+      spread rivals model-induced spread, the pipeline is measuring itself” — that needs a threshold decided in advance,
+      or it becomes whatever the data suggests.</div>
+      <div class="dep">Depends on A3, G7, and a working stage 4.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="h4" aria-labelledby="h4t">
+    <div class="body">
+      <div class="ttl" id="h4t"><span class="iid">H4</span>Run the three-paper difficulty ladder and show the failure</div>
+      <div class="meta"><b>Done when:</b> all three rungs are demoed — API-native pass, mid-difficulty, and the expected
+      failure. Rung 3 is what produces the API-gap finding; hiding it costs you the most interesting result you have.</div>
+      <div class="dep">Depends on C5 (GPU decision constrains which papers qualify).</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="h5" aria-labelledby="h5t">
+    <div class="body">
+      <div class="ttl" id="h5t"><span class="iid">H5</span>Set success thresholds for the five experiments</div>
+      <div class="meta"><b>Done when:</b> each of the MD’s five experiments has a number that decides it — README-only vs
+      Serena+paper, manual install vs RepoLaunch, the difficulty ladder, generated vs gold, and the
+      success-rate/corrections/cost/retries tracking. Right now all five are directions, not tests.</div>
+      <div class="dep">Do before the runs, not after.</div>
+    </div>
+    <span class="tag"><span class="pill decide">Decide</span></span>
+  </div>
+
+  <div class="item">
+    <input type="checkbox" id="h6" aria-labelledby="h6t">
+    <div class="body">
+      <div class="ttl" id="h6t"><span class="iid">H6</span>File the PR and the API-gap proposal</div>
+      <div class="meta"><b>Done when:</b> the component PR is open against <code>EeshaanJain/openproblems</code>, and the
+      optional <code>--sc_train</code> proposal (gated on <code>requires_sc_counts</code>, plus a benchmark-owned limma lift
+      so models aren’t scored on their own DE method) is filed as a written finding rather than left as a corridor
+      conversation.</div>
+      <div class="dep">Depends on H1. Also needs the Chem-PerturBridge checkpoint license answered.</div>
+    </div>
+    <span class="tag"><span class="pill build">Build</span></span>
+  </div>
+</div>
+
+<h2><span class="num">4</span>What needs work — the plan’s 11 soft spots</h2>
+<p class="lede">The MD is a good tool-selection memo. What it is not yet is a build plan: most items have no acceptance
+criterion, and a handful of specifications actively contradict each other or a sibling document. Ordered by how much
+damage each one does if it survives to execution.</p>
+
+<div class="card">
+  <div class="gap">
+    <div class="sev"><span class="g crit">◆</span>Critical</div>
+    <div>
+      <div class="gt">The workflow diagram has the two hardest stages in the wrong order</div>
+      <div class="gd">The MD draws context → comprehension → contract → a parallel fork of environment build and dataset
+      adapter. The unified plan runs environment build <em>before</em> comprehension, and that is the correct order:
+      Serena’s symbol resolution needs installed dependencies. Build them backwards and you get plausible, wrong
+      entrypoint guesses that survive all the way to a score.</div>
+      <div class="gf"><b>Fix:</b> D4 — edit the ASCII diagram. Minutes of work, and it is the highest-leverage edit in the document.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g crit">◆</span>Critical</div>
+    <div>
+      <div class="gt">RepoLaunch is simultaneously the critical path and the least available tool</div>
+      <div class="gd">Everything in the comprehension lane sits behind it, and it is the only one of the five stack tools
+      with no PyPI package (verified 404, against 200 for mini-swe-agent, serena-agent, swe-rex, and modal). It is also the
+      oldest last-push in the stack, it needs its own LiteLLM provider and key because it is itself an LLM agent, its run
+      instructions are in <code>docs/Development.md</code> rather than the README, and its native target is build-and-test
+      repos — a research repo with no test suite yields an empty testcase-status map. On top of that, the plan itself names
+      RepoLaunch + CUDA as the biggest schedule risk.</div>
+      <div class="gf"><b>Fix:</b> C1, C2, C5 — vendor and pin by commit, budget for a second model integration, and have a manual-install fallback ready for at least one ladder rung.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g ser">▲</span>Serious</div>
+    <div>
+      <div class="gt">The gene-order default and the gene-order gate disagree</div>
+      <div class="gd">The contract template ships <code>gene_order_fixed: false</code>. The Gauntlet makes any use of the
+      metric’s <code>--resolve_genes</code> rescue a hard fail. So the permissive default invites exactly the adapter the
+      gate is designed to reject — and the failure mode in between is silently misaligned genes, which produces numbers
+      rather than errors.</div>
+      <div class="gf"><b>Fix:</b> E3 — default to <code>unknown</code>, treat order as significant until cited otherwise.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g ser">▲</span>Serious</div>
+    <div>
+      <div class="gt">The benchmark API can’t express a whole class of the models you want to integrate</div>
+      <div class="gd">OP3’s method API passes only <code>de_train</code> and <code>id_map</code>. That fits the six
+      Kaggle-derived methods, and cannot express chemCPA, CPA, or biolord, which need single-cell counts living upstream of
+      <code>process_dataset</code>. The current answer is to dodge it by picking API-compatible methods for the demo, plus
+      an unfiled proposal for <code>--sc_train</code>. The dodge is the right call for a hackathon; leaving the proposal
+      unwritten is not, because the gap is the most transferable finding here.</div>
+      <div class="gf"><b>Fix:</b> H4, H6 — demo the rung that fails, and file the API-gap proposal as a written artifact.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g ser">▲</span>Serious</div>
+    <div>
+      <div class="gt">Nobody owns the results table that everything is supposed to land in</div>
+      <div class="gd">Deviations are meant to “surface as a column in the results table”, the K=3 comparison needs a place to
+      live, and baselines need to sit beside the generated method. No document names that file, its schema, or its owner —
+      and a harness that runs models but writes no single comparable table is how a benchmark becomes quietly
+      non-comparable.</div>
+      <div class="gf"><b>Fix:</b> H2 — one tidy long-form table, one owner, and a first-class <code>status</code> column so failures are rows rather than absences.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g warn">●</span>Warning</div>
+    <div>
+      <div class="gt">“Reproducible within an explicitly defined stochastic tolerance” — the tolerance is never defined</div>
+      <div class="gd">It appears as a robustness requirement with no number, in either document. Since GPU determinism was
+      explicitly cut from scope, bitwise identity isn’t available, which makes the tolerance the only version of this check
+      that can exist.</div>
+      <div class="gf"><b>Fix:</b> G7. Also blocks a clean read of the K=3 headline.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g warn">●</span>Warning</div>
+    <div>
+      <div class="gt">The headline result has no pre-registered decision rule</div>
+      <div class="gd">“If K=3 adapters spread as widely as the gap between models, the pipeline is measuring itself” is the
+      most valuable number the workstream can produce in a day — and “as widely as” is doing all the work. Decide the
+      threshold before the runs, or the conclusion gets fitted to whatever comes out.</div>
+      <div class="gf"><b>Fix:</b> H3, after A3 gives you the between-method spread to compare against.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g warn">●</span>Warning</div>
+    <div>
+      <div class="gt">The five experiments are directions, not tests</div>
+      <div class="gd">README-only vs Serena+paper, manual install vs RepoLaunch, the difficulty ladder, generated vs gold,
+      and the cost/retry tracking all lack a success threshold. With a fixed time budget and no threshold, every experiment
+      resolves to “we observed some things”.</div>
+      <div class="gf"><b>Fix:</b> H5 — one number per experiment, written before the runs.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g warn">●</span>Warning</div>
+    <div>
+      <div class="gt"><code>hyperparameters: {...}</code> is a placeholder doing load-bearing work</div>
+      <div class="gd">It is described as “asserted at runtime, deviations logged”, but there is no schema to assert against.
+      This is the field that catches an agent quietly cutting epochs to make a run finish inside the time budget — the exact
+      failure <code>DEVIATIONS.md</code> exists to prevent.</div>
+      <div class="gf"><b>Fix:</b> E4.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g warn">●</span>Warning</div>
+    <div>
+      <div class="gt">The first three hours are a single point of failure</div>
+      <div class="gd">Everything downstream assumes a hand-written golden adapter and working Viash fluency. If A1 slips,
+      stages 4 through 6 have nothing to be compared against and the Gauntlet has no reference. It is also the one block
+      that can’t be parallelized away — both owners need the same contract knowledge.</div>
+      <div class="gf"><b>Fix:</b> A1 first, on a control method (the fastest path to a working contract), and timebox it hard.</div>
+    </div>
+  </div>
+
+  <div class="gap">
+    <div class="sev"><span class="g warn">●</span>Warning</div>
+    <div>
+      <div class="gt">Four open questions are still open, and three of them gate real work</div>
+      <div class="gd">Which OP3 method to hand-write first (gates A1); the Chem-PerturBridge checkpoint license, since an
+      unlicensed checkpoint can’t go in a public PR (gates H6); GPU or CPU-only (gates C5 and ladder selection); and whether
+      the full-text access blocker reaches this workstream or stops at the literature agent (gates B3).</div>
+      <div class="gf"><b>Fix:</b> answer all four before hour zero — none of them need new information, only a decision.</div>
+    </div>
+  </div>
+</div>
+
+<div class="callout ok">
+  <div class="hd2"><span class="dot"></span>What the plan already gets right — don’t relitigate these</div>
+  <p style="margin:0">The <code>MODELSPEC.json</code> ≡ <code>model_contract.yaml</code> equivalence is stated explicitly, so
+  the two names are a labelling nuisance rather than a design conflict. Per-field citation to
+  <code>PAPER_ID:Lstart-Lend</code> or <code>repo:file:line</code> is already required. Metric design, dataset QC, and the
+  leakage audit are named as other people’s work. Hidden-test protection is structural in OP3 rather than something you
+  enforce. Baselines are reused, not rebuilt. And “numerical agreement with the paper” has already been correctly dropped
+  as a scored criterion in favour of “does <code>DEVIATIONS.md</code> explain the gap?”. That last swap is the single best
+  judgement call in the document.</p>
+</div>
+
+<h2><span class="num">5</span>Tool stack — verified, not assumed</h2>
+<p class="lede">All eight GitHub links in the MD resolve. Licenses are uniformly permissive, so nothing here blocks a public
+PR. The one gap is availability, not legality — and it lands on the critical path.</p>
+
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>Tool</th><th>Role in the pipeline</th><th>License</th><th>PyPI</th><th>Last push</th><th>Verdict</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>mini-SWE-agent</strong></td>
+      <td>Orchestration loop, stages 3 and 4. Bash-only → linear, readable trajectory</td>
+      <td>MIT</td><td>200</td><td class="num">2026-08-10</td>
+      <td><span class="pill reuse">Reuse</span></td>
+    </tr>
+    <tr>
+      <td><strong>Serena (MCP)</strong></td>
+      <td>Symbol navigation, stage 2 — <em>inside the built image only</em></td>
+      <td>MIT</td><td>200 <span style="color:var(--text-muted)">(<code>serena-agent</code>)</span></td><td class="num">2026-08-14</td>
+      <td><span class="pill reuse">Reuse</span></td>
+    </tr>
+    <tr>
+      <td><strong>RepoLaunch</strong></td>
+      <td>Environment reconstruction, stage 1. Emits image + reconstructable Dockerfile + testcase-status map</td>
+      <td>MIT</td><td><strong>404</strong></td><td class="num">2026-06-16</td>
+      <td><span class="pill caution">Vendor + pin</span></td>
+    </tr>
+    <tr>
+      <td><strong>SWE-ReX</strong></td>
+      <td>Sandboxed execution for every stage that runs vendored code</td>
+      <td>MIT</td><td>200</td><td class="num">2026-08-10</td>
+      <td><span class="pill reuse">Reuse</span></td>
+    </tr>
+    <tr>
+      <td><strong>Modal</strong></td>
+      <td>GPU/cloud scale-out — add only if C5 decides GPU</td>
+      <td>Apache-2.0</td><td>200</td><td class="num">2026-08-15</td>
+      <td><span class="pill decide">Defer</span></td>
+    </tr>
+    <tr>
+      <td>Aider (repo map)</td>
+      <td>Cheap first-pass map on the messy-repo rung</td>
+      <td>Apache-2.0</td><td>200</td><td class="num">2026-05-22</td>
+      <td><span class="pill decide">Optional</span></td>
+    </tr>
+    <tr>
+      <td>OpenHands</td>
+      <td>Heavier alternative platform; costs the trajectory legibility that motivates mini-SWE-agent</td>
+      <td>MIT</td><td>—</td><td class="num">2026-08-15</td>
+      <td><span class="pill decide">Not now</span></td>
+    </tr>
+    <tr>
+      <td>E2B</td>
+      <td>Hosted sandbox alternative to local Docker</td>
+      <td>Apache-2.0</td><td>200</td><td class="num">2026-08-13</td>
+      <td><span class="pill decide">Fallback</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p style="font-size:12.5px;color:var(--text-muted);margin-top:2px">
+  The MD’s <code>OpenHands/openhands</code> link redirects to <code>OpenHands/OpenHands</code>; worth correcting in the doc.
+  PyPI column is the HTTP status of the package page, checked directly.</p>
+
+<div class="callout">
+  <div class="hd2"><span class="dot"></span>The MVP recommendation is right, and worth defending</div>
+  <p style="margin:0"><code>mini-SWE-agent + Serena MCP + RepoLaunch + SWE-ReX</code>, Docker locally, Modal only for GPU.
+  Four of those five are pip-installable and permissively licensed, which means the project’s scarce time goes where the
+  doc says it should: <strong>contract extraction, dataset adaptation, and validation</strong> — not rebuilding coding-agent
+  or container infrastructure. Every hour spent on orchestration plumbing is an hour not spent on the only three things
+  nobody else can supply.</p>
+</div>
+
+<h2><span class="num">6</span>Suggested order of attack</h2>
+<ol>
+  <li><strong>Answer the four open questions</strong> (H5 inputs, C5, A1 target method, checkpoint license). None need new information.</li>
+  <li><strong>Fix the diagram</strong> (D4). Minutes, prevents a wasted day.</li>
+  <li><strong>Hand-write the golden adapter and build the fixture</strong> (A1, A2, A3). No agents yet.</li>
+  <li><strong>Write the schema and the ingest check</strong> (A5, A4) — these define what “done” means for the agent stages.</li>
+  <li><strong>Get RepoLaunch working on one easy repo</strong> (C1–C4). If this slips, everything slips; find out early.</li>
+  <li><strong>Then, and only then, wire Serena</strong> (D1) and the contract-extraction agent (E1).</li>
+  <li><strong>Gauntlet tests before the adapter agent</strong> (G1–G6). Tests written after the code they judge tend to agree with it.</li>
+  <li><strong>K=3 and the ladder last</strong> (H3, H4) — they are results, and they need everything above to be trustworthy.</li>
+</ol>
+
+<footer>
+  <p>Derived from <code>methods/METHOD_INTEGRATION_AGENT.md</code>, <code>methods/plan_unified.md</code>, and
+  <code>methods/plan_sei.md</code> at <code>reAGENT_hackathon@method 9a20021</code>. Tool metadata from the GitHub and PyPI
+  APIs; no benchmark scores appear in this document because none have been produced yet. Checkboxes are local to your
+  browser session and are not saved.</p>
+</footer>
+
+</div>
+<script>
+  var tg = document.getElementById('tg');
+  tg.addEventListener('click', function () {
+    var r = document.documentElement;
+    var cur = r.getAttribute('data-theme');
+    if (!cur) {
+      cur = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    r.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+  });
+</script>
+</body>
+</html>
