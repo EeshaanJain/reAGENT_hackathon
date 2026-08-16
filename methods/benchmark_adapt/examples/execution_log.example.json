@@ -1,0 +1,15 @@
+{
+  "method_id": "example_chem_perturbridge_style",
+  "commands": [
+    {"stage": "ingest", "cmd": "git checkout a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2", "returncode": 0, "wall_clock_s": 4.2},
+    {"stage": "environment_build", "cmd": "repolaunch build .", "returncode": 0, "wall_clock_s": 187.5},
+    {"stage": "environment_build", "cmd": "repolaunch test .", "returncode": 0, "wall_clock_s": 22.1, "note": "testcase-status map: 4/4 passed"},
+    {"stage": "repo_comprehension", "cmd": "serena find_symbol predict", "returncode": 0, "wall_clock_s": 0.8},
+    {"stage": "contract_extraction", "cmd": "mini-swe-agent (contract extraction run)", "returncode": 0, "wall_clock_s": 340.0, "cost_usd": 0.42}
+  ],
+  "total_wall_clock_s": 554.6,
+  "total_cost_usd": 0.42,
+  "notes": [
+    "Example log for exercising harness/synthesize_adapter.py's prompt rendering. Not a real RepoLaunch/Serena run."
+  ]
+}

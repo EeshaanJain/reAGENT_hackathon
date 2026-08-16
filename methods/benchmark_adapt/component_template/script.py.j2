@@ -1,0 +1,53 @@
+import anndata as ad
+import numpy as np
+import pandas as pd
+
+## VIASH START
+par = {
+    "de_train": "resources_test/{{ method_id }}/de_train.h5ad",
+    "id_map": "resources_test/{{ method_id }}/id_map.csv",
+    "layer": "{{ input_layer if input_layer and input_layer != 'unknown' else 'clipped_sign_log10_pval' }}",
+    "output": "output/{{ method_id }}/prediction.h5ad",
+}
+meta = {"name": "{{ method_id }}"}
+## VIASH END
+
+# === Skeleton generated from model_contract.yaml -- mini-swe-agent fills in the body ===
+#
+# Contract summary (full citations in MODELSPEC.json alongside this file):
+#   prediction_level:       {{ prediction_level }}
+#   input_layer:            {{ input_layer }}  (read from de_train via par['layer'])
+#   perturbation_encoding:  {{ perturbation_encoding }}
+#   requires_sc_counts:     {{ requires_sc_counts }}
+#   gene_space:             {{ gene_space }}
+#   source entrypoint:      {{ entrypoint }}
+#
+# Hard requirements (Gauntlet will enforce these -- see benchmark_adapt/gauntlet/checks.py; these
+# are real OP3 conventions, verified against src/api/file_prediction.yaml and a real shipped
+# method, src/methods/scape/script.py -- not this workstream's invention):
+#   G1  par['output'] must have a layer literally named "prediction" (always this name,
+#       regardless of par['layer']), finite, in the declared bounds. Emitting the wrong layer
+#       name (e.g. writing to "logFC" or to par['layer']'s own name) produces silently wrong
+#       scores, not an error.
+#   G2  obs_names of the output must exactly equal id_map['id'] (as strings), in order --
+#       `obs=pd.DataFrame(index=id_map["id"].astype(str))`, not cell_type/sm_name columns. No
+#       reindexing/resolve_genes-style rescue.
+#   G3  The prediction must be a genuine function of sm_name -- a model that only conditions on
+#       cell_type (ignoring the compound) will be caught by the shuffle-sm_name test.
+#   G4  No network access during inference.
+#   G6  No NaN/Inf; gene count must match de_train's gene space exactly.
+#
+# par['de_train'], par['id_map'], and par['layer'] are the ONLY inputs. There is no par['de_test']
+# -- OP3 never hands a regular method the held-out labels; do not add a code path that expects it.
+# Output uns must include "dataset_id" (copy from de_train.uns) and "method_id" (meta['name']).
+{% if requires_sc_counts == true %}
+#
+# NOTE: requires_sc_counts=true. This is the known OP3 API gap (chemCPA/CPA/biolord-class
+# methods): the method needs single-cell counts that de_train/id_map cannot express. Do not
+# attempt to fabricate counts from the DE table. File this as the API-gap finding (see
+# plan_unified.md §7 / §10) rather than writing a workaround adapter.
+{% endif %}
+
+raise NotImplementedError(
+    "TODO(mini-swe-agent): implement the {{ method_id }} adapter per the contract above"
+)

@@ -1,0 +1,6 @@
+# contract_gen's own harness code (orchestrator.py, repolaunch_runner.py) -- installs into the
+# shared `reagent` conda env, same as benchmark_adapt. RepoLaunch itself is NOT in this file --
+# see README.md "Installing RepoLaunch" -- it requires Python >= 3.12 and lives in its own venv
+# at RepoLaunch/.venv, separate from `reagent` (which is 3.11).
+pyyaml>=6.0
+jsonschema>=4.22

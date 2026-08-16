@@ -1,0 +1,77 @@
+You are writing a benchmark adapter for the Open Problems v3 (OP3) perturbation-prediction task.
+This is Stage 4 of a larger pipeline -- an earlier, separate agent already produced everything
+below; treat it as ground truth, not something to re-derive.
+
+## What you are given
+
+**Model contract** (method_id: `{{ method_id }}`), extracted and cited from the paper + repo:
+
+```yaml
+{{ contract_yaml }}
+```
+
+**Built Docker image**: `{{ docker_image }}` (already built and verified by RepoLaunch; your
+environment is this exact image -- do not `pip install` anything not already in it unless a
+command fails and you've confirmed why).
+
+**What already happened to get here** (from execution_log.json -- if something below failed or
+needed a workaround, that's relevant context, not something to silently redo differently):
+
+```
+{{ execution_log_summary }}
+```
+
+## Your job
+
+Write exactly three files under `{{ output_dir }}`:
+
+1. `script.py` -- the adapter. It must:
+   - Read `par['de_train']`, `par['id_map']`, and `par['layer']` (which de_train layer to read,
+     e.g. `{{ input_layer }}` -- a real `wf_method.yaml` argument, not something we invented)
+     ONLY. There is no `par['de_test']` -- OP3 never hands a regular method the held-out labels.
+     Do not add a code path expecting it.
+   - Produce `par['output']`: an AnnData with a layer literally named **`prediction`** -- always
+     this exact name, regardless of `par['layer']` (verified against `file_prediction.yaml` and
+     the real shipped `src/methods/scape/script.py`){% if layer_bounds %}, with values in
+     {{ layer_bounds }}{% endif %}. `obs` must be indexed by `id_map['id']` (as strings) in
+     order -- `obs=pd.DataFrame(index=id_map["id"].astype(str))` -- not cell_type/sm_name
+     columns; `file_prediction.yaml` requires no obs columns at all. Include
+     `uns={"dataset_id": de_train.uns["dataset_id"], "method_id": meta["name"]}`.
+   - Genuinely depend on `sm_name`, not just `cell_type` -- a model that collapses to the
+     per-cell-type training mean will be caught and rejected by the Gauntlet's shuffle test.
+   - Never access the network during inference.
+   - {% if requires_sc_counts %}This contract has `requires_sc_counts: true`. de_train/id_map
+     cannot express what this model needs (it's single-cell, not DE-signature). Do not fabricate
+     counts from the DE table. Write `script.py` as far as you honestly can, then write a clear
+     `NotImplementedError` explaining the gap -- this is the known OP3 API limitation being filed
+     as a finding, not a bug to work around.
+     {% else %}This contract is DE-signature-native -- de_train/id_map should be sufficient.{% endif %}
+
+2. `config.vsh.yaml` -- follow `component_template/config.vsh.yaml.j2`'s structure:
+   `__merge__: ../../api/comp_method.yaml`, `engines.docker.image: {{ docker_image }}`, and
+   `engines.docker.setup` transcribed from the already-reconstructed Dockerfile below -- **do not
+   invent install steps; if the reconstructed Dockerfile is insufficient, say so, don't guess**:
+
+   ```
+   {{ dockerfile_setup }}
+   ```
+
+3. `test.py` -- follow `component_template/test.py.j2`.
+
+## Every deviation goes in DEVIATIONS.md
+
+If you do anything the paper's stated protocol doesn't call for (a normalization it doesn't
+mention, a default hyperparameter substituted for one the paper specifies, a workaround for a
+build issue), write it to `{{ output_dir }}/DEVIATIONS.md` as you go. An empty DEVIATIONS.md is
+only legal if you explicitly assert "no divergences found" -- don't leave it silently blank.
+
+Do not try to make the numbers match the paper by adjusting the model. Scientific fidelity to what
+the paper's method actually does, cited and logged, is the goal -- not agreement with a reported
+number.
+
+## Iterate against the fixture
+
+A tiny fixture is mounted at `{{ fixture_dir }}` (`de_train.h5ad`, `id_map.csv`, gene order pinned
+by SHA256 in `fixture_manifest.json`). Run your adapter against it and inspect the output before
+declaring done. You have shell access in this container -- use it to actually execute
+`script.py`, not just read code.

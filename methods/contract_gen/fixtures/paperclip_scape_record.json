@@ -1,0 +1,7 @@
+{
+  "_note": "Minimal, honest stand-in -- there is no real Paperclip output for scAPE (Vlad's literature agent, a separate pipeline this repo doesn't have live output from). scAPE is a NeurIPS 2023 Kaggle-competition submission (see the real vendored src/methods/scape/config.vsh.yaml: 'neurips2023_rank: 16'), documented via a Google Doc rather than an indexed paper with a PMC/DOI id. Only fields verified against the real repo are populated; bibliographic fields (title/authors/id/abstract/source/date/url/full_text_status) are omitted rather than fabricated. This exists only to drive the RepoLaunch smoke test through the same paperclip_intake path as every other method -- it is not a claim that this is real literature-agent output.",
+  "method_name": "scape",
+  "method_folder": "scape",
+  "github_flag": "candidate_found",
+  "github_candidates": "https://github.com/scapeML/scape"
+}

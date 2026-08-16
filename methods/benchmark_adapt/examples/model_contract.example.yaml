@@ -1,0 +1,96 @@
+# Example model_contract.yaml (== MODELSPEC.json) -- a filled-in ladder-rung-1 (API-native)
+# example, in the style of a Chem-PerturBridge-class method: a pretrained compound representation
+# feeding a ridge/MLP head that predicts DE directly. This is what Cecilia's Stage 3 hands off;
+# everything here downstream (harness/synthesize_adapter.py, the Gauntlet) is written to consume
+# exactly this shape. See schemas/model_contract.schema.json for the structural + citation rules.
+#
+# NOTE: citations below point at line numbers in a hypothetical vendored paper/repo snapshot that
+# doesn't exist in this repo -- this file is a worked example for exercising the harness, not a
+# real handoff. `harness/contract.py load_contract()` validates its *shape* and *citation syntax*;
+# resolving citations against real source material needs paper_pack_dir/repo_dir, which only
+# exist once Cecilia's Stage 0/2 have actually run.
+
+schema_version: "1.0"
+method_id: example_chem_perturbridge_style
+
+model:
+  repo: "https://github.com/example-org/example-chem-perturbridge"
+  commit: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+  entrypoint:
+    value: "python predict.py --checkpoint {checkpoint} --de_train {de_train} --id_map {id_map} --output {output}"
+    citation: "repo:predict.py:L1-L40"
+
+environment:
+  image: "example-chem-perturbridge:a1b2c3d"
+  dockerfile_source: repolaunch_layer_reconstruction
+  gpu_required:
+    value: false
+    citation: "repo:predict.py:L12"
+
+prediction_level:
+  value: de_signature
+  citation: "PAPER_ID:example2026:L210-L225"
+input_layer:
+  value: clipped_sign_log10_pval
+  citation: "PAPER_ID:example2026:L230-L233"
+requires_sc_counts:
+  value: false
+  citation: "PAPER_ID:example2026:L230-L233"
+perturbation_encoding:
+  value: pretrained_embedding
+  citation: "PAPER_ID:example2026:L110-L118"
+
+gene_space:
+  n_genes:
+    value: 500
+    citation: "repo:predict.py:L55"
+  id_type:
+    value: "unknown"
+    citation: null
+  order_sensitive:
+    value: "unknown"
+    citation: null
+
+handles:
+  dose:
+    value: false
+    citation: "PAPER_ID:example2026:L118-L120"
+  timepoint:
+    value: false
+    citation: "PAPER_ID:example2026:L118-L120"
+  unseen_compound:
+    value: true
+    citation: "PAPER_ID:example2026:L340-L355"
+  unseen_cell_type:
+    value: "unknown"
+    citation: null
+
+compute:
+  gpu:
+    value: false
+    citation: "repo:predict.py:L12"
+  vram_gb:
+    value: "unknown"
+    citation: null
+  est_runtime_min:
+    value: 3
+    citation: "repo:execution_log.json:L1"
+
+checkpoint:
+  url:
+    value: "https://example.org/checkpoints/chem_perturbridge_v1.pt"
+    citation: "PAPER_ID:example2026:L400-L402"
+  sha256:
+    value: "deadbeef00112233445566778899aabbccddeeff00112233445566778899aa"
+    citation: "repo:predict.py:L20"
+  license:
+    value: "CC-BY-4.0"
+    citation: "PAPER_ID:example2026:L410-L412"
+
+hyperparameters:
+  ridge_alpha:
+    value: 1.0
+    citation: "repo:predict.py:L67"
+  embedding_dim:
+    value: 256
+    citation: "PAPER_ID:example2026:L120-L122"

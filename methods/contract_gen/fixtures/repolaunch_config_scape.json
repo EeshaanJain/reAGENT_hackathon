@@ -4,10 +4,10 @@
     "organize": false
   },
   "model_config": {
-    "model": "anthropic/claude-3-5-sonnet-20241022"
+    "model": "anthropic/claude-sonnet-5"
   },
-  "workspace_root": "temp/repolarunch_smoke_test/",
-  "dataset": "temp/repolarunch_smoke_test/dataset.jsonl",
+  "workspace_root": "work/scape_test/",
+  "dataset": "work/scape_test/dataset.jsonl",
   "print_to_console": true,
   "first_N_repos": 1,
   "overwrite": false,
