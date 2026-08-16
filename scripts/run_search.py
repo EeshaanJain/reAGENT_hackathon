@@ -96,10 +96,15 @@ def main() -> None:
     ap.add_argument("--since", default=None,
                     help="only papers since this date (scheduled-run mode); "
                          "default searches the full corpus")
+    ap.add_argument("-k", "--keywords", default="keywords.yaml",
+                    help="keywords file inside the benchmark dir; a benchmark "
+                         "may ship several search configs (e.g. keywords.yaml "
+                         "for methods, keywords_datasets.yaml for datasets)")
     args = ap.parse_args()
 
     bench = Path(args.benchmark_dir)
-    kw = yaml.safe_load((bench / "keywords.yaml").read_text())["search"]
+    kw_path = bench / args.keywords
+    kw = yaml.safe_load(kw_path.read_text())["search"]
     queries = kw["queries"]
     sources = kw.get("sources", "pmc,biorxiv,medrxiv,arxiv")
     n = kw.get("results_per_query", 20)
@@ -156,13 +161,18 @@ def main() -> None:
             "sources": sources,
             "n_per_query": n,
             "since": args.since,
+            "keywords_file": args.keywords,
             "filter_backend": kw.get("filter_backend", "paperclip"),
             "judge_model": kw.get("judge_model"),
         },
         "papers": papers,
     }
+    # Non-default keywords files get their own output, e.g.
+    # keywords_datasets.yaml -> latest_search_datasets.json.
+    suffix = kw_path.stem.removeprefix("keywords").lstrip("_")
+    default_name = f"latest_search{'_' + suffix if suffix else ''}.json"
     out_path = Path(args.output) if args.output else (
-        bench / "results" / "latest_search.json")
+        bench / "results" / default_name)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(out, indent=2))
     csv_path = write_csv(out, out_path.with_suffix(".csv"))

@@ -1,0 +1,38 @@
+# Dataset search for the perturbation prediction benchmark ("new datasets"
+# pipeline): papers introducing single-cell chemical-perturbation datasets or
+# the experimental platforms that produce them.
+#
+# Unlike the method search (keywords.yaml), this includes the `abstracts`
+# source: landmark dataset papers in paywalled journals (e.g. sci-Plex,
+# Srivatsan et al., Science 2020, doi:10.1126/science.aax6234) exist in the
+# paperclip corpus only as abstract-only OpenAlex records (oa_*), not as full
+# text. Retrieval and the abstract-based claude filter work on those records;
+# full-text extraction for oa_* papers must go through the DOI instead of
+# /papers/<id>/.
+search:
+  sources: pmc,biorxiv,medrxiv,arxiv,abstracts
+  results_per_query: 30
+  filter_repeats: 3
+  filter_backend: claude
+  judge_model: sonnet
+  queries:
+    - high-throughput chemical screen single-cell transcriptomics
+    - multiplexed drug screen single-cell RNA-seq profiling
+    - chemical transcriptomics dose response single-cell atlas
+    - single-cell RNA-seq drug perturbation dataset resource
+    - small molecule compound screen transcriptional profiling single cell
+    - sample multiplexing cell hashing drug treatment scRNA-seq
+  relevance_filter: >
+    Keep papers that introduce DATASETS, resources, or experimental
+    platforms/protocols providing single-cell transcriptomic profiles of
+    cells under chemical perturbations (drugs, small molecules, compounds,
+    doses, or drug combinations) — data usable for benchmarking methods
+    that predict transcriptional responses to chemical perturbations.
+    Keep technology papers if applying the technology produced a released
+    chemical-perturbation dataset.
+    Remove: computational method papers that only reuse existing datasets;
+    genetic-only (CRISPR/knockout) perturbation datasets with no chemical
+    arm; bulk-only resources (L1000/CMap profiles without single-cell
+    resolution); drug sensitivity, viability, or IC50 screens without
+    transcriptomic readout; morphology/imaging-only screens; reviews and
+    perspective pieces; and papers not about perturbation profiling at all.
