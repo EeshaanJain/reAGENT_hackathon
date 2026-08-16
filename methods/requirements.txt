@@ -29,6 +29,9 @@ mini-swe-agent>=1.0
 # serena-agent provides real semantic code navigation (find_symbol, get_symbols_overview, ...),
 # but only through its MCP server -- there is no bare one-shot CLI for those tools (verified:
 # `serena tools list` only enumerates them, `serena project create --index` does static indexing,
-# but querying needs an MCP client). contract_gen's own heuristic comprehension stage does not
-# depend on this package; it's here for the follow-up work of wiring a real MCP client.
+# but querying needs an MCP client). methods/serena/mcp_client.py is that client: it spawns
+# `serena start-mcp-server` and talks real MCP over stdio via the `mcp` package below. Used when
+# orchestrator.py is run with --comprehension-engine serena (see methods/serena/README.md); the
+# default --comprehension-engine heuristic does not need either package.
 serena-agent>=1.7
+mcp>=1.0
