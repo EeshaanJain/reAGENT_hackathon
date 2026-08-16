@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reagent-hackathon.local/schemas/model_contract.schema.json",
+  "title": "Model Contract (== MODELSPEC.json)",
+  "description": "Structural schema for the Stage 3 -> Stage 4 handoff artifact. Citation discipline (every non-unknown field must resolve to PAPER_ID:Lstart-Lend or repo:path:line) is enforced in harness/contract.py, not here, because it's a cross-field invariant JSON Schema expresses awkwardly.",
+  "type": "object",
+  "required": [
+    "model", "environment", "prediction_level", "input_layer", "requires_sc_counts",
+    "perturbation_encoding", "gene_space", "handles", "compute", "checkpoint", "hyperparameters"
+  ],
+  "$defs": {
+    "citation": {
+      "type": "string",
+      "pattern": "^(PAPER_ID:[A-Za-z0-9_.:-]+:L[0-9]+-L?[0-9]+|repo:[^:]+:L?[0-9]+(-L?[0-9]+)?)$",
+      "description": "PAPER_ID:<id>:Lstart-Lend or repo:<file>:Lline[-Lend]"
+    },
+    "cited_field": {
+      "type": "object",
+      "description": "Every scientific/software claim is wrapped like this. value == \"unknown\" is always legal; if value != \"unknown\", citation must be present and match the citation pattern.",
+      "required": ["value", "citation"],
+      "properties": {
+        "value": {},
+        "citation": {
+          "anyOf": [
+            { "$ref": "#/$defs/citation" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "value": { "const": "unknown" } } },
+          "then": {},
+          "else": { "properties": { "citation": { "$ref": "#/$defs/citation" } } }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "method_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+
+    "model": {
+      "type": "object",
+      "required": ["repo", "commit", "entrypoint"],
+      "properties": {
+        "repo": { "type": "string" },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "A pinned SHA. Never the literal 'main'."
+        },
+        "entrypoint": { "$ref": "#/$defs/cited_field" }
+      }
+    },
+
+    "environment": {
+      "type": "object",
+      "required": ["image", "gpu_required"],
+      "properties": {
+        "image": { "type": "string", "description": "Built image tag/ref handed off from Stage 1 (RepoLaunch)." },
+        "dockerfile_source": { "type": "string", "enum": ["repolaunch_layer_reconstruction"], "default": "repolaunch_layer_reconstruction" },
+        "gpu_required": { "$ref": "#/$defs/cited_field" }
+      }
+    },
+
+    "prediction_level": {
+      "allOf": [{ "$ref": "#/$defs/cited_field" }],
+      "properties": { "value": { "enum": ["de_signature", "pseudobulk", "single_cell", "unknown"] } }
+    },
+    "input_layer": { "$ref": "#/$defs/cited_field" },
+    "requires_sc_counts": {
+      "allOf": [{ "$ref": "#/$defs/cited_field" }],
+      "properties": { "value": { "enum": [true, false, "unknown"] } }
+    },
+    "perturbation_encoding": {
+      "allOf": [{ "$ref": "#/$defs/cited_field" }],
+      "properties": { "value": { "enum": ["smiles", "ecfp4", "pretrained_embedding", "onehot", "gene_id", "unknown"] } },
+      "description": "gene_id => scope gate refuses upstream (E2). See harness/contract.py:scope_gate()."
+    },
+
+    "gene_space": {
+      "type": "object",
+      "required": ["n_genes", "id_type", "order_sensitive"],
+      "properties": {
+        "n_genes": { "$ref": "#/$defs/cited_field" },
+        "id_type": { "$ref": "#/$defs/cited_field" },
+        "order_sensitive": {
+          "allOf": [{ "$ref": "#/$defs/cited_field" }],
+          "description": "Default MUST be 'unknown', not false. Two source docs disagreed on this default (todo.html gap #3); treating order as significant until cited otherwise is the resolution used here."
+        }
+      }
+    },
+
+    "handles": {
+      "type": "object",
+      "properties": {
+        "dose": { "$ref": "#/$defs/cited_field" },
+        "timepoint": { "$ref": "#/$defs/cited_field" },
+        "unseen_compound": { "$ref": "#/$defs/cited_field" },
+        "unseen_cell_type": { "$ref": "#/$defs/cited_field" }
+      }
+    },
+
+    "compute": {
+      "type": "object",
+      "properties": {
+        "gpu": { "$ref": "#/$defs/cited_field" },
+        "vram_gb": { "$ref": "#/$defs/cited_field" },
+        "est_runtime_min": { "$ref": "#/$defs/cited_field" }
+      }
+    },
+
+    "checkpoint": {
+      "type": "object",
+      "properties": {
+        "url": { "$ref": "#/$defs/cited_field" },
+        "sha256": { "$ref": "#/$defs/cited_field" },
+        "license": { "$ref": "#/$defs/cited_field" }
+      }
+    },
+
+    "hyperparameters": {
+      "type": "object",
+      "description": "Flagged gap (todo.html #8): this was '{...}' with nothing to assert against. Keys are free-form but each MUST be a cited_field, asserted at runtime by the adapter, with mismatches routed to DEVIATIONS.md rather than silently applied.",
+      "additionalProperties": { "$ref": "#/$defs/cited_field" }
+    },
+
+    "arguments": {
+      "type": "array",
+      "description": "CLI arguments the rendered config.vsh.yaml exposes (its `arguments:` block). Optional -- absent/empty means the component takes no configurable arguments beyond the task's own de_train/id_map/output. Each entry's value is the argument's default; citation follows the same cited_field discipline (typically the repo's own train()/predict() signature).",
+      "items": {
+        "allOf": [
+          { "$ref": "#/$defs/cited_field" },
+          {
+            "type": "object",
+            "required": ["name", "arg_type"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^--[a-z][a-z0-9_]*$" },
+              "arg_type": { "type": "string", "enum": ["string", "integer", "double", "boolean"] },
+              "description": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+
+    "dependencies": {
+      "type": "array",
+      "description": "Pip/git packages the rendered engines.docker.setup installs, beyond the base image. Optional -- an empty/absent list defers entirely to the base image. Each entry's value is the version pin (or a git+URL); citation points at the repo file that declared it (setup.py/pyproject.toml/requirements.txt) or RepoLaunch's own reconstructed layer log.",
+      "items": {
+        "allOf": [
+          { "$ref": "#/$defs/cited_field" },
+          {
+            "type": "object",
+            "required": ["package"],
+            "properties": { "package": { "type": "string" } }
+          }
+        ]
+      }
+    }
+  }
+}

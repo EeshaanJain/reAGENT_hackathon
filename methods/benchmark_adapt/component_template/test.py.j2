@@ -1,0 +1,73 @@
+"""Viash test.py for {{ method_id }}.
+
+Today, before `viash` (the JVM build tool) is set up on this machine, run these same checks via:
+    pytest benchmark_adapt/gauntlet --adapter output/{{ method_id }}/script.py
+
+Once `viash build`/`viash ns test` is available, replace the viash_shim.run_component() calls
+below with a subprocess call into the built executable -- the check functions imported from
+gauntlet/checks.py do not need to change; only the call site that produces `prediction` does.
+This is the seam mentioned in benchmark_adapt/README.md ("what's real vs. a stand-in").
+"""
+
+import os
+import sys
+from pathlib import Path
+
+BENCHMARK_ADAPT_ROOT = Path(os.environ.get("BENCHMARK_ADAPT_ROOT", Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(BENCHMARK_ADAPT_ROOT))
+
+from gauntlet.checks import (  # noqa: E402
+    check_id_map_alignment,
+    check_layer_conformance,
+    check_output_sanity,
+    check_perturbation_sensitivity,
+)
+from harness import viash_shim  # noqa: E402
+
+SCRIPT = Path(__file__).parent / "script.py"
+FIXTURE_DIR = BENCHMARK_ADAPT_ROOT / "fixtures" / "data"
+# Output layer is always literally "prediction" (file_prediction.yaml) -- not the input layer name.
+OUTPUT_LAYER = "prediction"
+INPUT_LAYER = "{{ input_layer if input_layer and input_layer != 'unknown' else 'clipped_sign_log10_pval' }}"
+LAYER_BOUNDS = {{ layer_bounds | default([-4.0, 4.0]) }}
+
+
+def _run(id_map_path, out_path):
+    par = {
+        "de_train": str(FIXTURE_DIR / "de_train.h5ad"),
+        "id_map": str(id_map_path),
+        "layer": INPUT_LAYER,
+        "output": str(out_path),
+    }
+    result = viash_shim.run_component(SCRIPT, par, workdir=out_path.parent)
+    assert result.ok, f"{SCRIPT} failed: {result.stderr}"
+    import anndata as ad
+
+    return ad.read_h5ad(out_path)
+
+
+def main():
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        pred = _run(FIXTURE_DIR / "id_map.csv", td / "prediction.h5ad")
+
+        check_layer_conformance(pred, OUTPUT_LAYER, tuple(LAYER_BOUNDS)).assert_ok()
+        print("G1 layer conformance: OK")
+
+        import pandas as pd
+
+        id_map_df = pd.read_csv(FIXTURE_DIR / "id_map.csv")
+        check_id_map_alignment(pred, id_map_df).assert_ok()
+        print("G2 id_map alignment: OK")
+
+        check_output_sanity(pred, OUTPUT_LAYER, pred.n_vars).assert_ok()
+        print("G6 output sanity: OK")
+
+        print("All Gauntlet checks in this test.py passed. See gauntlet/ for G3/G4/G7, which need "
+              "the shuffle/network-block/rerun machinery in conftest.py -- run via pytest instead.")
+
+
+if __name__ == "__main__":
+    main()

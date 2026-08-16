@@ -3,6 +3,8 @@
 __pycache__/
 *.py[codz]
 *$py.class
+.vscode/
+.claude/
 
 # C extensions
 *.so
@@ -217,6 +219,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+.claude/
+
+# Temporary working directories (method integration pipeline)
+temp/
+work/
+smoke_tests/results/
+methods/scape/work/
+.serena/
 
 # Non-final outputs: eval runs, tuning artifacts (keep out of git)
 evals/backsearch/results/
