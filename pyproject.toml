@@ -1,14 +1,23 @@
 [project]
 name = "litsearch"
 version = "0.1.0"
-description = "Benchmark-agnostic literature search agent for maintaining Open Problems benchmarks"
+description = "Benchmark-agnostic agent tooling for maintaining Open Problems benchmarks"
 requires-python = ">=3.10"
 dependencies = [
+    "anndata>=0.10",
+    "h5py>=3.10",
+    "numpy>=1.24",
+    "pandas>=2.0",
     "pyyaml>=6.0",
+    "rdkit>=2024.3",
+    "scipy>=1.10",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest>=7.0"]
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.9",
+]
 
 [build-system]
 requires = ["setuptools>=61"]
@@ -16,3 +25,22 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+# The root project owns the installable packages, their tests, and benchmark CLIs.
+# Method harnesses and exploratory notebooks retain their existing lint policies.
+include = [
+    "src/**/*.py",
+    "tests/**/*.py",
+    "benchmarks/**/*.py",
+    "scripts/render_ingest_prompt.py",
+    "scripts/run_ingest.py",
+]
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP", "W"]

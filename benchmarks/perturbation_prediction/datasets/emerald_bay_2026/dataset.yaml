@@ -1,0 +1,17 @@
+dataset:
+  dataset_id: emerald_bay_2026
+  publication_url: https://www.biorxiv.org/content/10.64898/2026.06.09.731197v1
+  data_url_or_accession: https://huggingface.co/datasets/tahoebio/EmeraldBay
+  local_pdf_path: data/2026.06.09.731197.full.pdf
+
+prompt_template: ../../prompts/data_ingest.md.template
+ingest_contract: ../../ingest_contract.yaml
+
+subset:
+  condition_columns: [sm_name, timepoint_hr, dose_uM, cell_type]
+  control_column: control
+  minimum_condition_size: 30
+  target_min_cells: 195000
+  minimum_acceptable_cells: 190000
+  max_cells_exclusive: 200000
+  seed: 42

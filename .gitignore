@@ -219,7 +219,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-.claude/
+# Local data
+/data/
+.DS_Store
+tmp_code/
 
 # Temporary working directories (method integration pipeline)
 temp/
@@ -234,3 +237,6 @@ methods/scape/work/
 # Non-final outputs: eval runs, tuning artifacts (keep out of git)
 evals/backsearch/results/
 evals/backsearch/query_sets/
+**/rollout-*.jsonl
+tmp
+data_ingest/
